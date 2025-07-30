@@ -8,52 +8,71 @@ import {
   Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
 import { useLayoutStore } from '../stores';
 import { PrimaryButton, SurfaceCard } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
+type AddHallRouteProp = RouteProp<RootStackParamList, 'AddHall'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AddHallScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<AddHallRouteProp>();
   const { colors } = useTheme();
+  const { t } = useLocalization();
   
-  const { addHall } = useLayoutStore();
+  const { addHall, updateHall, halls } = useLayoutStore();
+  
+  // Check if we're editing an existing hall
+  const editingHallId = route.params?.hallId;
+  const editingHall = editingHallId ? halls.find(h => h.id === editingHallId) : null;
+  const isEditing = !!editingHall;
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState(editingHall?.name || '');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Hata', 'Salon adı gereklidir.');
+      Alert.alert(t.error, t.enterHallName);
       return;
     }
 
     setLoading(true);
     try {
-      addHall({ name: name.trim() });
+      if (isEditing && editingHallId) {
+        updateHall(editingHallId, { name: name.trim() });
+        Alert.alert(t.success, t.hallUpdated);
+      } else {
+        addHall({ name: name.trim() });
+        Alert.alert(t.success, t.hallAdded);
+      }
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Hata', 'Salon eklenirken bir hata oluştu.');
+      Alert.alert(t.error, 'Bir hata oluştu');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={{ flex: 1, padding: 16 }}>
+        <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
           <SurfaceCard style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
-              Salon Adı *
+            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 16 }}>
+              {isEditing ? t.editHall : t.addHall}
+            </Text>
+            
+            <Text style={{ fontSize: 14, color: colors.textSubtle, marginBottom: 8 }}>
+              {t.hallName} *
             </Text>
             <TextInput
               style={{
@@ -68,7 +87,7 @@ export default function AddHallScreen() {
               }}
               value={name}
               onChangeText={setName}
-              placeholder="Salon adını girin..."
+              placeholder={t.enterHallName}
               placeholderTextColor={colors.textSubtle}
               autoFocus
             />
@@ -78,7 +97,7 @@ export default function AddHallScreen() {
               marginTop: 8,
               fontStyle: 'italic'
             }}>
-              Salon oluşturduktan sonra masalar ekleyebilirsiniz.
+              {t.hallNameHint}
             </Text>
           </SurfaceCard>
 
@@ -88,19 +107,19 @@ export default function AddHallScreen() {
             textAlign: 'center',
             marginBottom: 24
           }}>
-            Örnekler: "Ana Salon", "Teras", "Üst Kat", "Bahçe"
+            {t.hallExamples}
           </Text>
         </View>
 
         <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
           <PrimaryButton
-            title="İptal"
+            title={t.cancel}
             variant="outline"
             onPress={() => navigation.goBack()}
             style={{ flex: 1 }}
           />
           <PrimaryButton
-            title="Kaydet"
+            title={isEditing ? t.save : t.add}
             onPress={handleSave}
             loading={loading}
             style={{ flex: 1 }}

@@ -32,7 +32,8 @@ export default function TablesScreen() {
     tables, 
     getHallsWithTables, 
     addHall, 
-    addTable 
+    addTable,
+    deleteTable 
   } = useLayoutStore();
   
   const { 
@@ -50,18 +51,44 @@ export default function TablesScreen() {
     setTimeout(() => setRefreshing(false), 1000);
   }, []);
 
+  const handleEditHall = (hallId: string) => {
+    navigation.navigate('AddHall', { hallId });
+  };
+
+  const handleEditTable = (tableId: string) => {
+    navigation.navigate('EditTable', { tableId });
+  };
+
+  const handleDeleteTable = (table: Table) => {
+    Alert.alert(
+      t.deleteTable,
+      t.deleteTableConfirm,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            deleteTable(table.id);
+            Alert.alert(t.success, t.tableDeleted);
+          }
+        }
+      ]
+    );
+  };
+
   const handleAddHall = () => {
-    navigation.navigate('AddHall');
+    navigation.navigate('AddHall', {});
   };
 
   const handleAddTable = (hallId: string) => {
     Alert.alert(
-      'Masa Ekle',
-      'Yeni masa eklensin mi?',
+      t.addTable,
+      t.addTableConfirm,
       [
-        { text: 'İptal', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Ekle',
+          text: t.add,
           onPress: () => {
             addTable({ hallId });
           }
@@ -80,61 +107,84 @@ export default function TablesScreen() {
     const displayName = table.label || `Masa ${table.seq}`;
 
     return (
-      <TouchableOpacity
-        key={table.id}
-        onPress={() => handleTablePress(table)}
-        style={{ flex: 1, margin: 4 }}
-      >
-        <SurfaceCard
-          variant="outlined"
-          padding="small"
-          style={{
-            minHeight: 80,
-            backgroundColor: table.isOpen ? colors.accent + '20' : colors.surface,
-            borderColor: table.isOpen ? colors.accent : colors.border,
-            borderWidth: table.isOpen ? 2 : 1,
-          }}
+      <View key={table.id} style={{ width: '33.33%', paddingHorizontal: 4, marginBottom: 8 }}>
+        <TouchableOpacity
+          onPress={() => handleTablePress(table)}
+          style={{ flex: 1 }}
         >
-          <View style={{ flex: 1, justifyContent: 'space-between' }}>
+          <SurfaceCard
+        variant="outlined"
+        padding="small"
+        style={{
+          minHeight: 80,
+          backgroundColor: table.isOpen ? colors.accent + '20' : colors.surface,
+          borderColor: table.isOpen ? colors.accent : colors.border,
+          borderWidth: table.isOpen ? 2 : 1,
+        }}
+          >
+        <View style={{ flex: 1, justifyContent: 'space-between', height: 'auto' }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Text style={{ 
-              fontSize: 14, 
-              fontWeight: '600', 
-              color: colors.text,
-              textAlign: 'center'
+          fontSize: 10, 
+          fontWeight: '600', 
+          color: colors.text,
+          flex: 1
             }}>
-              {displayName}
+          {displayName}
             </Text>
             
-            {table.isOpen && (
-              <View style={{ alignItems: 'center', marginTop: 4 }}>
-                <View style={{
-                  backgroundColor: colors.accent,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  borderRadius: 10,
-                }}>
-                  <Text style={{ 
-                    fontSize: 10, 
-                    color: '#FFFFFF',
-                    fontWeight: '600'
-                  }}>
-                    AÇIK
-                  </Text>
-                </View>
-                {total > 0 && (
-                  <Text style={{ 
-                    fontSize: 12, 
-                    color: colors.textSubtle,
-                    marginTop: 2
-                  }}>
-                    {formatPrice(total)}
-                  </Text>
-                )}
-              </View>
-            )}
+            <View style={{ flexDirection: 'row', gap: 2 }}>
+              <TouchableOpacity 
+            onPress={() => handleEditTable(table.id)}
+            style={{
+              padding: 4,
+            }}
+              >
+            <Ionicons name="pencil" size={12} color={colors.textSubtle} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+            onPress={() => handleDeleteTable(table)}
+            style={{
+              padding: 4,
+            }}
+              >
+            <Ionicons name="trash" size={12} color="#ff4444" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </SurfaceCard>
-      </TouchableOpacity>
+              
+              {table.isOpen && (
+                <View style={{ alignItems: 'center', marginTop: 4 }}>
+                  <View style={{
+                    backgroundColor: colors.accent,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 10,
+                  }}>
+                    <Text style={{ 
+                      fontSize: 10, 
+                      color: '#FFFFFF',
+                      fontWeight: '600'
+                    }}>
+                      {t.open}
+                    </Text>
+                  </View>
+                  {total > 0 && (
+                    <Text style={{ 
+                      fontSize: 12, 
+                      color: colors.textSubtle,
+                      marginTop: 2
+                    }}>
+                      {formatPrice(total)}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+          </SurfaceCard>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -155,27 +205,43 @@ export default function TablesScreen() {
             {hall.name}
           </Text>
           
-          <TouchableOpacity 
-            onPress={() => handleAddTable(hall.id)}
-            style={{
-              backgroundColor: colors.primary,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 6,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Ionicons name="add" size={16} color="#FFFFFF" />
-            <Text style={{ 
-              color: '#FFFFFF', 
-              fontSize: 12, 
-              fontWeight: '600',
-              marginLeft: 4
-            }}>
-              Masa Ekle
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity 
+              onPress={() => handleEditHall(hall.id)}
+              style={{
+                backgroundColor: colors.surface,
+                paddingHorizontal: 8,
+                paddingVertical: 6,
+                borderRadius: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="pencil" size={14} color={colors.textSubtle} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={() => handleAddTable(hall.id)}
+              style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons name="add" size={16} color="#FFFFFF" />
+              <Text style={{ 
+                color: '#FFFFFF', 
+                fontSize: 12, 
+                fontWeight: '600',
+                marginLeft: 4
+              }}>
+                {t.addTable}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {hall.tables.length === 0 ? (
@@ -185,7 +251,7 @@ export default function TablesScreen() {
             fontStyle: 'italic',
             padding: 20
           }}>
-            Bu salonda henüz masa yok
+            {t.noTables}
           </Text>
         ) : (
           <View style={{ 
@@ -204,7 +270,7 @@ export default function TablesScreen() {
   const todayTotal = getTodayTotal();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       <ScrollView
         style={{ flex: 1 }}
         refreshControl={
@@ -219,13 +285,13 @@ export default function TablesScreen() {
         <SurfaceCard style={{ margin: 16, marginBottom: 8 }} variant="elevated">
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View>
-              <Text style={{ fontSize: 14, color: colors.textSubtle }}>Bugünkü Toplam</Text>
+              <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.dailyTotal}</Text>
               <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>
                 {formatPrice(todayTotal)}
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ fontSize: 14, color: colors.textSubtle }}>Açık Masalar</Text>
+              <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.openTables}</Text>
               <Text style={{ fontSize: 20, fontWeight: '600', color: colors.accent }}>
                 {tables.filter(t => t.isOpen).length}
               </Text>
@@ -243,10 +309,10 @@ export default function TablesScreen() {
                 fontSize: 16,
                 marginBottom: 16
               }}>
-                Henüz salon eklenmemiş
+                {t.noHalls}
               </Text>
               <PrimaryButton
-                title="İlk Salonu Ekle"
+                title={t.addFirstHall}
                 onPress={handleAddHall}
                 fullWidth
               />
@@ -259,7 +325,7 @@ export default function TablesScreen() {
               scrollEnabled={false}
               ListFooterComponent={
                 <PrimaryButton
-                  title="Yeni Salon Ekle"
+                  title={t.addNewHall}
                   onPress={handleAddHall}
                   variant="outline"
                   fullWidth

@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
 
 // Screen imports (we'll create these next)
 import {
@@ -15,12 +16,16 @@ import {
   AddMenuItemScreen,
   AddHallScreen
 } from '../screens';
+import EditTableScreen from '@/screens/EditTableScreen';
+import AddCategoryScreen from '@/screens/AddCategoryScreen';
 
 export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
   AddMenuItem: { categoryId?: string };
-  AddHall: undefined;
+  AddHall: { hallId?: string };
+  EditTable: { tableId: string };
+  AddCategory: { categoryId?: string };
 };
 
 export type TabParamList = {
@@ -35,6 +40,7 @@ const Tab = createBottomTabNavigator<TabParamList>();
 
 function MainTabs() {
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   return (
     <Tab.Navigator
@@ -82,32 +88,32 @@ function MainTabs() {
         name="Tables" 
         component={TablesScreen}
         options={{
-          title: 'Masalar',
-          headerTitle: 'Orderia - Masalar',
+          title: t.tables,
+          headerTitle: t.tablesTitle,
         }}
       />
       <Tab.Screen 
         name="Menu" 
         component={MenuScreen}
         options={{
-          title: 'Menü',
-          headerTitle: 'Menü Yönetimi',
+          title: t.menu,
+          headerTitle: t.menuManagement,
         }}
       />
       <Tab.Screen 
         name="History" 
         component={HistoryScreen}
         options={{
-          title: 'Tarihçe',
-          headerTitle: 'Satış Tarihçesi',
+          title: t.history,
+          headerTitle: t.salesHistory,
         }}
       />
       <Tab.Screen 
         name="Settings" 
         component={SettingsScreen}
         options={{
-          title: 'Ayarlar',
-          headerTitle: 'Ayarlar',
+          title: t.settings,
+          headerTitle: t.settings,
         }}
       />
     </Tab.Navigator>
@@ -116,6 +122,7 @@ function MainTabs() {
 
 export default function AppNavigator() {
   const { colors } = useTheme();
+  const { t } = useLocalization();
 
   return (
     <NavigationContainer>
@@ -139,7 +146,7 @@ export default function AppNavigator() {
           name="TableDetail" 
           component={TableDetailScreen}
           options={{
-            title: 'Masa Detayı',
+            title: t.tableDetail,
             presentation: 'modal',
           }}
         />
@@ -147,7 +154,7 @@ export default function AppNavigator() {
           name="AddMenuItem" 
           component={AddMenuItemScreen}
           options={{
-            title: 'Ürün Ekle',
+            title: t.addMenuItem,
             presentation: 'modal',
           }}
         />
@@ -155,7 +162,23 @@ export default function AppNavigator() {
           name="AddHall" 
           component={AddHallScreen}
           options={{
-            title: 'Salon Ekle',
+            title: t.addHall,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="EditTable" 
+          component={EditTableScreen}
+          options={{
+            title: t.editTable,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="AddCategory" 
+          component={AddCategoryScreen}
+          options={{
+            title: t.addCategory,
             presentation: 'modal',
           }}
         />

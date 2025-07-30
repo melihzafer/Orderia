@@ -81,8 +81,8 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={{ flex: 1, padding: 16 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+      <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
         {/* Export Buttons */}
         {historyDates.length > 0 && (
           <SurfaceCard style={{ marginBottom: 16 }} variant="outlined">

@@ -25,23 +25,23 @@ export default function SettingsScreen() {
 
   const handleDataExport = () => {
     Alert.alert(
-      'Veri Dışa Aktarma',
-      'Bu özellik henüz geliştirilme aşamasında.',
-      [{ text: 'Tamam' }]
+      t.dataExport,
+      t.featureInDevelopment,
+      [{ text: t.ok }]
     );
   };
 
   const handleDataImport = () => {
     Alert.alert(
-      'Veri İçe Aktarma',
-      'Bu özellik henüz geliştirilme aşamasında.',
-      [{ text: 'Tamam' }]
+      t.dataImport,
+      t.featureInDevelopment,
+      [{ text: t.ok }]
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, backgroundColor: colors.bg }}>
         
         {/* Language Settings */}
         <SurfaceCard style={{ marginBottom: 16 }}>
@@ -231,7 +231,7 @@ export default function SettingsScreen() {
               fontWeight: '600', 
               color: colors.text 
             }}>
-              Veri Yönetimi
+              {t.dataManagement}
             </Text>
           </View>
           
@@ -259,14 +259,14 @@ export default function SettingsScreen() {
                 color: colors.text,
                 fontWeight: '500'
               }}>
-                Veri Dışa Aktarma
+                {t.dataExport}
               </Text>
               <Text style={{ 
                 fontSize: 12, 
                 color: colors.textSubtle,
                 marginTop: 2
               }}>
-                Verilerinizi yedekleyin
+                {t.backupData}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textSubtle} />
@@ -295,14 +295,14 @@ export default function SettingsScreen() {
                 color: colors.text,
                 fontWeight: '500'
               }}>
-                Veri İçe Aktarma
+                {t.dataImport}
               </Text>
               <Text style={{ 
                 fontSize: 12, 
                 color: colors.textSubtle,
                 marginTop: 2
               }}>
-                Önceki verilerinizi geri yükleyin
+                {t.restorePreviousData}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textSubtle} />
@@ -327,7 +327,7 @@ export default function SettingsScreen() {
               fontWeight: '600', 
               color: colors.text 
             }}>
-              Uygulama Bilgileri
+              {t.appInfo}
             </Text>
           </View>
           
@@ -340,7 +340,7 @@ export default function SettingsScreen() {
                 {brand.tagline}
               </Text>
               <Text style={{ fontSize: 12, color: colors.textSubtle, marginTop: 8 }}>
-                Sürüm 1.0.0 - OMNI Tech Solutions
+                {t.version} 1.0.0 - OMNI Tech Solutions
               </Text>
             </View>
           </View>

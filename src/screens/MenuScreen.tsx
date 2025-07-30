@@ -43,28 +43,16 @@ export default function MenuScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleAddCategory = () => {
-    Alert.prompt(
-      'Kategori Ekle',
-      'Kategori adını girin:',
-      [
-        { text: 'İptal', style: 'cancel' },
-        {
-          text: 'Ekle',
-          onPress: (name) => {
-            if (name?.trim()) {
-              const category = addCategory({ name: name.trim() });
-              setSelectedCategoryId(category.id);
-            }
-          }
-        }
-      ],
-      'plain-text'
-    );
+    navigation.navigate('AddCategory', {});
+  };
+
+  const handleEditCategory = (categoryId: string) => {
+    navigation.navigate('AddCategory', { categoryId });
   };
 
   const handleAddMenuItem = () => {
     if (!selectedCategoryId) {
-      Alert.alert('Hata', 'Önce bir kategori seçin veya oluşturun.');
+      Alert.alert(t.error, t.selectCategoryFirst);
       return;
     }
     navigation.navigate('AddMenuItem', { categoryId: selectedCategoryId });
@@ -72,12 +60,12 @@ export default function MenuScreen() {
 
   const handleDeleteMenuItem = (item: MenuItem) => {
     Alert.alert(
-      'Ürünü Sil',
-      `"${item.name}" ürününü silmek istediğinizden emin misiniz?`,
+      t.deleteItem,
+      `"${item.name}" ${t.deleteItemConfirm}`,
       [
-        { text: 'İptal', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Sil',
+          text: t.delete,
           style: 'destructive',
           onPress: () => deleteMenuItem(item.id)
         }
@@ -99,48 +87,66 @@ export default function MenuScreen() {
     const itemCount = menuItems.filter(item => item.categoryId === category.id).length;
 
     return (
-      <TouchableOpacity
-        key={category.id}
-        onPress={() => setSelectedCategoryId(category.id)}
-        style={{
-          paddingHorizontal: 16,
-          paddingVertical: 8,
-          marginRight: 8,
-          borderRadius: 20,
-          backgroundColor: isSelected ? colors.primary : colors.surfaceAlt,
-          borderWidth: 1,
-          borderColor: isSelected ? colors.primary : colors.border,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{
-            color: isSelected ? '#FFFFFF' : colors.text,
-            fontWeight: isSelected ? '600' : '400',
-            fontSize: 14,
-          }}>
-            {category.name}
-          </Text>
-          {itemCount > 0 && (
-            <View style={{
-              backgroundColor: isSelected ? '#FFFFFF' : colors.primary,
-              borderRadius: 10,
-              minWidth: 18,
-              height: 18,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginLeft: 6,
+      <View key={category.id} style={{ marginRight: 8, position: 'relative' }}>
+        <TouchableOpacity
+          onPress={() => setSelectedCategoryId(category.id)}
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 20,
+            backgroundColor: isSelected ? colors.primary : colors.surfaceAlt,
+            borderWidth: 1,
+            borderColor: isSelected ? colors.primary : colors.border,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{
+              color: isSelected ? '#FFFFFF' : colors.text,
+              fontWeight: isSelected ? '600' : '400',
+              fontSize: 14,
             }}>
-              <Text style={{
-                color: isSelected ? colors.primary : '#FFFFFF',
-                fontSize: 10,
-                fontWeight: '600',
+              {category.name}
+            </Text>
+            {itemCount > 0 && (
+              <View style={{
+                backgroundColor: isSelected ? '#FFFFFF' : colors.primary,
+                borderRadius: 10,
+                minWidth: 18,
+                height: 18,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 6,
               }}>
-                {itemCount}
-              </Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
+                <Text style={{
+                  color: isSelected ? colors.primary : '#FFFFFF',
+                  fontSize: 10,
+                  fontWeight: '600',
+                }}>
+                  {itemCount}
+                </Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+        
+        {isSelected && (
+          <TouchableOpacity
+            onPress={() => handleEditCategory(category.id)}
+            style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              padding: 4,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            <Ionicons name="pencil" size={10} color={colors.textSubtle} />
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -208,10 +214,10 @@ export default function MenuScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       <View style={{ flex: 1 }}>
         {/* Search Bar */}
-        <View style={{ padding: 16, paddingBottom: 8 }}>
+        <View style={{ padding: 16, paddingBottom: 8, backgroundColor: colors.bg }}>
           <View style={{
             flexDirection: 'row',
             backgroundColor: colors.surfaceAlt,
@@ -228,7 +234,7 @@ export default function MenuScreen() {
                 fontSize: 16,
                 color: colors.text,
               }}
-              placeholder="Ürün ara..."
+              placeholder={t.searchItems}
               placeholderTextColor={colors.textSubtle}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -264,7 +270,7 @@ export default function MenuScreen() {
                 fontSize: 14,
                 marginLeft: 4,
               }}>
-                Kategori Ekle
+                {t.addCategory}
               </Text>
             </TouchableOpacity>
           </ScrollView>
@@ -280,10 +286,10 @@ export default function MenuScreen() {
                 fontSize: 16,
                 marginBottom: 16
               }}>
-                Henüz kategori eklenmemiş
+                {t.noCategoriesYet}
               </Text>
               <PrimaryButton
-                title="İlk Kategoriyi Ekle"
+                title={t.addFirstCategory}
                 onPress={handleAddCategory}
                 fullWidth
               />
@@ -296,11 +302,11 @@ export default function MenuScreen() {
                 fontSize: 16,
                 marginBottom: 16
               }}>
-                {searchQuery ? 'Arama sonucu bulunamadı' : 'Bu kategoride henüz ürün yok'}
+                {searchQuery ? t.noItemsFound : t.noCategoryItems}
               </Text>
               {!searchQuery && (
                 <PrimaryButton
-                  title="İlk Ürünü Ekle"
+                  title={t.addFirstItem}
                   onPress={handleAddMenuItem}
                   fullWidth
                 />
@@ -320,7 +326,7 @@ export default function MenuScreen() {
         {categories.length > 0 && (
           <View style={{ padding: 16, paddingTop: 8 }}>
             <PrimaryButton
-              title="Yeni Ürün Ekle"
+              title={t.addNewItem}
               onPress={handleAddMenuItem}
               fullWidth
             />

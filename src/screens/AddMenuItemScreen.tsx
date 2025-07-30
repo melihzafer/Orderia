@@ -14,6 +14,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
 import { useMenuStore } from '../stores';
 import { PrimaryButton, SurfaceCard } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -25,6 +26,7 @@ export default function AddMenuItemScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AddMenuItemRouteProp>();
   const { colors } = useTheme();
+  const { t } = useLocalization();
   
   const { categories, addMenuItem } = useMenuStore();
   const { categoryId } = route.params || {};
@@ -68,19 +70,19 @@ export default function AddMenuItemScreen() {
 
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Hata', 'Ürün eklenirken bir hata oluştu.');
+      Alert.alert(t.error, t.itemAddError);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView style={{ flex: 1, padding: 16 }}>
+        <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ backgroundColor: colors.bg }}>
           <SurfaceCard style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
               Ürün Adı *
@@ -203,7 +205,7 @@ export default function AddMenuItemScreen() {
 
         <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
           <PrimaryButton
-            title="İptal"
+            title={t.cancel}
             variant="outline"
             onPress={() => navigation.goBack()}
             style={{ flex: 1 }}

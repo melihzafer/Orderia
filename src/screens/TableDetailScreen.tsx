@@ -20,6 +20,7 @@ import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
 import { PrimaryButton, SurfaceCard, StatusBadge } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { MenuItem, TicketLine, OrderStatus } from '../types';
+import { generateOrderBillPDF } from '../utils/pdfGenerator';
 
 type TableDetailRouteProp = RouteProp<RootStackParamList, 'TableDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -96,11 +97,11 @@ export default function TableDetailScreen() {
   const handleMarkAllDelivered = () => {
     if (!ticket) return;
     Alert.alert(
-      'Tüm Siparişleri Teslim Et',
-      'Tüm bekleyen siparişleri teslim edildi olarak işaretlemek istediğinizden emin misiniz?',
+      t.deliverAllOrders,
+      t.deliverAllConfirm,
       [
-        { text: 'İptal', style: 'cancel' },
-        { text: 'Teslim Et', onPress: () => markAllDelivered(ticket.id) }
+        { text: t.cancel, style: 'cancel' },
+        { text: t.deliver, onPress: () => markAllDelivered(ticket.id) }
       ]
     );
   };
@@ -109,15 +110,48 @@ export default function TableDetailScreen() {
     if (!ticket) return;
     const total = getTicketTotal(ticket.id);
     Alert.alert(
-      'Ödeme Al',
-      `Toplam tutar: ${formatPrice(total)}\n\nÖdeme almak istediğinizden emin misiniz?`,
+      t.makePayment,
+      `${t.total}: ${formatPrice(total)}\n\n${t.paymentConfirm}`,
       [
-        { text: 'İptal', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         { 
-          text: 'Ödeme Al', 
+          text: t.makePayment, 
           onPress: () => {
             payTicket(ticket.id);
-            navigation.goBack();
+            
+            // Ask if customer wants order bill
+            setTimeout(() => {
+              Alert.alert(
+                t.orderBill,
+                t.generateOrderBill,
+                [
+                  { text: t.no, style: 'cancel', onPress: () => navigation.goBack() },
+                  { 
+                    text: t.yes, 
+                    onPress: async () => {
+                      try {
+                        const displayName = table?.label || `${t.table} ${table?.seq}`;
+                        await generateOrderBillPDF({
+                          ticket,
+                          ticketLines: ticket.lines,
+                          tableName: displayName,
+                          total,
+                          formatPrice,
+                          t
+                        });
+                        Alert.alert(t.success, t.orderBillGenerated, [
+                          { text: t.ok, onPress: () => navigation.goBack() }
+                        ]);
+                      } catch (error) {
+                        Alert.alert(t.error, t.genericError, [
+                          { text: t.ok, onPress: () => navigation.goBack() }
+                        ]);
+                      }
+                    }
+                  }
+                ]
+              );
+            }, 500);
           }
         }
       ]
@@ -135,7 +169,7 @@ export default function TableDetailScreen() {
             
             {line.note && (
               <Text style={{ fontSize: 14, color: colors.textSubtle, marginTop: 2, fontStyle: 'italic' }}>
-                Not: {line.note}
+                {t.note}: {line.note}
               </Text>
             )}
             
@@ -207,7 +241,7 @@ export default function TableDetailScreen() {
                 }}
               >
                 <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
-                  Teslim Et
+                  {t.deliver}
                 </Text>
               </TouchableOpacity>
             )}
@@ -247,7 +281,7 @@ export default function TableDetailScreen() {
   if (!table) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, color: colors.textSubtle }}>Masa bulunamadı</Text>
+        <Text style={{ fontSize: 18, color: colors.textSubtle }}>{t.tableNotFound}</Text>
       </SafeAreaView>
     );
   }
@@ -256,15 +290,15 @@ export default function TableDetailScreen() {
   const total = ticket ? getTicketTotal(ticket.id) : 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       {/* Header */}
-      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: colors.bg }}>
         <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
           {displayName}
         </Text>
         {ticket && (
           <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center', marginTop: 4 }}>
-            Toplam: {formatPrice(total)}
+            {t.total}: {formatPrice(total)}
           </Text>
         )}
       </View>
@@ -273,10 +307,10 @@ export default function TableDetailScreen() {
       {!ticket ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
           <Text style={{ fontSize: 18, color: colors.textSubtle, textAlign: 'center', marginBottom: 24 }}>
-            Bu masa henüz açılmamış
+            {t.tableNotOpened}
           </Text>
           <PrimaryButton
-            title="Masayı Aç"
+            title={t.openTable}
             onPress={handleOpenTable}
             size="large"
           />
@@ -293,10 +327,10 @@ export default function TableDetailScreen() {
                   fontSize: 16,
                   marginBottom: 16
                 }}>
-                  Henüz sipariş alınmamış
+                  {t.noOrdersYet}
                 </Text>
                 <PrimaryButton
-                  title="İlk Siparişi Ekle"
+                  title={t.addFirstOrder}
                   onPress={() => setShowMenuModal(true)}
                   fullWidth
                 />
@@ -315,14 +349,14 @@ export default function TableDetailScreen() {
           <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               <PrimaryButton
-                title="Sipariş Ekle"
+                title={t.addOrder}
                 onPress={() => setShowMenuModal(true)}
                 style={{ flex: 1 }}
               />
               
               {ticket.lines.some(line => line.status === 'pending') && (
                 <PrimaryButton
-                  title="Hepsini Teslim Et"
+                  title={t.deliverAll}
                   onPress={handleMarkAllDelivered}
                   variant="secondary"
                   style={{ flex: 1 }}
@@ -332,7 +366,7 @@ export default function TableDetailScreen() {
             
             {ticket.lines.length > 0 && (
               <PrimaryButton
-                title={`Ödeme Al (${formatPrice(total)})`}
+                title={`${t.makePayment} (${formatPrice(total)})`}
                 onPress={handlePayment}
                 size="large"
                 fullWidth
@@ -348,17 +382,18 @@ export default function TableDetailScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
       >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
           <View style={{ 
             flexDirection: 'row', 
             justifyContent: 'space-between', 
             alignItems: 'center',
             padding: 16,
             borderBottomWidth: 1,
-            borderBottomColor: colors.border
+            borderBottomColor: colors.border,
+            backgroundColor: colors.bg
           }}>
             <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>
-              Menü
+              {t.menu}
             </Text>
             <TouchableOpacity onPress={() => setShowMenuModal(false)}>
               <Ionicons name="close" size={24} color={colors.text} />
@@ -380,7 +415,7 @@ export default function TableDetailScreen() {
               }}
               value={note}
               onChangeText={setNote}
-              placeholder="Sipariş notu (opsiyonel)..."
+              placeholder={t.orderNote}
               placeholderTextColor={colors.textSubtle}
             />
           </View>
