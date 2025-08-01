@@ -19,7 +19,12 @@ import EditTableScreen from '@/screens/EditTableScreen';
 import AddCategoryScreen from '@/screens/AddCategoryScreen';
 import { PrimaryButton } from '@/components';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+import { CompositeNavigationProp, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+
+type MainTabsNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
@@ -40,7 +45,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function MainTabs() {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<MainTabsNavigationProp>();
   const { colors } = useTheme();
   const { t } = useLocalization();
 
@@ -95,6 +100,14 @@ function MainTabs() {
           headerLeft: () => (
             <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
           ),
+            headerRight: () => (
+            <PrimaryButton
+              title={t.addHall}
+              onPress={() => navigation.navigate('AddHall')}
+              variant="outline"
+              style={{ marginRight: 12 }}
+            />
+          ),
         }}
       />
       <Tab.Screen 
@@ -106,14 +119,7 @@ function MainTabs() {
           // headerLeft: () => (
           //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
           // ),
-          headerRight: () => (
-            <PrimaryButton
-              title={t.addHall}
-              onPress={() => navigation.navigate('AddHall')}
-              variant="outline"
-              style={{ marginRight: 12 }}
-            />
-          ),
+        
         }}
       />
       <Tab.Screen 
