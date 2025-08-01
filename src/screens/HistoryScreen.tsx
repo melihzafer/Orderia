@@ -20,15 +20,15 @@ export default function HistoryScreen() {
     try {
       setExporting(true);
       const exportData = prepareExportData(dailyHistory);
-      const success = await exportToCSV(exportData);
+      const success = await exportToCSV(exportData, 'orderia_report', t);
       
       if (success) {
-        Alert.alert('Başarılı', 'Rapor CSV formatında dışa aktarıldı');
+        Alert.alert(t.success, t.reportExported);
       } else {
-        Alert.alert('Hata', 'Rapor dışa aktarılırken bir hata oluştu');
+        Alert.alert(t.error, t.genericError);
       }
     } catch (error) {
-      Alert.alert('Hata', 'Rapor dışa aktarılırken bir hata oluştu');
+      Alert.alert(t.error, t.genericError);
     } finally {
       setExporting(false);
     }
@@ -38,15 +38,15 @@ export default function HistoryScreen() {
     try {
       setExporting(true);
       const exportData = prepareExportData(dailyHistory);
-      const success = await exportToPDF(exportData);
+      const success = await exportToPDF(exportData, 'orderia_report', t, formatPrice);
       
       if (success) {
-        Alert.alert('Başarılı', 'Rapor PDF formatında dışa aktarıldı');
+        Alert.alert(t.success, t.reportExported);
       } else {
-        Alert.alert('Hata', 'Rapor dışa aktarılırken bir hata oluştu');
+        Alert.alert(t.error, t.genericError);
       }
     } catch (error) {
-      Alert.alert('Hata', 'Rapor dışa aktarılırken bir hata oluştu');
+      Alert.alert(t.error, t.genericError);
     } finally {
       setExporting(false);
     }
@@ -64,7 +64,7 @@ export default function HistoryScreen() {
               {formatDate(new Date(date).getTime())}
             </Text>
             <Text style={{ fontSize: 14, color: colors.textSubtle, marginTop: 2 }}>
-              {history.tickets.length} sipariş
+              {history.tickets.length} {t.ordersCount}
             </Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
@@ -72,7 +72,7 @@ export default function HistoryScreen() {
               {formatPrice(history.totals.gross)}
             </Text>
             <Text style={{ fontSize: 12, color: colors.textSubtle }}>
-              Toplam Satış
+              {t.totalSales}
             </Text>
           </View>
         </View>
@@ -92,7 +92,7 @@ export default function HistoryScreen() {
               color: colors.text,
               marginBottom: 12
             }}>
-              Raporu Dışa Aktar
+              {t.exportReport}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity
@@ -165,7 +165,7 @@ export default function HistoryScreen() {
               color: colors.textSubtle,
               fontSize: 16
             }}>
-              Henüz satış tarihçesi yok
+              {t.noSalesHistory}
             </Text>
           </SurfaceCard>
         ) : (

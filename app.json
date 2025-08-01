@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4F46E5"
-      }
+      },
+      "package": "com.zwolfe.orderia"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8cb6ebf2-d02d-4f26-ba81-e592cc412dff"
+      }
     }
   }
 }

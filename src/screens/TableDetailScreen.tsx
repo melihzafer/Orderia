@@ -117,6 +117,16 @@ export default function TableDetailScreen() {
         { 
           text: t.makePayment, 
           onPress: () => {
+            // Store ticket data before payment (since it will be moved to history)
+            const ticketForBill = {
+              ...ticket,
+              status: 'paid' as const,
+              lines: ticket.lines.map(line => ({
+                ...line,
+                status: 'paid' as const
+              }))
+            };
+            
             payTicket(ticket.id);
             
             // Ask if customer wants order bill
@@ -132,8 +142,8 @@ export default function TableDetailScreen() {
                       try {
                         const displayName = table?.label || `${t.table} ${table?.seq}`;
                         await generateOrderBillPDF({
-                          ticket,
-                          ticketLines: ticket.lines,
+                          ticket: ticketForBill,
+                          ticketLines: ticketForBill.lines,
                           tableName: displayName,
                           total,
                           formatPrice,
@@ -143,6 +153,7 @@ export default function TableDetailScreen() {
                           { text: t.ok, onPress: () => navigation.goBack() }
                         ]);
                       } catch (error) {
+                        console.error('PDF generation error:', error);
                         Alert.alert(t.error, t.genericError, [
                           { text: t.ok, onPress: () => navigation.goBack() }
                         ]);
@@ -157,7 +168,6 @@ export default function TableDetailScreen() {
       ]
     );
   };
-
   const renderTicketLine = ({ item: line }: { item: TicketLine }) => {
     return (
       <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">

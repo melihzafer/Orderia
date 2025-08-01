@@ -26,7 +26,7 @@ export default function AddMenuItemScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AddMenuItemRouteProp>();
   const { colors } = useTheme();
-  const { t } = useLocalization();
+  const { t, currency } = useLocalization();
   
   const { categories, addMenuItem } = useMenuStore();
   const { categoryId } = route.params || {};
@@ -39,23 +39,23 @@ export default function AddMenuItemScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert('Hata', 'Ürün adı gereklidir.');
+      Alert.alert(t.error, t.productNameRequired);
       return;
     }
 
     if (!price.trim()) {
-      Alert.alert('Hata', 'Fiyat gereklidir.');
+      Alert.alert(t.error, t.priceRequired);
       return;
     }
 
     if (!selectedCategoryId) {
-      Alert.alert('Hata', 'Kategori seçmelisiniz.');
+      Alert.alert(t.error, t.categoryRequired);
       return;
     }
 
     const priceValue = parseFloat(price);
     if (isNaN(priceValue) || priceValue <= 0) {
-      Alert.alert('Hata', 'Geçerli bir fiyat girin.');
+      Alert.alert(t.error, t.validPriceRequired);
       return;
     }
 
@@ -85,7 +85,7 @@ export default function AddMenuItemScreen() {
         <ScrollView style={{ flex: 1, padding: 16 }} contentContainerStyle={{ backgroundColor: colors.bg }}>
           <SurfaceCard style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
-              Ürün Adı *
+              {t.productName} *
             </Text>
             <TextInput
               style={{
@@ -100,14 +100,14 @@ export default function AddMenuItemScreen() {
               }}
               value={name}
               onChangeText={setName}
-              placeholder="Ürün adını girin..."
+              placeholder={t.enterProductName}
               placeholderTextColor={colors.textSubtle}
             />
           </SurfaceCard>
 
           <SurfaceCard style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
-              Fiyat (₺) *
+              {t.priceLabel} ({currency === 'TRY' ? '₺' : currency === 'BGN' ? 'лв' : '€'}) *
             </Text>
             <TextInput
               style={{
@@ -130,7 +130,7 @@ export default function AddMenuItemScreen() {
 
           <SurfaceCard style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
-              Açıklama
+              {t.description}
             </Text>
             <TextInput
               style={{
@@ -146,7 +146,7 @@ export default function AddMenuItemScreen() {
               }}
               value={description}
               onChangeText={setDescription}
-              placeholder="Ürün açıklaması (opsiyonel)..."
+              placeholder={t.productDescription}
               placeholderTextColor={colors.textSubtle}
               multiline
               textAlignVertical="top"
@@ -155,7 +155,7 @@ export default function AddMenuItemScreen() {
 
           <SurfaceCard style={{ marginBottom: 24 }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 }}>
-              Kategori *
+              {t.category} *
             </Text>
             {categories.map((category) => (
               <TouchableOpacity
@@ -211,7 +211,7 @@ export default function AddMenuItemScreen() {
             style={{ flex: 1 }}
           />
           <PrimaryButton
-            title="Kaydet"
+            title={t.save}
             onPress={handleSave}
             loading={loading}
             style={{ flex: 1 }}

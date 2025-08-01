@@ -135,6 +135,18 @@ export interface Translation {
   item: string;
   unitPrice: string;
   thank_you_for_your_visit: string;
+  productNameRequired: string;
+  priceRequired: string;
+  categoryRequired: string;
+  validPriceRequired: string;
+  productName: string;
+  priceLabel: string;
+  description: string;
+  category: string;
+  enterProductName: string;
+  productDescription: string;
+  ordersCount: string;
+  noSalesHistory: string;
   exportCSV: string;
   exportPDF: string;
   
@@ -296,6 +308,18 @@ export const translations: Record<string, Translation> = {
     item: 'Ürün',
     unitPrice: 'Birim Fiyat',
     thank_you_for_your_visit: 'Ziyaretiniz için teşekkürler',
+    productNameRequired: 'Ürün adı gereklidir.',
+    priceRequired: 'Fiyat gereklidir.',
+    categoryRequired: 'Kategori seçmelisiniz.',
+    validPriceRequired: 'Geçerli bir fiyat girin.',
+    productName: 'Ürün Adı',
+    priceLabel: 'Fiyat',
+    description: 'Açıklama',
+    category: 'Kategori',
+    enterProductName: 'Ürün adını girin...',
+    productDescription: 'Ürün açıklaması (opsiyonel)...',
+    ordersCount: 'sipariş',
+    noSalesHistory: 'Henüz satış tarihçesi yok',
     exportCSV: 'CSV Olarak Dışa Aktar',
     exportPDF: 'PDF Olarak Dışa Aktar',
     
@@ -456,6 +480,18 @@ export const translations: Record<string, Translation> = {
     item: 'Артикул',
     unitPrice: 'Единична Цена',
     thank_you_for_your_visit: 'Благодарим ви за посещението',
+    productNameRequired: 'Името на продукта е задължително.',
+    priceRequired: 'Цената е задължителна.',
+    categoryRequired: 'Трябва да изберете категория.',
+    validPriceRequired: 'Въведете валидна цена.',
+    productName: 'Име на Продукта',
+    priceLabel: 'Цена',
+    description: 'Описание',
+    category: 'Категория',
+    enterProductName: 'Въведете име на продукта...',
+    productDescription: 'Описание на продукта (по избор)...',
+    ordersCount: 'поръчки',
+    noSalesHistory: 'Все още няма история на продажбите',
     exportCSV: 'Експортиране като CSV',
     exportPDF: 'Експортиране като PDF',
     
@@ -616,6 +652,18 @@ export const translations: Record<string, Translation> = {
     item: 'Item',
     unitPrice: 'Unit Price',
     thank_you_for_your_visit: 'Thank you for your visit',
+    productNameRequired: 'Product name is required.',
+    priceRequired: 'Price is required.',
+    categoryRequired: 'You must select a category.',
+    validPriceRequired: 'Enter a valid price.',
+    productName: 'Product Name',
+    priceLabel: 'Price',
+    description: 'Description',
+    category: 'Category',
+    enterProductName: 'Enter product name...',
+    productDescription: 'Product description (optional)...',
+    ordersCount: 'orders',
+    noSalesHistory: 'No sales history yet',
     exportCSV: 'Export as CSV',
     exportPDF: 'Export as PDF',
     

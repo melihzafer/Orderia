@@ -20,8 +20,21 @@ export const generateOrderBillPDF = async (data: OrderBillData): Promise<void> =
   const dateStr = now.toLocaleDateString();
   const timeStr = now.toLocaleTimeString();
   
-  // Filter only paid items
-  const paidLines = ticketLines.filter(line => line.status === 'paid');
+  // For a paid ticket, show all lines (they should all be paid)
+  // If for some reason filtering is needed, use ticket.lines instead of ticketLines
+  const linesToShow = ticket.status === 'paid' ? ticket.lines : ticketLines.filter(line => line.status === 'paid');
+  
+  console.log('PDF Generation Debug:', {
+    ticketStatus: ticket.status,
+    totalLines: ticketLines.length,
+    linesToShow: linesToShow.length,
+    lineStatuses: ticketLines.map(l => ({ id: l.id, status: l.status, name: l.nameSnapshot }))
+  });
+
+  // Ensure we have items to show
+  if (linesToShow.length === 0) {
+    throw new Error('No items to include in the bill');
+  }
   
   const htmlContent = `
     <!DOCTYPE html>
@@ -142,7 +155,7 @@ export const generateOrderBillPDF = async (data: OrderBillData): Promise<void> =
           </tr>
         </thead>
         <tbody>
-          ${paidLines.map(line => `
+          ${linesToShow.map(line => `
             <tr>
               <td>${line.nameSnapshot}</td>
               <td>${line.quantity}</td>
