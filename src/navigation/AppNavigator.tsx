@@ -1,7 +1,8 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationProp, useNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import OrderiaTextIcon from '../../assets/orderia_text.svg';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 // Screen imports (we'll create these next)
@@ -16,7 +17,9 @@ import {
 } from '../screens';
 import EditTableScreen from '@/screens/EditTableScreen';
 import AddCategoryScreen from '@/screens/AddCategoryScreen';
-
+import { PrimaryButton } from '@/components';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
@@ -37,6 +40,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function MainTabs() {
+  const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
   const { t } = useLocalization();
 
@@ -87,7 +91,10 @@ function MainTabs() {
         component={TablesScreen}
         options={{
           title: t.tables,
-          headerTitle: t.tables,
+          headerTitle: "",
+          headerLeft: () => (
+            <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
+          ),
         }}
       />
       <Tab.Screen 
@@ -96,6 +103,17 @@ function MainTabs() {
         options={{
           title: t.menu,
           headerTitle: t.menuManagement,
+          // headerLeft: () => (
+          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
+          // ),
+          headerRight: () => (
+            <PrimaryButton
+              title={t.addHall}
+              onPress={() => navigation.navigate('AddHall')}
+              variant="outline"
+              style={{ marginRight: 12 }}
+            />
+          ),
         }}
       />
       <Tab.Screen 
@@ -104,6 +122,9 @@ function MainTabs() {
         options={{
           title: t.history,
           headerTitle: t.salesHistory,
+          // headerLeft: () => (
+          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
+          // ),
         }}
       />
       <Tab.Screen 
@@ -112,6 +133,9 @@ function MainTabs() {
         options={{
           title: t.settings,
           headerTitle: t.settings,
+          // headerLeft: () => (
+          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
+          // ),
         }}
       />
     </Tab.Navigator>

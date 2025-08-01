@@ -367,11 +367,11 @@ export default function TablesScreen() {
               }}>
                 {t.noHalls}
               </Text>
-              <PrimaryButton
+              {/* <PrimaryButton
                 title={t.addFirstHall}
                 onPress={handleAddHall}
                 fullWidth
-              />
+              /> */}
             </SurfaceCard>
           ) : (
             <FlatList
@@ -380,12 +380,14 @@ export default function TablesScreen() {
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
               ListFooterComponent={
-                <PrimaryButton
+                <>
+                {/* <PrimaryButton
                   title={t.addNewHall}
                   onPress={handleAddHall}
                   variant="outline"
                   fullWidth
-                />
+                /> */}
+                </>
               }
             />
           )}

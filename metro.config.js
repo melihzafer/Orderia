@@ -3,6 +3,19 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
+// 2. Enable SVG support
+const { transformer, resolver } = config;
+
+config.transformer = {
+  ...transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer'),
+};
+config.resolver = {
+  ...resolver,
+  assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
+  sourceExts: [...resolver.sourceExts, 'svg'],
+};
+
 // Fix import.meta issues for React 18 web compatibility
 config.resolver.unstable_enableSymlinks = true;
 config.transformer.unstable_allowRequireContext = true;
@@ -25,3 +38,4 @@ config.resolver.alias = aliases;
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
 module.exports = config;
+
