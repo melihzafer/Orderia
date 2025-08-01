@@ -63,7 +63,16 @@ export interface DayHistory {
 }
 
 // Status types
-export type OrderStatus = 'pending' | 'delivered' | 'paid';
+  status: 'pending' | 'delivered' | 'paid' | 'cancelled';
+}
+
+export interface AddTicketLineData {
+  menuItemId: string;
+  quantity: number;
+  note?: string;
+}
+
+export type OrderStatus = 'pending' | 'delivered' | 'paid' | 'cancelled';
 export type TicketStatus = 'open' | 'paid';
 
 // UI related types

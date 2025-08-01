@@ -114,6 +114,9 @@ export interface Translation {
   ready: string;
   served: string;
   paid: string;
+  pending: string;
+  delivered: string;
+  cancelled: string;
   
   // History & Reports
   dailyTotal: string;
@@ -172,6 +175,15 @@ export interface Translation {
   orderAdded: string;
   itemAdded: string;
   reportExported: string;
+  
+  // Data Import/Export
+  dataExported: string;
+  exportFailed: string;
+  importWarning: string;
+  import: string;
+  importFailed: string;
+  dataImported: string;
+  importProcessingFailed: string;
 }
 
 export const translations: Record<string, Translation> = {
@@ -211,7 +223,7 @@ export const translations: Record<string, Translation> = {
     addTable: 'Masa Ekle',
     addTableConfirm: 'Yeni masa eklensin mi?',
     editHall: 'Salon Düzenle',
-    editTable: 'Masa Düzenle',
+    editTable: 'Masayı Düzenle',
     deleteTable: 'Masa Sil',
     deleteTableConfirm: 'Bu masayı silmek istediğinizden emin misiniz?',
     deleteHall: 'Salon Sil',
@@ -291,6 +303,9 @@ export const translations: Record<string, Translation> = {
     ready: 'HAZIR',
     served: 'SERVİS EDİLDİ',
     paid: 'ÖDENDİ',
+    pending: 'Bekliyor',
+    delivered: 'Teslim Edildi',
+    cancelled: 'İptal Edildi',
     
     // History & Reports
     dailyTotal: 'Bugünkü Toplam',
@@ -349,6 +364,15 @@ export const translations: Record<string, Translation> = {
     orderAdded: 'Sipariş başarıyla eklendi',
     itemAdded: 'Ürün sepete eklendi',
     reportExported: 'Rapor başarıyla dışa aktarıldı',
+    
+    // Data Import/Export
+    dataExported: 'Veriler başarıyla dışa aktarıldı',
+    exportFailed: 'Veri dışa aktarma başarısız oldu',
+    importWarning: 'Bu işlem mevcut tüm verileri siler ve yedek dosyasından verileri geri yükler. Devam etmek istediğinizden emin misiniz?',
+    import: 'İçe Aktar',
+    importFailed: 'Veri içe aktarma başarısız oldu',
+    dataImported: 'Veriler başarıyla içe aktarıldı',
+    importProcessingFailed: 'Verileri işlerken hata oluştu',
   },
   
   bg: {
@@ -467,6 +491,9 @@ export const translations: Record<string, Translation> = {
     ready: 'ГОТОВА',
     served: 'СЕРВИРАНА',
     paid: 'ПЛАТЕНА',
+    pending: 'Изчакване',
+    delivered: 'Доставена',
+    cancelled: 'Отказана',
     
     // History & Reports
     dailyTotal: 'Дневен Общ Оборот',
@@ -525,6 +552,15 @@ export const translations: Record<string, Translation> = {
     orderAdded: 'Поръчката е добавена успешно',
     itemAdded: 'Артикулът е добавен в количката',
     reportExported: 'Отчетът е експортиран успешно',
+    
+    // Data Import/Export
+    dataExported: 'Данните са експортирани успешно',
+    exportFailed: 'Неуспешен експорт на данни',
+    importWarning: 'Тази операция ще изтрие всички съществуващи данни и ще възстанови данните от резервния файл. Сигурни ли сте, че искате да продължите?',
+    import: 'Импортиране',
+    importFailed: 'Неуспешно импортиране на данни',
+    dataImported: 'Данните са импортирани успешно',
+    importProcessingFailed: 'Грешка при обработката на данните',
   },
   
   en: {
@@ -643,6 +679,9 @@ export const translations: Record<string, Translation> = {
     ready: 'READY',
     served: 'SERVED',
     paid: 'PAID',
+    pending: 'Pending',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
     
     // History & Reports
     dailyTotal: 'Daily Total',
@@ -701,5 +740,14 @@ export const translations: Record<string, Translation> = {
     orderAdded: 'Order added successfully',
     itemAdded: 'Item added to cart',
     reportExported: 'Report exported successfully',
+    
+    // Data Import/Export
+    dataExported: 'Data exported successfully',
+    exportFailed: 'Data export failed',
+    importWarning: 'This operation will delete all existing data and restore data from the backup file. Are you sure you want to continue?',
+    import: 'Import',
+    importFailed: 'Data import failed',
+    dataImported: 'Data imported successfully',
+    importProcessingFailed: 'Error processing data',
   },
 };

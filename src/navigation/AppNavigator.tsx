@@ -1,5 +1,5 @@
-import { NavigationContainer, NavigationProp, useNavigation } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer, NavigationProp, useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import OrderiaTextIcon from '../../assets/orderia_text.svg';
@@ -19,7 +19,6 @@ import EditTableScreen from '@/screens/EditTableScreen';
 import AddCategoryScreen from '@/screens/AddCategoryScreen';
 import { PrimaryButton } from '@/components';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CompositeNavigationProp, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 type MainTabsNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList>,
@@ -103,7 +102,7 @@ function MainTabs() {
             headerRight: () => (
             <PrimaryButton
               title={t.addHall}
-              onPress={() => navigation.navigate('AddHall')}
+              onPress={() => navigation.navigate('AddHall', {})}
               variant="outline"
               style={{ marginRight: 12 }}
             />

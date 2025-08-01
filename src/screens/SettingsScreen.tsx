@@ -2,14 +2,27 @@ import React from 'react';
 import { View, Text, Switch, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization, Language, Currency } from '../i18n';
 import { SurfaceCard } from '../components';
 import { brand } from '../constants/branding';
+import { useLayoutStore } from '../stores/layoutStore';
+import { useMenuStore } from '../stores/menuStore';
+import { useOrderStore } from '../stores/orderStore';
+import { useHistoryStore } from '../stores/historyStore';
 
 export default function SettingsScreen() {
   const { colors, colorMode, toggleColorMode } = useTheme();
   const { t, language, currency, setLanguage, setCurrency } = useLocalization();
+  
+  // Store hooks
+  const layoutStore = useLayoutStore();
+  const menuStore = useMenuStore();
+  const orderStore = useOrderStore();
+  const historyStore = useHistoryStore();
 
   const languages: Array<{ code: Language; name: string; flag: string }> = [
     { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
@@ -23,20 +36,125 @@ export default function SettingsScreen() {
     { code: 'EUR', name: t.euro, symbol: '€' },
   ];
 
-  const handleDataExport = () => {
-    Alert.alert(
-      t.dataExport,
-      t.featureInDevelopment,
-      [{ text: t.ok }]
-    );
+  const handleDataExport = async () => {
+    try {
+      // Collect all data from stores
+      const exportData = {
+        version: '1.0.0',
+        exportDate: new Date().toISOString(),
+        data: {
+          halls: layoutStore.halls,
+          tables: layoutStore.tables,
+          categories: menuStore.categories,
+          menuItems: menuStore.menuItems,
+          openTickets: orderStore.openTickets,
+          dailyHistory: historyStore.dailyHistory,
+          settings: {
+            language,
+            currency,
+            colorMode
+          }
+        }
+      };
+
+      // Create JSON string
+      const jsonString = JSON.stringify(exportData, null, 2);
+      
+      // Create file name with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const fileName = `orderia-backup-${timestamp}.json`;
+      
+      // Save to device
+      const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+      await FileSystem.writeAsStringAsync(fileUri, jsonString);
+      
+      // Share the file
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/json',
+          dialogTitle: t.dataExport
+        });
+      }
+      
+      Alert.alert(t.success, t.dataExported, [{ text: t.ok }]);
+    } catch (error) {
+      console.error('Export error:', error);
+      Alert.alert(t.error, t.exportFailed, [{ text: t.ok }]);
+    }
   };
 
-  const handleDataImport = () => {
-    Alert.alert(
-      t.dataImport,
-      t.featureInDevelopment,
-      [{ text: t.ok }]
-    );
+  const handleDataImport = async () => {
+    try {
+      // Pick a file
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true
+      });
+
+      if (result.canceled) return;
+
+      // Read the file
+      const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
+      const importData = JSON.parse(fileContent);
+
+      // Validate data structure
+      if (!importData.data || !importData.version) {
+        throw new Error('Invalid backup file format');
+      }
+
+      // Show confirmation dialog
+      Alert.alert(
+        t.dataImport,
+        t.importWarning,
+        [
+          { text: t.cancel, style: 'cancel' },
+          {
+            text: t.import,
+            style: 'destructive',
+            onPress: () => performImport(importData.data)
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Import error:', error);
+      Alert.alert(t.error, t.importFailed, [{ text: t.ok }]);
+    }
+  };
+
+  const performImport = (data: any) => {
+    try {
+      // Clear existing data and import new data
+      if (data.halls) {
+        layoutStore.halls = data.halls;
+      }
+      if (data.tables) {
+        layoutStore.tables = data.tables;
+      }
+      if (data.categories) {
+        menuStore.categories = data.categories;
+      }
+      if (data.menuItems) {
+        menuStore.menuItems = data.menuItems;
+      }
+      if (data.openTickets) {
+        orderStore.openTickets = data.openTickets;
+      }
+      if (data.dailyHistory) {
+        historyStore.dailyHistory = data.dailyHistory;
+      }
+      if (data.settings) {
+        if (data.settings.language) setLanguage(data.settings.language);
+        if (data.settings.currency) setCurrency(data.settings.currency);
+        if (data.settings.colorMode && data.settings.colorMode !== colorMode) {
+          toggleColorMode();
+        }
+      }
+
+      Alert.alert(t.success, t.dataImported, [{ text: t.ok }]);
+    } catch (error) {
+      console.error('Import processing error:', error);
+      Alert.alert(t.error, t.importProcessingFailed, [{ text: t.ok }]);
+    }
   };
 
   return (

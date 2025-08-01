@@ -121,10 +121,12 @@ export default function TableDetailScreen() {
             const ticketForBill = {
               ...ticket,
               status: 'paid' as const,
-              lines: ticket.lines.map(line => ({
-                ...line,
-                status: 'paid' as const
-              }))
+              lines: ticket.lines
+                .filter(line => line.status !== 'cancelled') // Exclude cancelled items from bill
+                .map(line => ({
+                  ...line,
+                  status: 'paid' as const
+                }))
             };
             
             payTicket(ticket.id);
@@ -248,10 +250,27 @@ export default function TableDetailScreen() {
                   paddingHorizontal: 8,
                   paddingVertical: 4,
                   borderRadius: 6,
+                  marginBottom: 4,
                 }}
               >
                 <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
                   {t.deliver}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {line.status === 'delivered' && (
+              <TouchableOpacity
+                onPress={() => handleStatusChange(line, 'cancelled')}
+                style={{
+                  backgroundColor: '#EF4444',
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+                  {t.cancel}
                 </Text>
               </TouchableOpacity>
             )}
@@ -434,7 +453,7 @@ export default function TableDetailScreen() {
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            style={{ maxHeight: 60 }}
+            style={{ maxHeight: 75 }}
             contentContainerStyle={{ padding: 16 }}
           >
             {categoriesWithItems.map((category) => (
@@ -443,7 +462,7 @@ export default function TableDetailScreen() {
                 onPress={() => setSelectedCategory(category.id)}
                 style={{
                   paddingHorizontal: 16,
-                  paddingVertical: 8,
+                  paddingVertical: 12,
                   marginRight: 8,
                   borderRadius: 20,
                   backgroundColor: selectedCategory === category.id ? colors.primary : colors.surfaceAlt,

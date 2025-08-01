@@ -223,6 +223,8 @@ export const useOrderStore = create<OrderState>()(
         if (!ticket) return 0;
 
         return ticket.lines.reduce((total, line) => {
+          // Exclude cancelled items from total calculation
+          if (line.status === 'cancelled') return total;
           return total + (line.priceSnapshot * line.quantity);
         }, 0);
       },
