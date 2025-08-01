@@ -1,11 +1,9 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
-
 // Screen imports (we'll create these next)
 import {
   TablesScreen,
@@ -89,7 +87,7 @@ function MainTabs() {
         component={TablesScreen}
         options={{
           title: t.tables,
-          headerTitle: t.tablesTitle,
+          headerTitle: t.tables,
         }}
       />
       <Tab.Screen 

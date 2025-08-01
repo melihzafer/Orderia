@@ -27,7 +27,8 @@
     "react-native-web": "^0.20.0",
     "zustand": "^4.5.5",
     "expo-sharing": "~13.1.5",
-    "expo-print": "~14.1.4"
+    "expo-print": "~14.1.4",
+    "react-native-svg": "15.11.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

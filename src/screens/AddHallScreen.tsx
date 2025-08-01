@@ -110,6 +110,7 @@ export default function AddHallScreen() {
             {t.hallExamples}
           </Text>
         </View>
+          </KeyboardAvoidingView>
 
         <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
           <PrimaryButton
@@ -125,7 +126,6 @@ export default function AddHallScreen() {
             style={{ flex: 1 }}
           />
         </View>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

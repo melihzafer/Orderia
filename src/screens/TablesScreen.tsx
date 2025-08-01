@@ -33,7 +33,8 @@ export default function TablesScreen() {
     getHallsWithTables, 
     addHall, 
     addTable,
-    deleteTable 
+    deleteTable,
+    deleteHall 
   } = useLayoutStore();
   
   const { 
@@ -44,6 +45,7 @@ export default function TablesScreen() {
   } = useOrderStore();
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [showActionsForHall, setShowActionsForHall] = React.useState<string | null>(null);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -71,6 +73,24 @@ export default function TablesScreen() {
           onPress: () => {
             deleteTable(table.id);
             Alert.alert(t.success, t.tableDeleted);
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteHall = (hall: Hall & { tables: Table[] }) => {
+    Alert.alert(
+      t.deleteHall,
+      t.deleteHallConfirm,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            deleteHall(hall.id);
+            Alert.alert(t.success, t.hallDeleted);
           }
         }
       ]
@@ -189,14 +209,21 @@ export default function TablesScreen() {
   };
 
   const renderHall = ({ item: hall }: { item: Hall & { tables: Table[] } }) => {
+    const showActions = showActionsForHall === hall.id;
+    
     return (
       <SurfaceCard style={{ marginBottom: 16 }}>
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: 12
-        }}>
+        <TouchableOpacity
+          onLongPress={() => {
+            setShowActionsForHall(showActions ? null : hall.id);
+          }}
+          style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: 12
+          }}
+        >
           <Text style={{ 
             fontSize: 18, 
             fontWeight: '600', 
@@ -206,19 +233,43 @@ export default function TablesScreen() {
           </Text>
           
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity 
-              onPress={() => handleEditHall(hall.id)}
-              style={{
-                backgroundColor: colors.surface,
-                paddingHorizontal: 8,
-                paddingVertical: 6,
-                borderRadius: 6,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <Ionicons name="pencil" size={14} color={colors.textSubtle} />
-            </TouchableOpacity>
+            {showActions && (
+              <>
+                <TouchableOpacity 
+                  onPress={() => {
+                    handleEditHall(hall.id);
+                    setShowActionsForHall(null);
+                  }}
+                  style={{
+                    backgroundColor: colors.surface,
+                    paddingHorizontal: 8,
+                    paddingVertical: 6,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Ionicons name="pencil" size={14} color={colors.textSubtle} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  onPress={() => {
+                    handleDeleteHall(hall);
+                    setShowActionsForHall(null);
+                  }}
+                  style={{
+                    backgroundColor: '#FF4444',
+                    paddingHorizontal: 8,
+                    paddingVertical: 6,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Ionicons name="trash" size={14} color="#FFFFFF" />
+                </TouchableOpacity>
+              </>
+            )}
             
             <TouchableOpacity 
               onPress={() => handleAddTable(hall.id)}
@@ -242,7 +293,7 @@ export default function TablesScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {hall.tables.length === 0 ? (
           <Text style={{ 
@@ -281,6 +332,11 @@ export default function TablesScreen() {
           />
         }
       >
+        <TouchableOpacity 
+          activeOpacity={1} 
+          onPress={() => setShowActionsForHall(null)}
+          style={{ flex: 1 }}
+        >
         {/* Today's Summary */}
         <SurfaceCard style={{ margin: 16, marginBottom: 8 }} variant="elevated">
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -334,6 +390,7 @@ export default function TablesScreen() {
             />
           )}
         </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

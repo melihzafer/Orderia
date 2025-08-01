@@ -37,6 +37,9 @@ export interface Translation {
   editTable: string;
   deleteTable: string;
   deleteTableConfirm: string;
+  deleteHall: string;
+  deleteHallConfirm: string;
+  hallDeleted: string;
     hallName: string;
   hallNameHint: string;
   hallExamples: string;
@@ -67,6 +70,7 @@ export interface Translation {
   categoryUpdated: string;
   deleteCategory: string;
   deleteCategoryConfirm: string;
+  categoryDeleted: string;
   selectCategoryFirst: string;
   deleteItem: string;
   deleteItemConfirm: string;
@@ -210,6 +214,9 @@ export const translations: Record<string, Translation> = {
     editTable: 'Masa Düzenle',
     deleteTable: 'Masa Sil',
     deleteTableConfirm: 'Bu masayı silmek istediğinizden emin misiniz?',
+    deleteHall: 'Salon Sil',
+    deleteHallConfirm: 'Bu salonu silmek istediğinizden emin misiniz? Salondaki tüm masalar da silinecektir.',
+    hallDeleted: 'Salon silindi',
     hallName: 'Salon Adı',
     hallNameHint: 'Salon oluşturduktan sonra masalar ekleyebilirsiniz.',
     hallExamples: 'Örnekler: "Ana Salon", "Teras", "Üst Kat", "Bahçe"',
@@ -240,6 +247,7 @@ export const translations: Record<string, Translation> = {
     categoryUpdated: 'Kategori başarıyla güncellendi',
     deleteCategory: 'Kategori Sil',
     deleteCategoryConfirm: 'Bu kategoriyi silmek istediğinizden emin misiniz?',
+    categoryDeleted: 'Kategori silindi',
     selectCategoryFirst: 'Önce bir kategori seçin veya oluşturun',
     deleteItem: 'Ürünü Sil',
     deleteItemConfirm: 'ürününü silmek istediğinizden emin misiniz?',
@@ -382,6 +390,9 @@ export const translations: Record<string, Translation> = {
     editTable: 'Редактирай Маса',
     deleteTable: 'Изтрий Маса',
     deleteTableConfirm: 'Сигурни ли сте, че искате да изтриете тази маса?',
+    deleteHall: 'Изтрий Зала',
+    deleteHallConfirm: 'Сигурни ли сте, че искате да изтриете тази зала? Всички маси в залата също ще бъдат изтрити.',
+    hallDeleted: 'Залата е изтрита',
     hallName: 'Име на Залата',
     hallNameHint: 'След създаване на залата можете да добавите маси.',
     hallExamples: 'Примери: "Основна Зала", "Тераса", "Горен Етаж", "Градина"',
@@ -412,6 +423,7 @@ export const translations: Record<string, Translation> = {
     categoryUpdated: 'Категорията е обновена успешно',
     deleteCategory: 'Изтрий Категория',
     deleteCategoryConfirm: 'Сигурни ли сте, че искате да изтриете тази категория?',
+    categoryDeleted: 'Категорията е изтрита',
     selectCategoryFirst: 'Първо изберете или създайте категория',
     deleteItem: 'Изтрий Артикул',
     deleteItemConfirm: 'сигурни ли сте, че искате да изтриете артикула?',
@@ -554,6 +566,9 @@ export const translations: Record<string, Translation> = {
     editTable: 'Edit Table',
     deleteTable: 'Delete Table',
     deleteTableConfirm: 'Are you sure you want to delete this table?',
+    deleteHall: 'Delete Hall',
+    deleteHallConfirm: 'Are you sure you want to delete this hall? All tables in the hall will also be deleted.',
+    hallDeleted: 'Hall deleted',
     hallName: 'Hall Name',
     hallNameHint: 'After creating the hall, you can add tables.',
     hallExamples: 'Examples: "Main Hall", "Terrace", "Upper Floor", "Garden"',
@@ -584,6 +599,7 @@ export const translations: Record<string, Translation> = {
     categoryUpdated: 'Category updated successfully',
     deleteCategory: 'Delete Category',
     deleteCategoryConfirm: 'Are you sure you want to delete this category?',
+    categoryDeleted: 'Category deleted',
     selectCategoryFirst: 'Please select or create a category first',
     deleteItem: 'Delete Item',
     deleteItemConfirm: 'are you sure you want to delete the item?',

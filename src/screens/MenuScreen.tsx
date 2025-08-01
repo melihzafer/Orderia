@@ -33,6 +33,7 @@ export default function MenuScreen() {
     addCategory,
     updateMenuItem,
     deleteMenuItem,
+    deleteCategory,
     toggleMenuItemActive,
     getCategoriesWithItems
   } = useMenuStore();
@@ -41,6 +42,7 @@ export default function MenuScreen() {
     categories.length > 0 ? categories[0].id : null
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const [showActionsForCategory, setShowActionsForCategory] = useState<string | null>(null);
 
   const handleAddCategory = () => {
     navigation.navigate('AddCategory', {});
@@ -48,6 +50,33 @@ export default function MenuScreen() {
 
   const handleEditCategory = (categoryId: string) => {
     navigation.navigate('AddCategory', { categoryId });
+  };
+
+  const handleDeleteCategory = (category: Category) => {
+    const itemCount = menuItems.filter(item => item.categoryId === category.id).length;
+    const confirmMessage = itemCount > 0 
+      ? `${t.deleteCategoryConfirm} Bu kategoride ${itemCount} ürün var ve hepsi silinecek.`
+      : t.deleteCategoryConfirm;
+      
+    Alert.alert(
+      t.deleteCategory,
+      confirmMessage,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            deleteCategory(category.id);
+            Alert.alert(t.success, t.categoryDeleted);
+            // If we just deleted the selected category, reset selection
+            if (selectedCategoryId === category.id) {
+              setSelectedCategoryId(categories.length > 1 ? categories.find(c => c.id !== category.id)?.id || null : null);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleAddMenuItem = () => {
@@ -84,15 +113,23 @@ export default function MenuScreen() {
 
   const renderCategoryTab = (category: Category) => {
     const isSelected = selectedCategoryId === category.id;
+    const showActions = showActionsForCategory === category.id;
     const itemCount = menuItems.filter(item => item.categoryId === category.id).length;
 
     return (
       <View key={category.id} style={{ marginRight: 8, position: 'relative' }}>
         <TouchableOpacity
-          onPress={() => setSelectedCategoryId(category.id)}
+          onPress={() => {
+            setSelectedCategoryId(category.id);
+            setShowActionsForCategory(null); // Hide actions when selecting normally
+          }}
+          onLongPress={() => {
+            setSelectedCategoryId(category.id);
+            setShowActionsForCategory(showActions ? null : category.id); // Toggle actions
+          }}
           style={{
             paddingHorizontal: 16,
-            paddingVertical: 8,
+            paddingVertical: 20,
             borderRadius: 20,
             backgroundColor: isSelected ? colors.primary : colors.surfaceAlt,
             borderWidth: 1,
@@ -129,22 +166,40 @@ export default function MenuScreen() {
           </View>
         </TouchableOpacity>
         
-        {isSelected && (
-          <TouchableOpacity
-            onPress={() => handleEditCategory(category.id)}
-            style={{
-              position: 'absolute',
-              top: -4,
-              right: -4,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
-              padding: 4,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Ionicons name="pencil" size={10} color={colors.textSubtle} />
-          </TouchableOpacity>
+        {showActions && (
+          <View style={{ position: 'absolute', top: 4, right: -10, flexDirection: 'row', gap: 4, zIndex: 100,   }}>
+            <TouchableOpacity
+              onPress={() => {
+                handleEditCategory(category.id);
+                setShowActionsForCategory(null); // Hide actions after action
+              }}
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 100,
+                padding: 10,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+            >
+              <Ionicons name="pencil" size={10} color={colors.textSubtle} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={() => {
+                handleDeleteCategory(category);
+                setShowActionsForCategory(null); // Hide actions after action
+              }}
+              style={{
+                backgroundColor: '#FF4444',
+                borderRadius: 100,
+                padding: 10,
+                borderWidth: 1,
+                borderColor: '#FF4444',
+              }}
+            >
+              <Ionicons name="trash" size={10} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     );
@@ -215,7 +270,12 @@ export default function MenuScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
-      <View style={{ flex: 1 }}>
+      <TouchableOpacity 
+        style={{ flex: 1 }} 
+        activeOpacity={1} 
+        onPress={() => setShowActionsForCategory(null)}
+      >
+        <View style={{ flex: 1 }} onStartShouldSetResponder={() => true}>
         {/* Search Bar */}
         <View style={{ padding: 16, paddingBottom: 8, backgroundColor: colors.bg }}>
           <View style={{
@@ -332,7 +392,8 @@ export default function MenuScreen() {
             />
           </View>
         )}
-      </View>
+        </View>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

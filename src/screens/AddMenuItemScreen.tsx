@@ -203,6 +203,7 @@ export default function AddMenuItemScreen() {
           </SurfaceCard>
         </ScrollView>
 
+          </KeyboardAvoidingView>
         <View style={{ padding: 16, flexDirection: 'row', gap: 12 }}>
           <PrimaryButton
             title={t.cancel}
@@ -217,7 +218,6 @@ export default function AddMenuItemScreen() {
             style={{ flex: 1 }}
           />
         </View>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
