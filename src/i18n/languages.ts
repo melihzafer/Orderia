@@ -134,13 +134,29 @@ export interface Translation {
   appInfo: string;
   version: string;
   orderBill: string;
-  generateOrderBill: string;
+  askForOrderBill: string;
   orderBillGenerated: string;
   table: string;
   date: string;
   time: string;
   item: string;
   unitPrice: string;
+  
+  // Payment & Billing
+  payment: string;
+  totalAmount: string;
+  amountReceived: string;
+  change: string;
+  cash: string;
+  card: string;
+  insufficientFunds: string;
+  orderName: string;
+  paymentMethod: string;
+  thankYouNote: string;
+  shareBill: string;
+  sharingNotAvailable: string;
+  itemTotal: string;
+  orderId: string;
   thank_you_for_your_visit: string;
   productNameRequired: string;
   priceRequired: string;
@@ -323,13 +339,29 @@ export const translations: Record<string, Translation> = {
     appInfo: 'Uygulama Bilgileri',
     version: 'Sürüm',
     orderBill: 'Sipariş Faturası',
-    generateOrderBill: 'Müşteri sipariş faturası istiyor mu?',
-    orderBillGenerated: 'Sipariş faturası oluşturuldu',
+    askForOrderBill: 'Sipariş faturasını oluşturup paylaşmak ister misiniz?',
+    orderBillGenerated: 'Sipariş faturası başarıyla oluşturuldu',
     table: 'Masa',
     date: 'Tarih',
     time: 'Saat',
     item: 'Ürün',
     unitPrice: 'Birim Fiyat',
+    
+    // Payment & Billing
+    payment: 'Ödeme',
+    totalAmount: 'Toplam Tutar',
+    amountReceived: 'Alınan Miktar',
+    change: 'Para Üstü',
+    cash: 'Nakit',
+    card: 'Kart',
+    insufficientFunds: 'Yetersiz bakiye',
+    orderName: 'Sipariş Adı',
+    paymentMethod: 'Ödeme Yöntemi',
+    thankYouNote: 'Ziyaretiniz için teşekkür ederiz!',
+    shareBill: 'Faturayı Paylaş',
+    sharingNotAvailable: 'Paylaşım bu cihazda mevcut değil.',
+    itemTotal: 'Ürün Toplamı',
+    orderId: 'Sipariş ID',
     thank_you_for_your_visit: 'Ziyaretiniz için teşekkürler',
     productNameRequired: 'Ürün adı gereklidir.',
     priceRequired: 'Fiyat gereklidir.',
@@ -511,13 +543,29 @@ export const translations: Record<string, Translation> = {
     appInfo: 'Информация за Приложението',
     version: 'Версия',
     orderBill: 'Фактура за Поръчка',
-    generateOrderBill: 'Клиентът иска ли фактура за поръчката?',
-    orderBillGenerated: 'Фактурата за поръчката е генерирана',
+    askForOrderBill: 'Искате ли да генерирате и споделите фактурата за поръчката?',
+    orderBillGenerated: 'Фактурата за поръчката е генерирана успешно',
     table: 'Маса',
     date: 'Дата',
     time: 'Час',
     item: 'Артикул',
     unitPrice: 'Единична Цена',
+    
+    // Payment & Billing
+    payment: 'Плащане',
+    totalAmount: 'Обща Сума',
+    amountReceived: 'Получена Сума',
+    change: 'Ресто',
+    cash: 'В брой',
+    card: 'Карта',
+    insufficientFunds: 'Недостатъчни средства',
+    orderName: 'Име на Поръчката',
+    paymentMethod: 'Начин на Плащане',
+    thankYouNote: 'Благодарим ви за посещението!',
+    shareBill: 'Споделяне на Фактура',
+    sharingNotAvailable: 'Споделянето не е достъпно на това устройство.',
+    itemTotal: 'Сума за Артикул',
+    orderId: 'ID на Поръчка',
     thank_you_for_your_visit: 'Благодарим ви за посещението',
     productNameRequired: 'Името на продукта е задължително.',
     priceRequired: 'Цената е задължителна.',
@@ -699,13 +747,29 @@ export const translations: Record<string, Translation> = {
     appInfo: 'App Information',
     version: 'Version',
     orderBill: 'Order Bill',
-    generateOrderBill: 'Does the customer need an order bill?',
-    orderBillGenerated: 'Order bill has been generated',
+    askForOrderBill: 'Do you want to generate and share the order bill?',
+    orderBillGenerated: 'Order bill has been generated successfully.',
     table: 'Table',
     date: 'Date',
     time: 'Time',
     item: 'Item',
     unitPrice: 'Unit Price',
+    
+    // Payment & Billing
+    payment: 'Payment',
+    totalAmount: 'Total Amount',
+    amountReceived: 'Amount Received',
+    change: 'Change',
+    cash: 'Cash',
+    card: 'Card',
+    insufficientFunds: 'Insufficient funds',
+    orderName: 'Order Name',
+    paymentMethod: 'Payment Method',
+    thankYouNote: 'Thank you for your visit!',
+    shareBill: 'Share Bill',
+    sharingNotAvailable: 'Sharing is not available on this device.',
+    itemTotal: 'Item Total',
+    orderId: 'Order ID',
     thank_you_for_your_visit: 'Thank you for your visit',
     productNameRequired: 'Product name is required.',
     priceRequired: 'Price is required.',

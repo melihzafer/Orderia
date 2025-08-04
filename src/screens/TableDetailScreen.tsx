@@ -19,8 +19,9 @@ import { useLocalization } from '../i18n';
 import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
 import { PrimaryButton, SurfaceCard, StatusBadge } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { MenuItem, TicketLine, OrderStatus } from '../types';
+import { MenuItem, Ticket, TicketLine, OrderStatus, PaymentInfo } from '../types';
 import { generateOrderBillPDF } from '../utils/pdfGenerator';
+import { generateAndShareBill } from '../utils/exportUtils';
 
 type TableDetailRouteProp = RouteProp<RootStackParamList, 'TableDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -30,28 +31,36 @@ export default function TableDetailScreen() {
   const route = useRoute<TableDetailRouteProp>();
   const { colors } = useTheme();
   const { t, formatPrice } = useLocalization();
+  const { menuItems } = useMenuStore();
   
   const { tableId } = route.params;
   
   const { getTable } = useLayoutStore();
   const { 
     openTable, 
-    getTicketByTable, 
+    getTicketsByTable, 
     getTicketTotal,
     addTicketLine,
     updateLineQuantity,
     updateLineStatus,
     markAllDelivered,
-    payTicket
+    payTicket,
+    updateTicketName
   } = useOrderStore();
   const { getCategoriesWithItems } = useMenuStore();
 
   const [showMenuModal, setShowMenuModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [showTicketNameModal, setShowTicketNameModal] = useState(false);
+  const [newTicketName, setNewTicketName] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [amountReceived, setAmountReceived] = useState('');
 
   const table = getTable(tableId);
-  const ticket = getTicketByTable(tableId);
+  const tickets = getTicketsByTable(tableId) || [];
+  const selectedTicket = selectedTicketId ? tickets.find(t => t.id === selectedTicketId) : null;
   const categoriesWithItems = getCategoriesWithItems();
 
   useEffect(() => {
@@ -60,20 +69,29 @@ export default function TableDetailScreen() {
     }
   }, [categoriesWithItems, selectedCategory]);
 
-  const handleOpenTable = () => {
-    openTable(tableId);
+  useEffect(() => {
+    // Auto-select the first ticket if none is selected
+    if (tickets.length > 0 && !selectedTicketId) {
+      setSelectedTicketId(tickets[0].id);
+    }
+  }, [tickets, selectedTicketId]);
+
+  const handleOpenTable = (ticketName?: string) => {
+    const newTicket = openTable(tableId, ticketName);
+    setSelectedTicketId(newTicket.id);
   };
 
   const handleAddItem = (menuItem: MenuItem) => {
-    if (!ticket) {
+    if (!selectedTicket) {
       const newTicket = openTable(tableId);
+      setSelectedTicketId(newTicket.id);
       addTicketLine(newTicket.id, {
         menuItemId: menuItem.id,
         quantity: 1,
         note: note.trim() || undefined,
       });
     } else {
-      addTicketLine(ticket.id, {
+      addTicketLine(selectedTicket.id, {
         menuItemId: menuItem.id,
         quantity: 1,
         note: note.trim() || undefined,
@@ -84,31 +102,93 @@ export default function TableDetailScreen() {
   };
 
   const handleQuantityChange = (line: TicketLine, delta: number) => {
-    if (!ticket) return;
+    if (!selectedTicket) return;
     const newQuantity = line.quantity + delta;
-    updateLineQuantity(ticket.id, line.id, newQuantity);
+    updateLineQuantity(selectedTicket.id, line.id, newQuantity);
   };
 
   const handleStatusChange = (line: TicketLine, status: OrderStatus) => {
-    if (!ticket) return;
-    updateLineStatus(ticket.id, line.id, status);
+    if (!selectedTicket) return;
+    updateLineStatus(selectedTicket.id, line.id, status);
   };
 
   const handleMarkAllDelivered = () => {
-    if (!ticket) return;
+    if (!selectedTicket) return;
     Alert.alert(
       t.deliverAllOrders,
       t.deliverAllConfirm,
       [
         { text: t.cancel, style: 'cancel' },
-        { text: t.deliver, onPress: () => markAllDelivered(ticket.id) }
+        { text: t.deliver, onPress: () => markAllDelivered(selectedTicket.id) }
+      ]
+    );
+  };
+
+  const handlePayPress = () => {
+    if (!selectedTicket) return;
+    setAmountReceived(''); // Reset amount for new payment
+    setShowPaymentModal(true);
+  };
+
+  const handleConfirmPayment = (paymentMethod: 'cash' | 'card') => {
+    if (!selectedTicket) return;
+
+    const total = getTicketTotal(selectedTicket.id);
+    console.log(total) ;
+    const received = parseFloat(amountReceived.replace(',', '.')) || 0;
+    const receivedInCents = received * 100; // Convert to cents to match total
+    const change = paymentMethod === 'cash' ? Math.max(0, receivedInCents - total) : 0;
+
+    if (paymentMethod === 'cash' && receivedInCents < total) {
+      Alert.alert(t.error, t.insufficientFunds);
+      return;
+    }
+
+    const paymentInfo: PaymentInfo = {
+      total,
+      amountReceived: receivedInCents,
+      change,
+      paymentMethod,
+    };
+
+    // This object is created before the ticket is closed and moved to history
+    const ticketToPrint: Ticket = {
+      ...selectedTicket,
+      paymentInfo,
+      status: 'paid',
+      closedAt: Date.now(),
+    };
+
+    payTicket(selectedTicket.id, paymentInfo);
+    setShowPaymentModal(false);
+    
+    // Ask if customer wants order bill
+    Alert.alert(
+      t.orderBill,
+      t.askForOrderBill,
+      [
+        { text: t.no, style: 'cancel', onPress: () => navigation.goBack() },
+        { 
+          text: t.yes, 
+          onPress: async () => {
+            try {
+              await generateAndShareBill(ticketToPrint, t, (amount) => formatPrice(amount));
+              Alert.alert(t.success, t.orderBillGenerated, [
+                { text: t.ok, onPress: () => navigation.goBack() }
+              ]);
+            } catch (error) {
+              Alert.alert(t.error, t.genericError);
+              navigation.goBack();
+            }
+          }
+        }
       ]
     );
   };
 
   const handlePayment = () => {
-    if (!ticket) return;
-    const total = getTicketTotal(ticket.id);
+    if (!selectedTicket) return;
+    const total = getTicketTotal(selectedTicket.id);
     Alert.alert(
       t.makePayment,
       `${t.total}: ${formatPrice(total)}\n\n${t.paymentConfirm}`,
@@ -119,23 +199,23 @@ export default function TableDetailScreen() {
           onPress: () => {
             // Store ticket data before payment (since it will be moved to history)
             const ticketForBill = {
-              ...ticket,
+              ...selectedTicket,
               status: 'paid' as const,
-              lines: ticket.lines
-                .filter(line => line.status !== 'cancelled') // Exclude cancelled items from bill
-                .map(line => ({
+              lines: selectedTicket.lines
+                .filter((line: TicketLine) => line.status !== 'cancelled') // Exclude cancelled items from bill
+                .map((line: TicketLine) => ({
                   ...line,
                   status: 'paid' as const
                 }))
             };
             
-            payTicket(ticket.id);
+            payTicket(selectedTicket.id);
             
             // Ask if customer wants order bill
             setTimeout(() => {
               Alert.alert(
                 t.orderBill,
-                t.generateOrderBill,
+                t.askForOrderBill,
                 [
                   { text: t.no, style: 'cancel', onPress: () => navigation.goBack() },
                   { 
@@ -310,13 +390,13 @@ export default function TableDetailScreen() {
   if (!table) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 18, color: colors.textSubtle }}>{t.tableNotFound}</Text>
+        <Text style={{ fontSize: 18, color: colors.textSubtle }}>{t.tableNotFound || 'Table not found'}</Text>
       </SafeAreaView>
     );
   }
 
-  const displayName = table.label || `Masa ${table.seq}`;
-  const total = ticket ? getTicketTotal(ticket.id) : 0;
+  const displayName = table.label || `Masa ${table.seq || '?'}`;
+  const total = selectedTicket ? getTicketTotal(selectedTicket.id) : 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
@@ -325,22 +405,64 @@ export default function TableDetailScreen() {
         <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
           {displayName}
         </Text>
-        {ticket && (
+        {selectedTicket && (
           <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center', marginTop: 4 }}>
             {t.total}: {formatPrice(total)}
           </Text>
         )}
       </View>
 
+      {/* Ticket Tabs */}
+      {tickets && tickets.length > 0 && (
+        <ScrollView horizontal style={{ maxHeight: 60, backgroundColor: colors.bg }}>
+          <View style={{ flexDirection: 'row', padding: 16, paddingBottom: 8 }}>
+            {tickets.map((ticket, index) => (
+              <TouchableOpacity
+                key={ticket.id}
+                onPress={() => setSelectedTicketId(ticket.id)}
+                style={{
+                  padding: 8,
+                  marginRight: 8,
+                  borderRadius: 8,
+                  backgroundColor: selectedTicketId === ticket.id ? colors.accent : colors.surface,
+                  borderWidth: 1,
+                  borderColor: selectedTicketId === ticket.id ? colors.accent : colors.border,
+                }}
+              >
+                <Text style={{
+                  color: selectedTicketId === ticket.id ? colors.bg : colors.text,
+                  fontWeight: selectedTicketId === ticket.id ? '600' : '400',
+                }}>
+                  {ticket.name || `Order ${index + 1}`}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              onPress={() => setShowTicketNameModal(true)}
+              style={{
+                padding: 8,
+                borderRadius: 8,
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderStyle: 'dashed',
+              }}
+            >
+              <Text style={{ color: colors.textSubtle }}>+ New Order</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+
       {/* Content */}
-      {!ticket ? (
+      {!tickets || tickets.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
           <Text style={{ fontSize: 18, color: colors.textSubtle, textAlign: 'center', marginBottom: 24 }}>
             {t.tableNotOpened}
           </Text>
           <PrimaryButton
             title={t.openTable}
-            onPress={handleOpenTable}
+            onPress={() => handleOpenTable()}
             size="large"
           />
         </View>
@@ -348,7 +470,7 @@ export default function TableDetailScreen() {
         <View style={{ flex: 1 }}>
           {/* Order Lines */}
           <View style={{ flex: 1, padding: 16 }}>
-            {ticket.lines.length === 0 ? (
+            {!selectedTicket || selectedTicket.lines.length === 0 ? (
               <SurfaceCard style={{ padding: 32 }}>
                 <Text style={{ 
                   textAlign: 'center', 
@@ -366,7 +488,7 @@ export default function TableDetailScreen() {
               </SurfaceCard>
             ) : (
               <FlatList
-                data={ticket.lines}
+                data={selectedTicket.lines}
                 renderItem={renderTicketLine}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
@@ -375,6 +497,7 @@ export default function TableDetailScreen() {
           </View>
 
           {/* Actions */}
+          {selectedTicket && (
           <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               <PrimaryButton
@@ -383,7 +506,7 @@ export default function TableDetailScreen() {
                 style={{ flex: 1 }}
               />
               
-              {ticket.lines.some(line => line.status === 'pending') && (
+              {selectedTicket.lines.some(line => line.status === 'pending') && (
                 <PrimaryButton
                   title={t.deliverAll}
                   onPress={handleMarkAllDelivered}
@@ -393,18 +516,19 @@ export default function TableDetailScreen() {
               )}
             </View>
             
-            {ticket.lines.length > 0 && (
+            {selectedTicket.lines.length > 0 && (
               <PrimaryButton
                 title={`${t.makePayment} (${formatPrice(total)})`}
-                onPress={handlePayment}
+                onPress={handlePayPress}
                 size="large"
                 fullWidth
               />
             )}
           </View>
+          )}
         </View>
       )}
-
+      
       {/* Menu Modal */}
       <Modal
         visible={showMenuModal}
@@ -493,6 +617,163 @@ export default function TableDetailScreen() {
             )}
           </View>
         </SafeAreaView>
+      </Modal>
+
+      {/* Ticket Name Modal */}
+      <Modal
+        visible={showTicketNameModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowTicketNameModal(false)}
+      >
+        <View style={{ 
+          flex: 1, 
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: 20,
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 16,
+              textAlign: 'center'
+            }}>
+              New Order Name
+            </Text>
+            
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                padding: 12,
+                color: colors.text,
+                backgroundColor: colors.bg,
+                marginBottom: 16
+              }}
+              value={newTicketName}
+              onChangeText={setNewTicketName}
+              placeholder="Order name (optional)"
+              placeholderTextColor={colors.textSubtle}
+              autoFocus
+            />
+            
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowTicketNameModal(false);
+                  setNewTicketName('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.bg
+                }}
+              >
+                <Text style={{ color: colors.text, textAlign: 'center' }}>
+                  {t.cancel}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => {
+                  handleOpenTable(newTicketName.trim() || undefined);
+                  setShowTicketNameModal(false);
+                  setNewTicketName('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '600' }}>
+                  Create
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Payment Modal */}
+      <Modal
+        visible={showPaymentModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPaymentModal(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 20, width: '90%' }}>
+            <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center', marginBottom: 16 }}>
+              {t.payment || 'Payment'}
+            </Text>
+
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>{t.totalAmount || 'Total Amount'}</Text>
+              <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.primary, textAlign: 'center' }}>
+                {formatPrice(selectedTicket ? getTicketTotal(selectedTicket.id) : 0)}
+              </Text>
+            </View>
+
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                padding: 12,
+                color: colors.text,
+                backgroundColor: colors.bg,
+                marginBottom: 16,
+                fontSize: 18,
+                textAlign: 'center'
+              }}
+              value={amountReceived}
+              onChangeText={setAmountReceived}
+              placeholder={t.amountReceived || 'Amount Received'}
+              placeholderTextColor={colors.textSubtle}
+              keyboardType="numeric"
+              autoFocus
+            />
+
+            {amountReceived && (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>{t.change || 'Change'}</Text>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text, textAlign: 'center' }}>
+                  {formatPrice(Math.max(0, (parseFloat(amountReceived.replace(',', '.')) * 100) - (selectedTicket ? getTicketTotal(selectedTicket.id) : 0)))}
+                </Text>
+              </View>
+            )}
+
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
+              <PrimaryButton
+                title={t.cash || 'Cash'}
+                onPress={() => handleConfirmPayment('cash')}
+                style={{ flex: 1 }}
+                disabled={!amountReceived}
+              />
+              <PrimaryButton
+                title={t.card || 'Card'}
+                onPress={() => handleConfirmPayment('card')}
+                variant="secondary"
+                style={{ flex: 1 }}
+              />
+            </View>
+            <TouchableOpacity onPress={() => setShowPaymentModal(false)}>
+              <Text style={{ color: colors.textSubtle, textAlign: 'center', padding: 8 }}>{t.cancel}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );

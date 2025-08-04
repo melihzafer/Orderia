@@ -75,7 +75,7 @@ export const useLayoutStore = create<LayoutState>()(
           seq: hall.nextTableSequence,
           label: data.label,
           isOpen: false,
-          activeTicketId: undefined,
+          activeTicketIds: [],
         };
         
         set((state) => ({

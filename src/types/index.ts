@@ -28,16 +28,25 @@ export interface Table {
   seq: number; // auto-generated
   label?: string; // user-defined alias
   isOpen: boolean;
-  activeTicketId?: string;
+  activeTicketIds: string[]; // Changed from single ticket to multiple tickets
 }
 
 export interface Ticket {
   id: string;
   tableId: string;
+  name?: string; // Added editable name for tickets
   status: 'open' | 'paid';
   createdAt: number;
   closedAt?: number;
   lines: TicketLine[];
+  paymentInfo?: PaymentInfo; // Added payment information
+}
+
+export interface PaymentInfo {
+  total: number;
+  amountReceived?: number;
+  change?: number;
+  paymentMethod?: 'cash' | 'card';
 }
 
 export interface TicketLine {
@@ -47,7 +56,7 @@ export interface TicketLine {
   priceSnapshot: number; // preserved even if menu item price changes
   quantity: number;
   note?: string;
-  status: 'pending' | 'delivered' | 'paid';
+  status: 'pending' | 'delivered' | 'paid' | 'cancelled';
   createdAt: number;
   updatedAt: number;
 }
@@ -60,10 +69,6 @@ export interface DayHistory {
     byCategory: Record<string, number>; 
   };
   generatedAt: number;
-}
-
-// Status types
-  status: 'pending' | 'delivered' | 'paid' | 'cancelled';
 }
 
 export interface AddTicketLineData {

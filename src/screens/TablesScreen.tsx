@@ -39,7 +39,7 @@ export default function TablesScreen() {
   
   const { 
     openTickets, 
-    getTicketByTable, 
+    getTicketsByTable, 
     getTicketTotal, 
     getTodayTotal 
   } = useOrderStore();
@@ -122,9 +122,9 @@ export default function TablesScreen() {
   };
 
   const renderTable = (table: Table) => {
-    const ticket = getTicketByTable(table.id);
-    const total = ticket ? getTicketTotal(ticket.id) : 0;
-    const displayName = table.label || `Masa ${table.seq}`;
+    const tickets = getTicketsByTable(table.id) || [];
+    const totalAmount = tickets.reduce((sum, ticket) => sum + getTicketTotal(ticket.id), 0);
+    const displayName = table.label || `Masa ${table.seq || '?'}`;
 
     return (
       <View key={table.id} style={{ width: '33.33%', paddingHorizontal: 4, marginBottom: 8 }}>
@@ -190,13 +190,23 @@ export default function TablesScreen() {
                       {t.open}
                     </Text>
                   </View>
-                  {total > 0 && (
+                  {totalAmount > 0 && (
                     <Text style={{ 
                       fontSize: 12, 
                       color: colors.textSubtle,
                       marginTop: 2
                     }}>
-                      {formatPrice(total)}
+                      {formatPrice(totalAmount)}
+                    </Text>
+                  )}
+                  {tickets.length > 1 && (
+                    <Text style={{ 
+                      fontSize: 10, 
+                      color: colors.accent,
+                      marginTop: 2,
+                      fontWeight: '600'
+                    }}>
+                      {tickets.length} orders
                     </Text>
                   )}
                 </View>

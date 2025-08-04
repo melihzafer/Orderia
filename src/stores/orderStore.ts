@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ticket, TicketLine, AddTicketLineData, OrderStatus } from '../types';
+import { Ticket, TicketLine, AddTicketLineData, OrderStatus, PaymentInfo } from '../types';
 import { generateId } from '../constants/branding';
 import { useLayoutStore } from './layoutStore';
 import { useMenuStore } from './menuStore';
@@ -11,8 +11,9 @@ interface OrderState {
   openTickets: Record<string, Ticket>; // ticketId -> ticket
   
   // Ticket actions
-  openTable: (tableId: string) => Ticket;
-  closeTicket: (ticketId: string) => void;
+  openTable: (tableId: string, ticketName?: string) => Ticket;
+  closeTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
+  updateTicketName: (ticketId: string, name: string) => void;
   
   // Line actions
   addTicketLine: (ticketId: string, data: AddTicketLineData) => TicketLine;
@@ -23,11 +24,11 @@ interface OrderState {
   
   // Batch actions
   markAllDelivered: (ticketId: string) => void;
-  payTicket: (ticketId: string) => void;
+  payTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
   
   // Selectors
   getTicket: (ticketId: string) => Ticket | undefined;
-  getTicketByTable: (tableId: string) => Ticket | undefined;
+  getTicketsByTable: (tableId: string) => Ticket[];
   getTicketTotal: (ticketId: string) => number;
   getAllOpenTickets: () => Ticket[];
   getTodayTotal: () => number;
@@ -39,18 +40,11 @@ export const useOrderStore = create<OrderState>()(
       openTickets: {},
 
       // Ticket actions
-      openTable: (tableId) => {
-        const existingTicket = Object.values(get().openTickets).find(
-          ticket => ticket.tableId === tableId && ticket.status === 'open'
-        );
-        
-        if (existingTicket) {
-          return existingTicket;
-        }
-
+      openTable: (tableId, ticketName) => {
         const ticket: Ticket = {
           id: generateId(),
           tableId,
+          name: ticketName,
           status: 'open',
           createdAt: Date.now(),
           lines: [],
@@ -64,17 +58,33 @@ export const useOrderStore = create<OrderState>()(
         }));
 
         // Update table status
-        useLayoutStore.getState().updateTable(tableId, {
-          isOpen: true,
-          activeTicketId: ticket.id
-        });
+        const layoutStore = useLayoutStore.getState();
+        const currentTable = layoutStore.tables.find(t => t.id === tableId);
+        if (currentTable) {
+          const currentTicketIds = currentTable.activeTicketIds || [];
+          layoutStore.updateTable(tableId, {
+            isOpen: true,
+            activeTicketIds: [...currentTicketIds, ticket.id]
+          });
+        }
 
         return ticket;
       },
 
-      closeTicket: (ticketId) => {
+      closeTicket: (ticketId, paymentInfo) => {
         const ticket = get().openTickets[ticketId];
         if (!ticket) return;
+
+        // Close the ticket with payment info
+        const closedTicket: Ticket = {
+          ...ticket,
+          status: 'paid',
+          closedAt: Date.now(),
+          paymentInfo
+        };
+
+        // Add to history
+        useHistoryStore.getState().addTicketToHistory(closedTicket);
 
         set((state) => {
           const { [ticketId]: removedTicket, ...remainingTickets } = state.openTickets;
@@ -82,10 +92,28 @@ export const useOrderStore = create<OrderState>()(
         });
 
         // Update table status
-        useLayoutStore.getState().updateTable(ticket.tableId, {
-          isOpen: false,
-          activeTicketId: undefined
-        });
+        const layoutStore = useLayoutStore.getState();
+        const currentTable = layoutStore.tables.find(t => t.id === ticket.tableId);
+        if (currentTable) {
+          const currentTicketIds = currentTable.activeTicketIds || [];
+          const updatedTicketIds = currentTicketIds.filter(id => id !== ticketId);
+          layoutStore.updateTable(ticket.tableId, {
+            isOpen: updatedTicketIds.length > 0,
+            activeTicketIds: updatedTicketIds
+          });
+        }
+      },
+
+      updateTicketName: (ticketId, name) => {
+        set((state) => ({
+          openTickets: {
+            ...state.openTickets,
+            [ticketId]: {
+              ...state.openTickets[ticketId],
+              name
+            }
+          }
+        }));
       },
 
       // Line actions
@@ -185,26 +213,8 @@ export const useOrderStore = create<OrderState>()(
         }));
       },
 
-      payTicket: (ticketId) => {
-        const ticket = get().openTickets[ticketId];
-        if (!ticket) return;
-
-        const paidTicket: Ticket = {
-          ...ticket,
-          status: 'paid',
-          closedAt: Date.now(),
-          lines: ticket.lines.map((line) => ({
-            ...line,
-            status: 'paid' as OrderStatus,
-            updatedAt: Date.now()
-          }))
-        };
-
-        // Add to history
-        useHistoryStore.getState().addTicketToHistory(paidTicket);
-
-        // Remove from open tickets
-        get().closeTicket(ticketId);
+      payTicket: (ticketId, paymentInfo) => {
+        get().closeTicket(ticketId, paymentInfo);
       },
 
       // Selectors
@@ -212,8 +222,8 @@ export const useOrderStore = create<OrderState>()(
         return get().openTickets[ticketId];
       },
 
-      getTicketByTable: (tableId) => {
-        return Object.values(get().openTickets).find(
+      getTicketsByTable: (tableId: string) => {
+        return Object.values(get().openTickets).filter(
           ticket => ticket.tableId === tableId
         );
       },

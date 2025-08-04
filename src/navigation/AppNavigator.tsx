@@ -2,7 +2,7 @@ import { NavigationContainer, NavigationProp, useNavigation, CompositeNavigation
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import OrderiaTextIcon from '../../assets/orderia_text.svg';
+import { Text } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 // Screen imports (we'll create these next)
@@ -13,11 +13,11 @@ import {
   SettingsScreen,
   TableDetailScreen,
   AddMenuItemScreen,
-  AddHallScreen
+  AddHallScreen,
+  EditTableScreen,
+  AddCategoryScreen
 } from '../screens';
-import EditTableScreen from '@/screens/EditTableScreen';
-import AddCategoryScreen from '@/screens/AddCategoryScreen';
-import { PrimaryButton } from '@/components';
+import { PrimaryButton } from '../components';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type MainTabsNavigationProp = CompositeNavigationProp<
@@ -97,7 +97,14 @@ function MainTabs() {
           title: t.tables,
           headerTitle: "",
           headerLeft: () => (
-            <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
+            <Text style={{ 
+              marginLeft: 12, 
+              fontSize: 20, 
+              fontWeight: 'bold', 
+              color: colors.primary 
+            }}>
+              Orderia
+            </Text>
           ),
             headerRight: () => (
             <PrimaryButton

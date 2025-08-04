@@ -9,6 +9,16 @@ const { transformer, resolver } = config;
 config.transformer = {
   ...transformer,
   babelTransformerPath: require.resolve('react-native-svg-transformer'),
+  // Add web-specific transformations
+  unstable_allowRequireContext: true,
+  getTransformOptions: async () => ({
+    transform: {
+      experimentalImportSupport: false,
+      inlineRequires: true,
+    },
+  }),
+  // Force CommonJS for web to avoid import.meta issues
+  unstable_disableES6Transforms: false,
 };
 config.resolver = {
   ...resolver,
@@ -16,9 +26,23 @@ config.resolver = {
   sourceExts: [...resolver.sourceExts, 'svg'],
 };
 
-// Fix import.meta issues for React 18 web compatibility
+// Fix import.meta issues for React 19 web compatibility
 config.resolver.unstable_enableSymlinks = true;
 config.transformer.unstable_allowRequireContext = true;
+
+// Add web-specific resolver options
+config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
+config.resolver.platforms = ['ios', 'android', 'native', 'web'];
+
+// Add specific configuration for web platform to avoid import.meta issues
+if (process.env.EXPO_PLATFORM === 'web') {
+  config.transformer.getTransformOptions = async () => ({
+    transform: {
+      experimentalImportSupport: false,
+      inlineRequires: true,
+    },
+  });
+}
 
 // Add path aliases with absolute paths for better platform compatibility
 const aliases = {

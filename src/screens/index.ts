@@ -5,3 +5,5 @@ export { default as SettingsScreen } from './SettingsScreen';
 export { default as TableDetailScreen } from './TableDetailScreen';
 export { default as AddMenuItemScreen } from './AddMenuItemScreen';
 export { default as AddHallScreen } from './AddHallScreen';
+export { default as EditTableScreen } from './EditTableScreen';
+export { default as AddCategoryScreen } from './AddCategoryScreen';

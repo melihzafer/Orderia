@@ -1,7 +1,8 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
-import { DayHistory, Ticket, TicketLine } from '../types';
+import { DayHistory, Ticket, TicketLine, MenuItem, PaymentInfo } from '../types';
+import { Translation } from '../i18n/languages';
 
 export interface ExportData {
   date: string;
@@ -303,4 +304,149 @@ export function prepareExportData(dailyHistory: Record<string, DayHistory>): Exp
       orders,
     };
   });
+}
+
+function generateBillHTML(
+  ticket: Ticket,
+  t: Translation,
+  priceFormatter: (amount: number) => string
+): string {
+  const {
+    id,
+    name,
+    lines,
+    paymentInfo,
+    createdAt,
+    closedAt
+  } = ticket;
+
+  const headerImage = 'https://raw.githubusercontent.com/zwolfe/orderia/main/assets/images/Logo.png';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>${t.orderBill} #${id.slice(-6)}</title>
+        <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #333; background-color: #f9f9f9; }
+            .container { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.05); padding: 30px; }
+            .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+            .header img { max-width: 100px; margin-bottom: 10px; }
+            .header h1 { font-size: 24px; color: #111; margin: 0; }
+            .ticket-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; color: #555; }
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            .items-table th, .items-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+            .items-table th { background-color: #f9f9f9; font-weight: 600; font-size: 14px; }
+            .items-table .quantity { text-align: center; }
+            .items-table .price { text-align: right; }
+            .summary { margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee; }
+            .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; }
+            .summary-row.total { font-weight: 700; font-size: 20px; color: #000; }
+            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #888; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="${headerImage}" alt="Logo">
+                <h1>${t.orderBill}</h1>
+            </div>
+            <div class="ticket-info">
+                <div><strong>${t.orderId}:</strong> #${id.slice(-6)}</div>
+                <div><strong>${t.date}:</strong> ${new Date(closedAt || createdAt).toLocaleDateString()}</div>
+            </div>
+            ${name ? `<div style="text-align: center; margin-bottom: 20px; font-size: 16px;"><strong>${t.orderName}:</strong> ${name}</div>` : ''}
+            
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>${t.item}</th>
+                        <th class="quantity">${t.quantity}</th>
+                        <th class="price">${t.unitPrice}</th>
+                        <th class="price">${t.itemTotal}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${lines.map(line => `
+                        <tr>
+                            <td>${line.nameSnapshot}</td>
+                            <td class="quantity">${line.quantity}</td>
+                            <td class="price">${priceFormatter(line.priceSnapshot)}</td>
+                            <td class="price">${priceFormatter(line.priceSnapshot * line.quantity)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            ${paymentInfo ? `
+            <div class="summary">
+                <div class="summary-row total">
+                    <span>${t.total}</span>
+                    <span class="price">${priceFormatter(paymentInfo.total)}</span>
+                </div>
+                ${paymentInfo.paymentMethod === 'cash' ? `
+                <div class="summary-row">
+                    <span>${t.amountReceived} (${t.cash})</span>
+                    <span class="price">${priceFormatter(paymentInfo.amountReceived || 0)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>${t.change}</span>
+                    <span class="price">${priceFormatter(paymentInfo.change || 0)}</span>
+                </div>
+                ` : `
+                <div class="summary-row">
+                    <span>${t.paymentMethod}</span>
+                    <span class="price">${t.card}</span>
+                </div>
+                `}
+            </div>
+            ` : ''}
+
+            <div class="footer">
+                <p>${t.thankYouNote || 'Thank you for your visit!'}</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+}
+
+
+export async function generateAndShareBill(
+  ticket: Ticket,
+  t: Translation,
+  priceFormatter: (amount: number) => string
+): Promise<boolean> {
+  try {
+    const htmlContent = generateBillHTML(ticket, t, priceFormatter);
+
+    const { uri } = await Print.printToFileAsync({
+      html: htmlContent,
+      base64: false,
+    });
+
+    const filename = `Orderia_Bill_${ticket.id.slice(-6)}.pdf`;
+    const finalUri = `${FileSystem.documentDirectory}${filename}`;
+    
+    await FileSystem.moveAsync({
+      from: uri,
+      to: finalUri,
+    });
+
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(finalUri, {
+        mimeType: 'application/pdf',
+        dialogTitle: t.shareBill || 'Share Bill',
+      });
+      return true;
+    } else {
+      alert(t.sharingNotAvailable || 'Sharing is not available on this device.');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error generating or sharing bill:', error);
+    alert(t.genericError || 'An error occurred while generating the bill.');
+    return false;
+  }
 }

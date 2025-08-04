@@ -6,7 +6,10 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "web:webpack": "expo start --web --bundler webpack",
+    "export:web": "expo export --platform web",
+    "build:web": "expo export --platform web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@svgr/webpack": "^8.1.0",
     "@types/react": "~19.0.10",
     "babel-plugin-module-resolver": "^5.0.2",
     "react-native-svg-transformer": "^1.5.1",
