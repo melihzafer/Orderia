@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useLayoutStore } from '../stores';
-import { PrimaryButton, SurfaceCard } from '../components';
+import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 type EditTableRouteProp = RouteProp<RootStackParamList, 'EditTable'>;
@@ -19,12 +20,14 @@ export default function EditTableScreen() {
   const { colors } = useTheme();
   const { t } = useLocalization();
   
-  const { updateTable, getTable } = useLayoutStore();
+  const { updateTable, getTable, deleteTable } = useLayoutStore();
   
   const { tableId } = route.params;
   const table = getTable(tableId);
   
   const [tableName, setTableName] = useState(table?.label || '');
+  const [showActions, setShowActions] = useState(false);
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   if (!table) {
     return (
@@ -46,68 +49,119 @@ export default function EditTableScreen() {
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      t.deleteTable || 'Delete Table',
+      t.deleteTableConfirm || 'Are you sure you want to delete this table?',
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            try {
+              deleteTable(tableId);
+              setShowActions(false);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert(t.error, t.genericError);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleLongPress = () => {
+    setShowActions(true);
+  };
+
+  const getTableActions = (): ActionSheetAction[] => [
+    {
+      id: 'delete',
+      title: t.delete || 'Delete',
+      icon: 'trash',
+      destructive: true,
+      onPress: handleDelete,
+    },
+  ];
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
       <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-        <SurfaceCard style={{ marginBottom: 24 }}>
-          <Text style={{ 
-            fontSize: 18, 
-            fontWeight: '600', 
-            color: colors.text,
-            marginBottom: 16
-          }}>
-            {t.editTable}
-          </Text>
-          
-          <Text style={{ 
-            fontSize: 14, 
-            color: colors.textSubtle,
-            marginBottom: 8
-          }}>
-            {t.tableName}
-          </Text>
-          
-          <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-              fontSize: 16,
+        <TouchableOpacity 
+          onLongPress={handleLongPress}
+          activeOpacity={1}
+          style={{ flex: 1 }}
+        >
+          <SurfaceCard style={{ marginBottom: 24 }}>
+            <Text style={{ 
+              fontSize: 18, 
+              fontWeight: '600', 
               color: colors.text,
-              backgroundColor: colors.surface,
+              marginBottom: 16
+            }}>
+              {t.editTable}
+            </Text>
+            
+            <Text style={{ 
+              fontSize: 14, 
+              color: colors.textSubtle,
               marginBottom: 8
-            }}
-            placeholder={t.enterNewTableName}
-            placeholderTextColor={colors.textSubtle}
-            value={tableName}
-            onChangeText={setTableName}
-            autoFocus
-          />
-          
-          <Text style={{ 
-            fontSize: 12, 
-            color: colors.textSubtle,
-            fontStyle: 'italic'
-          }}>
-            {t.tableNameHint.replace('{seq}', table.seq.toString())}
-          </Text>
-        </SurfaceCard>
+            }}>
+              {t.tableName}
+            </Text>
+            
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 12,
+                fontSize: 16,
+                color: colors.text,
+                backgroundColor: colors.surface,
+                marginBottom: 8
+              }}
+              placeholder={t.enterNewTableName}
+              placeholderTextColor={colors.textSubtle}
+              value={tableName}
+              onChangeText={setTableName}
+              autoFocus
+            />
+            
+            <Text style={{ 
+              fontSize: 12, 
+              color: colors.textSubtle,
+              fontStyle: 'italic'
+            }}>
+              {t.tableNameHint.replace('{seq}', table.seq.toString())}
+            </Text>
+          </SurfaceCard>
 
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <PrimaryButton
-            title={t.cancel}
-            variant="outline"
-            onPress={() => navigation.goBack()}
-            style={{ flex: 1 }}
-          />
-          <PrimaryButton
-            title={t.save}
-            onPress={handleSave}
-            style={{ flex: 1 }}
-          />
-        </View>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <PrimaryButton
+              title={t.cancel}
+              variant="outline"
+              onPress={() => navigation.goBack()}
+              style={{ flex: 1 }}
+            />
+            <PrimaryButton
+              title={t.save}
+              onPress={handleSave}
+              style={{ flex: 1 }}
+            />
+          </View>
+        </TouchableOpacity>
+
+        <ActionSheet
+          ref={bottomSheetRef}
+          title={'Table Actions'}
+          actions={getTableActions()}
+          isVisible={showActions}
+          onClose={() => setShowActions(false)}
+        />
       </View>
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -12,11 +12,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useLayoutStore, useOrderStore } from '../stores';
-import { PrimaryButton, SurfaceCard } from '../components';
+import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Hall, Table } from '../types';
 
@@ -45,7 +46,14 @@ export default function TablesScreen() {
   } = useOrderStore();
 
   const [refreshing, setRefreshing] = React.useState(false);
-  const [showActionsForHall, setShowActionsForHall] = React.useState<string | null>(null);
+  
+  // Action sheet states
+  const [showHallActions, setShowHallActions] = useState(false);
+  const [selectedHall, setSelectedHall] = useState<Hall | null>(null);
+  const [showTableActions, setShowTableActions] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const hallActionSheetRef = useRef<BottomSheet>(null);
+  const tableActionSheetRef = useRef<BottomSheet>(null);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -101,6 +109,103 @@ export default function TablesScreen() {
     navigation.navigate('AddHall', {});
   };
 
+  // Action sheet handlers
+  const handleHallLongPress = (hall: Hall & { tables: Table[] }) => {
+    setSelectedHall(hall);
+    setShowHallActions(true);
+  };
+
+  const handleTableLongPress = (table: Table) => {
+    setSelectedTable(table);
+    setShowTableActions(true);
+  };
+
+  const handleEditHallAction = (hall: Hall) => {
+    setShowHallActions(false);
+    setSelectedHall(null);
+    navigation.navigate('AddHall', { hallId: hall.id });
+  };
+
+  const handleDeleteHallAction = (hall: Hall & { tables: Table[] }) => {
+    setShowHallActions(false);
+    setSelectedHall(null);
+    
+    Alert.alert(
+      t.deleteHall,
+      t.deleteHallConfirm,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            deleteHall(hall.id);
+            Alert.alert(t.success, t.hallDeleted);
+          }
+        }
+      ]
+    );
+  };
+
+  const handleEditTableAction = (table: Table) => {
+    setShowTableActions(false);
+    setSelectedTable(null);
+    navigation.navigate('EditTable', { tableId: table.id });
+  };
+
+  const handleDeleteTableAction = (table: Table) => {
+    setShowTableActions(false);
+    setSelectedTable(null);
+    
+    Alert.alert(
+      t.deleteTable,
+      t.deleteTableConfirm,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.delete,
+          style: 'destructive',
+          onPress: () => {
+            deleteTable(table.id);
+            Alert.alert(t.success, t.tableDeleted);
+          }
+        }
+      ]
+    );
+  };
+
+  const getHallActions = (): ActionSheetAction[] => [
+    {
+      id: 'edit',
+      title: t.edit || 'Edit',
+      icon: 'pencil',
+      onPress: () => selectedHall && handleEditHallAction(selectedHall as Hall),
+    },
+    {
+      id: 'delete',
+      title: t.delete || 'Delete',
+      icon: 'trash',
+      destructive: true,
+      onPress: () => selectedHall && handleDeleteHallAction(selectedHall as Hall & { tables: Table[] }),
+    },
+  ];
+
+  const getTableActions = (): ActionSheetAction[] => [
+    {
+      id: 'edit',
+      title: t.edit || 'Edit',
+      icon: 'pencil',
+      onPress: () => selectedTable && handleEditTableAction(selectedTable),
+    },
+    {
+      id: 'delete',
+      title: t.delete || 'Delete',
+      icon: 'trash',
+      destructive: true,
+      onPress: () => selectedTable && handleDeleteTableAction(selectedTable),
+    },
+  ];
+
   const handleAddTable = (hallId: string) => {
     Alert.alert(
       t.addTable,
@@ -130,6 +235,7 @@ export default function TablesScreen() {
       <View key={table.id} style={{ width: '33.33%', paddingHorizontal: 4, marginBottom: 8 }}>
         <TouchableOpacity
           onPress={() => handleTablePress(table)}
+          onLongPress={() => handleTableLongPress(table)}
           style={{ flex: 1 }}
         >
           <SurfaceCard
@@ -143,36 +249,14 @@ export default function TablesScreen() {
         }}
           >
         <View style={{ flex: 1, justifyContent: 'space-between', height: 'auto' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Text style={{ 
-          fontSize: 10, 
-          fontWeight: '600', 
-          color: colors.text,
-          flex: 1
-            }}>
-          {displayName}
-            </Text>
-            
-            <View style={{ flexDirection: 'row', gap: 2 }}>
-              <TouchableOpacity 
-            onPress={() => handleEditTable(table.id)}
-            style={{
-              padding: 4,
-            }}
-              >
-            <Ionicons name="pencil" size={12} color={colors.textSubtle} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-            onPress={() => handleDeleteTable(table)}
-            style={{
-              padding: 4,
-            }}
-              >
-            <Ionicons name="trash" size={12} color="#ff4444" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <Text style={{ 
+            fontSize: 10, 
+            fontWeight: '600', 
+            color: colors.text,
+            flex: 1
+          }}>
+            {displayName}
+          </Text>
               
               {table.isOpen && (
                 <View style={{ alignItems: 'center', marginTop: 4 }}>
@@ -219,14 +303,10 @@ export default function TablesScreen() {
   };
 
   const renderHall = ({ item: hall }: { item: Hall & { tables: Table[] } }) => {
-    const showActions = showActionsForHall === hall.id;
-    
     return (
       <SurfaceCard style={{ marginBottom: 16 }}>
         <TouchableOpacity
-          onLongPress={() => {
-            setShowActionsForHall(showActions ? null : hall.id);
-          }}
+          onLongPress={() => handleHallLongPress(hall)}
           style={{ 
             flexDirection: 'row', 
             justifyContent: 'space-between', 
@@ -242,67 +322,27 @@ export default function TablesScreen() {
             {hall.name}
           </Text>
           
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {showActions && (
-              <>
-                <TouchableOpacity 
-                  onPress={() => {
-                    handleEditHall(hall.id);
-                    setShowActionsForHall(null);
-                  }}
-                  style={{
-                    backgroundColor: colors.surface,
-                    paddingHorizontal: 8,
-                    paddingVertical: 6,
-                    borderRadius: 6,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Ionicons name="pencil" size={14} color={colors.textSubtle} />
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  onPress={() => {
-                    handleDeleteHall(hall);
-                    setShowActionsForHall(null);
-                  }}
-                  style={{
-                    backgroundColor: '#FF4444',
-                    paddingHorizontal: 8,
-                    paddingVertical: 6,
-                    borderRadius: 6,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Ionicons name="trash" size={14} color="#FFFFFF" />
-                </TouchableOpacity>
-              </>
-            )}
-            
-            <TouchableOpacity 
-              onPress={() => handleAddTable(hall.id)}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 6,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <Ionicons name="add" size={16} color="#FFFFFF" />
-              <Text style={{ 
-                color: '#FFFFFF', 
-                fontSize: 12, 
-                fontWeight: '600',
-                marginLeft: 4
-              }}>
-                {t.addTable}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            onPress={() => handleAddTable(hall.id)}
+            style={{
+              backgroundColor: colors.primary,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 6,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Ionicons name="add" size={16} color="#FFFFFF" />
+            <Text style={{ 
+              color: '#FFFFFF', 
+              fontSize: 12, 
+              fontWeight: '600',
+              marginLeft: 4
+            }}>
+              {t.addTable}
+            </Text>
+          </TouchableOpacity>
         </TouchableOpacity>
 
         {hall.tables.length === 0 ? (
@@ -344,7 +384,6 @@ export default function TablesScreen() {
       >
         <TouchableOpacity 
           activeOpacity={1} 
-          onPress={() => setShowActionsForHall(null)}
           style={{ flex: 1 }}
         >
         {/* Today's Summary */}
@@ -404,6 +443,35 @@ export default function TablesScreen() {
         </View>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Action Sheets */}
+      {selectedHall && (
+        <ActionSheet
+          ref={hallActionSheetRef}
+          title={selectedHall.name}
+          subtitle="Actions for this hall"
+          actions={getHallActions()}
+          isVisible={showHallActions}
+          onClose={() => {
+            setShowHallActions(false);
+            setSelectedHall(null);
+          }}
+        />
+      )}
+
+      {selectedTable && (
+        <ActionSheet
+          ref={tableActionSheetRef}
+          title={selectedTable.label || `Masa ${selectedTable.seq}`}
+          subtitle="Actions for this table"
+          actions={getTableActions()}
+          isVisible={showTableActions}
+          onClose={() => {
+            setShowTableActions(false);
+            setSelectedTable(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

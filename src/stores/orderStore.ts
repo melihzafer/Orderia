@@ -6,6 +6,7 @@ import { generateId } from '../constants/branding';
 import { useLayoutStore } from './layoutStore';
 import { useMenuStore } from './menuStore';
 import { useHistoryStore } from './historyStore';
+import { notificationService } from '../services/notificationService';
 
 interface OrderState {
   openTickets: Record<string, Ticket>; // ticketId -> ticket
@@ -13,7 +14,10 @@ interface OrderState {
   // Ticket actions
   openTable: (tableId: string, ticketName?: string) => Ticket;
   closeTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
+  deleteTicket: (ticketId: string) => void;
   updateTicketName: (ticketId: string, name: string) => void;
+  setTicketDeliveryTime: (ticketId: string, minutes: number) => void;
+  clearTicketDeliveryTime: (ticketId: string) => void;
   
   // Line actions
   addTicketLine: (ticketId: string, data: AddTicketLineData) => TicketLine;
@@ -75,6 +79,11 @@ export const useOrderStore = create<OrderState>()(
         const ticket = get().openTickets[ticketId];
         if (!ticket) return;
 
+        // Cancel any delivery notifications
+        if (ticket.deliveryNotificationIds) {
+          notificationService.cancelDeliveryNotifications(ticket.deliveryNotificationIds);
+        }
+
         // Close the ticket with payment info
         const closedTicket: Ticket = {
           ...ticket,
@@ -104,6 +113,34 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
+      deleteTicket: (ticketId) => {
+        const ticket = get().openTickets[ticketId];
+        if (!ticket) return;
+
+        // Cancel any delivery notifications
+        if (ticket.deliveryNotificationIds) {
+          notificationService.cancelDeliveryNotifications(ticket.deliveryNotificationIds);
+        }
+
+        // Remove ticket from open tickets (without adding to history)
+        set((state) => {
+          const { [ticketId]: removedTicket, ...remainingTickets } = state.openTickets;
+          return { openTickets: remainingTickets };
+        });
+
+        // Update table status
+        const layoutStore = useLayoutStore.getState();
+        const currentTable = layoutStore.tables.find(t => t.id === ticket.tableId);
+        if (currentTable) {
+          const currentTicketIds = currentTable.activeTicketIds || [];
+          const updatedTicketIds = currentTicketIds.filter(id => id !== ticketId);
+          layoutStore.updateTable(ticket.tableId, {
+            isOpen: updatedTicketIds.length > 0,
+            activeTicketIds: updatedTicketIds
+          });
+        }
+      },
+
       updateTicketName: (ticketId, name) => {
         set((state) => ({
           openTickets: {
@@ -111,6 +148,67 @@ export const useOrderStore = create<OrderState>()(
             [ticketId]: {
               ...state.openTickets[ticketId],
               name
+            }
+          }
+        }));
+      },
+
+      setTicketDeliveryTime: (ticketId, minutes) => {
+        const ticket = get().openTickets[ticketId];
+        if (!ticket) return;
+        
+        const startedAt = Date.now();
+        
+        // Schedule delivery notifications
+        notificationService.scheduleDeliveryNotifications(
+          ticketId,
+          ticket.name || `Table ${ticket.tableId}`,
+          minutes
+        ).then((notificationIds) => {
+          set((state) => ({
+            openTickets: {
+              ...state.openTickets,
+              [ticketId]: {
+                ...state.openTickets[ticketId],
+                deliveryEtaMinutes: minutes,
+                deliveryStartedAt: startedAt,
+                deliveryNotificationIds: notificationIds,
+              }
+            }
+          }));
+        }).catch((error) => {
+          console.error('Failed to schedule notifications:', error);
+          // Still set the delivery time even if notifications fail
+          set((state) => ({
+            openTickets: {
+              ...state.openTickets,
+              [ticketId]: {
+                ...state.openTickets[ticketId],
+                deliveryEtaMinutes: minutes,
+                deliveryStartedAt: startedAt,
+              }
+            }
+          }));
+        });
+      },
+
+      clearTicketDeliveryTime: (ticketId) => {
+        const ticket = get().openTickets[ticketId];
+        if (!ticket) return;
+        
+        // Cancel any existing notifications
+        if (ticket.deliveryNotificationIds) {
+          notificationService.cancelDeliveryNotifications(ticket.deliveryNotificationIds);
+        }
+        
+        set((state) => ({
+          openTickets: {
+            ...state.openTickets,
+            [ticketId]: {
+              ...state.openTickets[ticketId],
+              deliveryEtaMinutes: undefined,
+              deliveryStartedAt: undefined,
+              deliveryNotificationIds: undefined,
             }
           }
         }));

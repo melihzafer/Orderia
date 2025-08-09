@@ -5,7 +5,9 @@ export interface Translation {
   delete: string;
   cancel: string;
   save: string;
+  update: string;
   confirm: string;
+  confirmDelete: string;
   yes: string;
   no: string;
   back: string;
@@ -63,6 +65,7 @@ export interface Translation {
   // Menu & Categories
   addCategory: string;
   editCategory: string;
+  editMenuItem: string;
   categoryName: string;
   enterCategoryName: string;
   enterNewCategoryName: string;
@@ -104,6 +107,9 @@ export interface Translation {
   addFirstOrder: string;
   addOrder: string;
   deliverAllOrders: string;
+  deleteOrder: string;
+  deleteOrderConfirm: string;
+  deleteOrderWarning: string;
   total: string;
   note: string;
   orderNote: string;
@@ -210,7 +216,9 @@ export const translations: Record<string, Translation> = {
     delete: 'Sil',
     cancel: 'İptal',
     save: 'Kaydet',
+    update: 'Güncelle',
     confirm: 'Onayla',
+    confirmDelete: 'Silmeyi Onayla',
     yes: 'Evet',
     no: 'Hayır',
     back: 'Geri',
@@ -268,6 +276,7 @@ export const translations: Record<string, Translation> = {
     // Menu & Categories
     addCategory: 'Kategori Ekle',
     editCategory: 'Kategori Düzenle',
+    editMenuItem: 'Ürünü Düzenle',
     categoryName: 'Kategori Adı',
     enterCategoryName: 'Kategori adını girin:',
     enterNewCategoryName: 'Yeni kategori adını girin:',
@@ -309,6 +318,9 @@ export const translations: Record<string, Translation> = {
     addFirstOrder: 'İlk Siparişi Ekle',
     addOrder: 'Sipariş Ekle',
     deliverAllOrders: 'Tüm Siparişleri Teslim Et',
+    deleteOrder: 'Siparişi Sil',
+    deleteOrderConfirm: 'siparişini silmek istediğinizden emin misiniz',
+    deleteOrderWarning: 'Bu işlem geri alınamaz.',
     total: 'Toplam',
     note: 'Not',
     orderNote: 'Sipariş notu (opsiyonel)...',
@@ -414,7 +426,9 @@ export const translations: Record<string, Translation> = {
     delete: 'Изтрий',
     cancel: 'Отказ',
     save: 'Запази',
+    update: 'Обнови',
     confirm: 'Потвърди',
+    confirmDelete: 'Потвърди изтриването',
     yes: 'Да',
     no: 'Не',
     back: 'Назад',
@@ -472,6 +486,7 @@ export const translations: Record<string, Translation> = {
     // Menu & Categories
     addCategory: 'Добави Категория',
     editCategory: 'Редактирай Категория',
+    editMenuItem: 'Редактирай Артикул',
     categoryName: 'Име на Категорията',
     enterCategoryName: 'Въведете име на категорията:',
     enterNewCategoryName: 'Въведете ново име на категорията:',
@@ -513,6 +528,9 @@ export const translations: Record<string, Translation> = {
     addFirstOrder: 'Добави Първата Поръчка',
     addOrder: 'Добави Поръчка',
     deliverAllOrders: 'Достави Всички Поръчки',
+    deleteOrder: 'Изтрий Поръчка',
+    deleteOrderConfirm: 'сигурни ли сте, че искате да изтриете',
+    deleteOrderWarning: 'Това действие не може да бъде отменено.',
     total: 'Общо',
     note: 'Бележка',
     orderNote: 'Бележка за поръчката (незадължително)...',
@@ -618,7 +636,9 @@ export const translations: Record<string, Translation> = {
     delete: 'Delete',
     cancel: 'Cancel',
     save: 'Save',
+    update: 'Update',
     confirm: 'Confirm',
+    confirmDelete: 'Confirm Delete',
     yes: 'Yes',
     no: 'No',
     back: 'Back',
@@ -676,6 +696,7 @@ export const translations: Record<string, Translation> = {
     // Menu & Categories
     addCategory: 'Add Category',
     editCategory: 'Edit Category',
+    editMenuItem: 'Edit Menu Item',
     categoryName: 'Category Name',
     enterCategoryName: 'Enter category name:',
     enterNewCategoryName: 'Enter new category name:',
@@ -717,6 +738,9 @@ export const translations: Record<string, Translation> = {
     addFirstOrder: 'Add First Order',
     addOrder: 'Add Order',
     deliverAllOrders: 'Deliver All Orders',
+    deleteOrder: 'Delete Order',
+    deleteOrderConfirm: 'Are you sure you want to delete',
+    deleteOrderWarning: 'This action cannot be undone.',
     total: 'Total',
     note: 'Note',
     orderNote: 'Order note (optional)...',

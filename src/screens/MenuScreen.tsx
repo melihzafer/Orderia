@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -12,13 +12,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useMenuStore } from '../stores';
-import { PrimaryButton, SurfaceCard } from '../components';
+import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Category, MenuItem } from '../types';
+import { useDebounceSearch, searchMenuItems } from '../utils/searchUtils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,8 +43,19 @@ export default function MenuScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     categories.length > 0 ? categories[0].id : null
   );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showActionsForCategory, setShowActionsForCategory] = useState<string | null>(null);
+  
+  // Use debounced search for better performance
+  const { searchQuery, setSearchQuery, debouncedQuery } = useDebounceSearch('', 300);
+  
+  // Action sheet for menu items
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+  const [showItemActions, setShowItemActions] = useState(false);
+  const actionSheetRef = useRef<BottomSheet>(null);
+
+  // Action sheet for categories
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [showCategoryActions, setShowCategoryActions] = useState(false);
+  const categoryActionSheetRef = useRef<BottomSheet>(null);
 
   const handleAddCategory = () => {
     navigation.navigate('AddCategory', {});
@@ -102,18 +115,81 @@ export default function MenuScreen() {
     );
   };
 
-  const filteredMenuItems = menuItems.filter(item => {
-    const matchesCategory = !selectedCategoryId || item.categoryId === selectedCategoryId;
-    const matchesSearch = !searchQuery || 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    return matchesCategory && matchesSearch;
-  });
+  const handleEditMenuItem = (menuItem: MenuItem) => {
+    navigation.navigate('AddMenuItem', { categoryId: menuItem.categoryId });
+    setShowItemActions(false);
+  };
+
+  const handleToggleItemStatus = (menuItem: MenuItem) => {
+    updateMenuItem(menuItem.id, { isActive: !menuItem.isActive });
+    setShowItemActions(false);
+  };
+
+  const handleItemLongPress = (menuItem: MenuItem) => {
+    setSelectedMenuItem(menuItem);
+    setShowItemActions(true);
+  };
+
+  const handleCategoryLongPress = (category: Category) => {
+    setSelectedCategory(category);
+    setShowCategoryActions(true);
+  };
+
+  // Define action sheet actions for menu items
+  const getItemActions = (menuItem: MenuItem): ActionSheetAction[] => [
+    {
+      id: 'edit',
+      title: t.edit || 'Edit',
+      icon: 'pencil',
+      onPress: () => handleEditMenuItem(menuItem),
+    },
+    {
+      id: 'toggle',
+      title: menuItem.isActive ? 'Deactivate' : 'Activate',
+      icon: menuItem.isActive ? 'eye-off' : 'eye',
+      onPress: () => handleToggleItemStatus(menuItem),
+    },
+    {
+      id: 'delete',
+      title: t.delete || 'Delete',
+      icon: 'trash',
+      destructive: true,
+      onPress: () => handleDeleteMenuItem(menuItem),
+    },
+  ];
+
+  // Define action sheet actions for categories
+  const getCategoryActions = (category: Category): ActionSheetAction[] => [
+    {
+      id: 'edit',
+      title: t.edit || 'Edit',
+      icon: 'pencil',
+      onPress: () => {
+        handleEditCategory(category.id);
+        setShowCategoryActions(false);
+      },
+    },
+    {
+      id: 'delete',
+      title: t.delete || 'Delete',
+      icon: 'trash',
+      destructive: true,
+      onPress: () => {
+        handleDeleteCategory(category);
+        setShowCategoryActions(false);
+      },
+    },
+  ];
+
+  // Use improved search with debouncing
+  const filteredMenuItems = searchMenuItems(
+    menuItems,
+    debouncedQuery,
+    selectedCategoryId || undefined
+  );
 
   const renderCategoryTab = (category: Category) => {
     const isSelected = selectedCategoryId === category.id;
-    const showActions = showActionsForCategory === category.id;
     const itemCount = menuItems.filter(item => item.categoryId === category.id).length;
 
     return (
@@ -121,12 +197,8 @@ export default function MenuScreen() {
         <TouchableOpacity
           onPress={() => {
             setSelectedCategoryId(category.id);
-            setShowActionsForCategory(null); // Hide actions when selecting normally
           }}
-          onLongPress={() => {
-            setSelectedCategoryId(category.id);
-            setShowActionsForCategory(showActions ? null : category.id); // Toggle actions
-          }}
+          onLongPress={() => handleCategoryLongPress(category)}
           style={{
             paddingHorizontal: 16,
             paddingVertical: 20,
@@ -165,117 +237,90 @@ export default function MenuScreen() {
             )}
           </View>
         </TouchableOpacity>
-        
-        {showActions && (
-          <View style={{ position: 'absolute', top: 4, right: -10, flexDirection: 'row', gap: 4, zIndex: 100,   }}>
-            <TouchableOpacity
-              onPress={() => {
-                handleEditCategory(category.id);
-                setShowActionsForCategory(null); // Hide actions after action
-              }}
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 100,
-                padding: 10,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Ionicons name="pencil" size={10} color={colors.textSubtle} />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              onPress={() => {
-                handleDeleteCategory(category);
-                setShowActionsForCategory(null); // Hide actions after action
-              }}
-              style={{
-                backgroundColor: '#FF4444',
-                borderRadius: 100,
-                padding: 10,
-                borderWidth: 1,
-                borderColor: '#FF4444',
-              }}
-            >
-              <Ionicons name="trash" size={10} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
     );
   };
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => {
     return (
-      <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View style={{ flex: 1, marginRight: 12 }}>
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: item.isActive ? colors.text : colors.textSubtle,
-              textDecorationLine: item.isActive ? 'none' : 'line-through',
-            }}>
-              {item.name}
-            </Text>
-            
-            {item.description && (
+      <TouchableOpacity
+        onLongPress={() => handleItemLongPress(item)}
+        activeOpacity={0.7}
+      >
+        <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: item.isActive ? colors.text : colors.textSubtle,
+                  textDecorationLine: item.isActive ? 'none' : 'line-through',
+                  flex: 1,
+                }}>
+                  {item.name}
+                </Text>
+                {!item.isActive && (
+                  <View style={{
+                    backgroundColor: colors.textSubtle + '20',
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    marginLeft: 8,
+                  }}>
+                    <Text style={{
+                      fontSize: 10,
+                      color: colors.textSubtle,
+                      fontWeight: '600',
+                    }}>
+                      INACTIVE
+                    </Text>
+                  </View>
+                )}
+              </View>
+              
+              {item.description && (
+                <Text style={{
+                  fontSize: 14,
+                  color: colors.textSubtle,
+                  marginBottom: 4,
+                }}>
+                  {item.description}
+                </Text>
+              )}
+              
               <Text style={{
-                fontSize: 14,
+                fontSize: 18,
+                fontWeight: '700',
+                color: colors.primary,
+              }}>
+                {formatPrice(item.price)}
+              </Text>
+            </View>
+
+            <View style={{ alignItems: 'center' }}>
+              <Ionicons 
+                name="ellipsis-vertical" 
+                size={20} 
+                color={colors.textSubtle} 
+              />
+              <Text style={{
+                fontSize: 10,
                 color: colors.textSubtle,
                 marginTop: 2,
               }}>
-                {item.description}
+                Hold
               </Text>
-            )}
-            
-            <Text style={{
-              fontSize: 18,
-              fontWeight: '700',
-              color: colors.primary,
-              marginTop: 4,
-            }}>
-              {formatPrice(item.price)}
-            </Text>
+            </View>
           </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity
-              onPress={() => toggleMenuItemActive(item.id)}
-              style={{
-                padding: 8,
-                marginRight: 4,
-              }}
-            >
-              <Ionicons 
-                name={item.isActive ? 'eye' : 'eye-off'} 
-                size={20} 
-                color={item.isActive ? colors.primary : colors.textSubtle} 
-              />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              onPress={() => handleDeleteMenuItem(item)}
-              style={{
-                padding: 8,
-              }}
-            >
-              <Ionicons name="trash-outline" size={20} color="#EF4444" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SurfaceCard>
+        </SurfaceCard>
+      </TouchableOpacity>
     );
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
-      <TouchableOpacity 
-        style={{ flex: 1 }} 
-        activeOpacity={1} 
-        onPress={() => setShowActionsForCategory(null)}
-      >
-        <View style={{ flex: 1 }} onStartShouldSetResponder={() => true}>
+      <View style={{ flex: 1 }}>
         {/* Search Bar */}
         <View style={{ padding: 16, paddingBottom: 8, backgroundColor: colors.bg }}>
           <View style={{
@@ -298,7 +343,22 @@ export default function MenuScreen() {
               placeholderTextColor={colors.textSubtle}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              autoCorrect={false}
+              autoCapitalize="none"
             />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchQuery('')}
+                style={{ 
+                  padding: 4,
+                  marginLeft: 4,
+                  borderRadius: 12,
+                  backgroundColor: colors.textSubtle + '20',
+                }}
+              >
+                <Ionicons name="close" size={16} color={colors.textSubtle} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -356,21 +416,38 @@ export default function MenuScreen() {
             </SurfaceCard>
           ) : filteredMenuItems.length === 0 ? (
             <SurfaceCard style={{ padding: 32 }}>
-              <Text style={{ 
-                textAlign: 'center', 
-                color: colors.textSubtle,
-                fontSize: 16,
-                marginBottom: 16
-              }}>
-                {searchQuery ? t.noItemsFound : t.noCategoryItems}
-              </Text>
-              {!searchQuery && (
-                <PrimaryButton
-                  title={t.addFirstItem}
-                  onPress={handleAddMenuItem}
-                  fullWidth
+              <View style={{ alignItems: 'center' }}>
+                <Ionicons 
+                  name={debouncedQuery ? "search" : "restaurant-outline"} 
+                  size={48} 
+                  color={colors.textSubtle} 
+                  style={{ marginBottom: 16 }} 
                 />
-              )}
+                <Text style={{ 
+                  textAlign: 'center', 
+                  color: colors.textSubtle,
+                  fontSize: 16,
+                  marginBottom: 8
+                }}>
+                  {debouncedQuery ? t.noItemsFound : t.noCategoryItems}
+                </Text>
+                {debouncedQuery ? (
+                  <Text style={{ 
+                    textAlign: 'center', 
+                    color: colors.textSubtle,
+                    fontSize: 14,
+                    fontStyle: 'italic'
+                  }}>
+                    Try adjusting your search query
+                  </Text>
+                ) : (
+                  <PrimaryButton
+                    title={t.addFirstItem}
+                    onPress={handleAddMenuItem}
+                    fullWidth
+                  />
+                )}
+              </View>
             </SurfaceCard>
           ) : (
             <FlatList
@@ -392,8 +469,37 @@ export default function MenuScreen() {
             />
           </View>
         )}
-        </View>
-      </TouchableOpacity>
+      </View>
+
+      {/* Action Sheet for Menu Items */}
+      {selectedMenuItem && (
+        <ActionSheet
+          ref={actionSheetRef}
+          title={selectedMenuItem.name}
+          subtitle={`Actions for this menu item`}
+          actions={getItemActions(selectedMenuItem)}
+          isVisible={showItemActions}
+          onClose={() => {
+            setShowItemActions(false);
+            setSelectedMenuItem(null);
+          }}
+        />
+      )}
+
+      {/* Action Sheet for Categories */}
+      {selectedCategory && (
+        <ActionSheet
+          ref={categoryActionSheetRef}
+          title={selectedCategory.name}
+          subtitle={`Actions for this category`}
+          actions={getCategoryActions(selectedCategory)}
+          isVisible={showCategoryActions}
+          onClose={() => {
+            setShowCategoryActions(false);
+            setSelectedCategory(null);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -40,6 +40,10 @@ export interface Ticket {
   closedAt?: number;
   lines: TicketLine[];
   paymentInfo?: PaymentInfo; // Added payment information
+  // Delivery timing (optional)
+  deliveryEtaMinutes?: number; // total planned minutes
+  deliveryStartedAt?: number; // timestamp when timing started
+  deliveryNotificationIds?: string[]; // scheduled notification ids to cancel
 }
 
 export interface PaymentInfo {

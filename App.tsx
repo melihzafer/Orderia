@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import { LocalizationProvider } from './src/i18n';
@@ -14,11 +15,13 @@ export default function App() {
   }, []);
 
   return (
-    <LocalizationProvider>
-      <ThemeProvider>
-        <AppNavigator />
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </LocalizationProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LocalizationProvider>
+        <ThemeProvider>
+          <AppNavigator />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </LocalizationProvider>
+    </GestureHandlerRootView>
   );
 }

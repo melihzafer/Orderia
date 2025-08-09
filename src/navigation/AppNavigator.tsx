@@ -27,7 +27,7 @@ type MainTabsNavigationProp = CompositeNavigationProp<
 export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
-  AddMenuItem: { categoryId?: string };
+  AddMenuItem: { categoryId?: string; itemId?: string };
   AddHall: { hallId?: string };
   EditTable: { tableId: string };
   AddCategory: { categoryId?: string };
@@ -106,12 +106,13 @@ function MainTabs() {
               Orderia
             </Text>
           ),
-            headerRight: () => (
-            <PrimaryButton
-              title={t.addHall}
+          headerRight: () => (
+            <Ionicons
+              name="add-circle-outline"
+              size={28}
+              color={colors.primary}
+              style={{ marginRight: 16 }}
               onPress={() => navigation.navigate('AddHall', {})}
-              variant="outline"
-              style={{ marginRight: 12 }}
             />
           ),
         }}

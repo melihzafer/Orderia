@@ -10,6 +10,7 @@ export const brand = {
     light: {
       primary: '#4F46E5',
       primaryHover: '#4338CA',
+      primaryContrast: '#FFFFFF',
       accent: '#D946EF',
       accentSoft: '#FDF4FF',
       bg: '#F9FAFB',
@@ -22,12 +23,14 @@ export const brand = {
       state: {
         pending: { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD', icon: '🕓' },
         delivered: { bg: '#D1FAE5', text: '#047857', border: '#6EE7B7', icon: '✅' },
-        paid: { bg: '#E5E7EB', text: '#6B7280', border: '#D1D5DB', icon: '💰' }
+        paid: { bg: '#E5E7EB', text: '#6B7280', border: '#D1D5DB', icon: '💰' },
+        cancelled: { bg: '#FEE2E2', text: '#DC2626', border: '#FECACA', icon: '❌' }
       }
     },
     dark: {
       primary: '#6366F1',
       primaryHover: '#4F46E5',
+      primaryContrast: '#FFFFFF',
       accent: '#E879F9',
       accentSoft: '#4A044E',
       bg: '#030712',
@@ -40,7 +43,8 @@ export const brand = {
       state: {
         pending: { bg: '#4C1D95', text: '#C4B5FD', border: '#7C3AED', icon: '🕓' },
         delivered: { bg: '#064E3B', text: '#6EE7B7', border: '#10B981', icon: '✅' },
-        paid: { bg: '#374151', text: '#9CA3AF', border: '#4B5563', icon: '💰' }
+        paid: { bg: '#374151', text: '#9CA3AF', border: '#4B5563', icon: '💰' },
+        cancelled: { bg: '#7F1D1D', text: '#FCA5A5', border: '#F87171', icon: '❌' }
       }
     }
   }

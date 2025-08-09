@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
-import { PrimaryButton, SurfaceCard, StatusBadge } from '../components';
+import { PrimaryButton, SurfaceCard, StatusBadge, DeliveryTimePicker } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { MenuItem, Ticket, TicketLine, OrderStatus, PaymentInfo } from '../types';
 import { generateOrderBillPDF } from '../utils/pdfGenerator';
@@ -45,7 +45,8 @@ export default function TableDetailScreen() {
     updateLineStatus,
     markAllDelivered,
     payTicket,
-    updateTicketName
+    updateTicketName,
+    deleteTicket
   } = useOrderStore();
   const { getCategoriesWithItems } = useMenuStore();
 
@@ -56,6 +57,7 @@ export default function TableDetailScreen() {
   const [showTicketNameModal, setShowTicketNameModal] = useState(false);
   const [newTicketName, setNewTicketName] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showDeliveryTimer, setShowDeliveryTimer] = useState(false);
   const [amountReceived, setAmountReceived] = useState('');
 
   const table = getTable(tableId);
@@ -120,6 +122,35 @@ export default function TableDetailScreen() {
       [
         { text: t.cancel, style: 'cancel' },
         { text: t.deliver, onPress: () => markAllDelivered(selectedTicket.id) }
+      ]
+    );
+  };
+
+  const handleDeleteTicket = (ticketId: string) => {
+    const ticketToDelete = tickets.find(t => t.id === ticketId);
+    const ticketName = ticketToDelete?.name || `Order ${tickets.indexOf(ticketToDelete!) + 1}`;
+    
+    Alert.alert(
+      t.deleteOrder || 'Delete Order',
+      `${t.deleteOrderConfirm || 'Are you sure you want to delete'} "${ticketName}"? ${t.deleteOrderWarning || 'This action cannot be undone.'}`,
+      [
+        { text: t.cancel, style: 'cancel' },
+        { 
+          text: t.delete || 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            deleteTicket(ticketId);
+            // If we're deleting the currently selected ticket, select another one
+            if (selectedTicketId === ticketId) {
+              const remainingTickets = tickets.filter(t => t.id !== ticketId);
+              if (remainingTickets.length > 0) {
+                setSelectedTicketId(remainingTickets[0].id);
+              } else {
+                setSelectedTicketId(null);
+              }
+            }
+          }
+        }
       ]
     );
   };
@@ -406,9 +437,66 @@ export default function TableDetailScreen() {
           {displayName}
         </Text>
         {selectedTicket && (
-          <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center', marginTop: 4 }}>
-            {t.total}: {formatPrice(total)}
-          </Text>
+          <View style={{ alignItems: 'center', marginTop: 4 }}>
+            <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>
+              {t.total}: {formatPrice(total)}
+            </Text>
+            
+            {/* Delivery Timer Section */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setShowDeliveryTimer(true)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: selectedTicket.deliveryEtaMinutes ? colors.primary + '20' : colors.surfaceAlt,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: selectedTicket.deliveryEtaMinutes ? colors.primary : colors.border,
+                }}
+              >
+                <Ionicons 
+                  name="timer" 
+                  size={16} 
+                  color={selectedTicket.deliveryEtaMinutes ? colors.primary : colors.textSubtle} 
+                />
+                <Text style={{ 
+                  marginLeft: 4, 
+                  fontSize: 14,
+                  color: selectedTicket.deliveryEtaMinutes ? colors.primary : colors.textSubtle,
+                  fontWeight: selectedTicket.deliveryEtaMinutes ? '600' : 'normal'
+                }}>
+                  {selectedTicket.deliveryEtaMinutes 
+                    ? `${selectedTicket.deliveryEtaMinutes}min` 
+                    : 'Set Timer'
+                  }
+                </Text>
+              </TouchableOpacity>
+
+              {selectedTicket.deliveryStartedAt && selectedTicket.deliveryEtaMinutes && (
+                <View style={{ 
+                  backgroundColor: colors.accent + '20',
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                }}>
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: colors.accent,
+                    fontWeight: '600'
+                  }}>
+                    {(() => {
+                      const elapsed = Math.floor((Date.now() - selectedTicket.deliveryStartedAt) / 60000);
+                      const progress = Math.min(100, Math.floor((elapsed / selectedTicket.deliveryEtaMinutes) * 100));
+                      return `${progress}%`;
+                    })()}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
         )}
       </View>
 
@@ -417,25 +505,51 @@ export default function TableDetailScreen() {
         <ScrollView horizontal style={{ maxHeight: 60, backgroundColor: colors.bg }}>
           <View style={{ flexDirection: 'row', padding: 16, paddingBottom: 8 }}>
             {tickets.map((ticket, index) => (
-              <TouchableOpacity
+              <View
                 key={ticket.id}
-                onPress={() => setSelectedTicketId(ticket.id)}
                 style={{
-                  padding: 8,
                   marginRight: 8,
                   borderRadius: 8,
                   backgroundColor: selectedTicketId === ticket.id ? colors.accent : colors.surface,
                   borderWidth: 1,
                   borderColor: selectedTicketId === ticket.id ? colors.accent : colors.border,
+                  overflow: 'hidden',
                 }}
               >
-                <Text style={{
-                  color: selectedTicketId === ticket.id ? colors.bg : colors.text,
-                  fontWeight: selectedTicketId === ticket.id ? '600' : '400',
-                }}>
-                  {ticket.name || `Order ${index + 1}`}
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSelectedTicketId(ticket.id)}
+                  onLongPress={() => handleDeleteTicket(ticket.id)}
+                  style={{
+                    padding: 8,
+                    paddingRight: tickets.length > 1 ? 32 : 8, // Add space for delete button if multiple tickets
+                  }}
+                >
+                  <Text style={{
+                    color: selectedTicketId === ticket.id ? colors.bg : colors.text,
+                    fontWeight: selectedTicketId === ticket.id ? '600' : '400',
+                  }}>
+                    {ticket.name || `Order ${index + 1}`}
+                  </Text>
+                </TouchableOpacity>
+                {tickets.length > 1 && (
+                  <TouchableOpacity
+                    onPress={() => handleDeleteTicket(ticket.id)}
+                    style={{
+                      position: 'absolute',
+                      right: 4,
+                      top: 4,
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      backgroundColor: '#EF4444',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Ionicons name="close" size={12} color="#FFFFFF" />
+                  </TouchableOpacity>
+                )}
+              </View>
             ))}
             <TouchableOpacity
               onPress={() => setShowTicketNameModal(true)}
@@ -573,49 +687,55 @@ export default function TableDetailScreen() {
             />
           </View>
 
-          {/* Category Tabs */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={{ maxHeight: 75 }}
-            contentContainerStyle={{ padding: 16 }}
-          >
-            {categoriesWithItems.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                onPress={() => setSelectedCategory(category.id)}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  marginRight: 8,
-                  borderRadius: 20,
-                  backgroundColor: selectedCategory === category.id ? colors.primary : colors.surfaceAlt,
-                  borderWidth: 1,
-                  borderColor: selectedCategory === category.id ? colors.primary : colors.border,
-                }}
-              >
-                <Text style={{
-                  color: selectedCategory === category.id ? '#FFFFFF' : colors.text,
-                  fontWeight: selectedCategory === category.id ? '600' : '400',
-                  fontSize: 14,
-                }}>
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* Menu Items */}
-          <View style={{ flex: 1, padding: 16 }}>
-            {selectedCategory && (
-              <FlatList
-                data={categoriesWithItems.find(c => c.id === selectedCategory)?.items.filter(item => item.isActive) || []}
-                renderItem={renderMenuItem}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
+          {/* Category Tabs - Fixed height, no nested scrolling */}
+          <View style={{ 
+            paddingVertical: 12,
+            borderBottomWidth: 1, 
+            borderBottomColor: colors.border 
+          }}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              style={{ flexGrow: 0 }}
+            >
+              {categoriesWithItems.map((category) => (
+                <TouchableOpacity
+                  key={category.id}
+                  onPress={() => setSelectedCategory(category.id)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    marginRight: 8,
+                    borderRadius: 20,
+                    backgroundColor: selectedCategory === category.id ? colors.primary : colors.surfaceAlt,
+                    borderWidth: 1,
+                    borderColor: selectedCategory === category.id ? colors.primary : colors.border,
+                  }}
+                >
+                  <Text style={{
+                    color: selectedCategory === category.id ? '#FFFFFF' : colors.text,
+                    fontWeight: selectedCategory === category.id ? '600' : '400',
+                    fontSize: 14,
+                  }}>
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
+
+          {/* Menu Items - Single scrollable area */}
+          {selectedCategory && (
+            <FlatList
+              data={categoriesWithItems.find(c => c.id === selectedCategory)?.items.filter(item => item.isActive) || []}
+              renderItem={renderMenuItem}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ padding: 16 }}
+              style={{ flex: 1 }}
+            />
+          )}
         </SafeAreaView>
       </Modal>
 
@@ -775,6 +895,15 @@ export default function TableDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Delivery Timer Modal */}
+      {showDeliveryTimer && selectedTicket && (
+        <DeliveryTimePicker
+          ticketId={selectedTicket.id}
+          currentMinutes={selectedTicket.deliveryEtaMinutes}
+          onClose={() => setShowDeliveryTimer(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
