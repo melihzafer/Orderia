@@ -206,6 +206,71 @@ export interface Translation {
   importFailed: string;
   dataImported: string;
   importProcessingFailed: string;
+  
+  // Analytics
+  analytics: string;
+  salesAnalytics: string;
+  totalRevenue: string;
+  averageOrder: string;
+  topSellingItems: string;
+  noItemsSold: string;
+  salesChart: string;
+  revenue: string;
+  categories: string;
+  peakHours: string;
+  noDataAvailable: string;
+  noCategoryData: string;
+  today: string;
+  thisWeek: string;
+  thisMonth: string;
+  thisYear: string;
+  custom: string;
+  
+  // QR Menu
+  qrMenu: string;
+  qrMenuManagement: string;
+  qrMenuSettings: string;
+  enableQRMenu: string;
+  enableQRMenuDescription: string;
+  allowDirectOrdering: string;
+  allowDirectOrderingDescription: string;
+  showPrices: string;
+  showPricesDescription: string;
+  selectTable: string;
+  qrCode: string;
+  share: string;
+  regenerate: string;
+  bulkActions: string;
+  shareAllQRCodes: string;
+  exportQRPDF: string;
+  qrMenuDisabled: string;
+  qrMenuDisabledDescription: string;
+  qrGenerationError: string;
+  shareError: string;
+  shareAllError: string;
+  pdfExported: string;
+  pdfExportError: string;
+  
+  // Notifications
+  notificationPermission: string;
+  notificationPermissionMessage: string;
+  orderReady: string;
+  orderReadyMessage: string;
+  kitchenDisplay: string;
+  readyForPickup: string;
+  kitchenAlert: string;
+  pendingOrders: string;
+  awaitingPreparation: string;
+  statusUpdate: string;
+  tableStatus: string;
+  occupied: string;
+  available: string;
+  cleaning: string;
+  reserved: string;
+  preparationReminder: string;
+  orderShouldBeReady: string;
+  minutes: string;
+  sold: string;
 }
 
 export const translations: Record<string, Translation> = {
@@ -417,6 +482,71 @@ export const translations: Record<string, Translation> = {
     importFailed: 'Veri içe aktarma başarısız oldu',
     dataImported: 'Veriler başarıyla içe aktarıldı',
     importProcessingFailed: 'Verileri işlerken hata oluştu',
+    
+    // Analytics
+    analytics: 'Analitik',
+    salesAnalytics: 'Satış Analitiği',
+    totalRevenue: 'Toplam Gelir',
+    averageOrder: 'Ortalama Sipariş',
+    topSellingItems: 'En Çok Satan Ürünler',
+    noItemsSold: 'Bu dönemde satılan ürün yok',
+    salesChart: 'Satış Grafiği',
+    revenue: 'Gelir',
+    categories: 'Kategoriler',
+    peakHours: 'Yoğun Saatler',
+    noDataAvailable: 'Veri bulunmuyor',
+    noCategoryData: 'Kategori verisi bulunmuyor',
+    today: 'Bugün',
+    thisWeek: 'Bu Hafta',
+    thisMonth: 'Bu Ay',
+    thisYear: 'Bu Yıl',
+    custom: 'Özel',
+    
+    // QR Menu
+    qrMenu: 'QR Menü',
+    qrMenuManagement: 'QR Menü Yönetimi',
+    qrMenuSettings: 'QR Menü Ayarları',
+    enableQRMenu: 'QR Menüyü Etkinleştir',
+    enableQRMenuDescription: 'Müşterilerin QR kod ile menüyü görüntülemesini sağla',
+    allowDirectOrdering: 'Direkt Sipariş Ver',
+    allowDirectOrderingDescription: 'Müşteriler direkt sipariş verebilir',
+    showPrices: 'Fiyatları Göster',
+    showPricesDescription: 'QR menüde ürün fiyatlarını göster',
+    selectTable: 'Masa Seç',
+    qrCode: 'QR Kod',
+    share: 'Paylaş',
+    regenerate: 'Yeniden Oluştur',
+    bulkActions: 'Toplu İşlemler',
+    shareAllQRCodes: 'Tüm QR Kodları Paylaş',
+    exportQRPDF: 'PDF Olarak Dışa Aktar',
+    qrMenuDisabled: 'QR Menü Devre Dışı',
+    qrMenuDisabledDescription: 'Masalarınız için QR kodları oluşturmak ve müşterilerin menünüzü dijital olarak görmesini sağlamak için QR Menüyü etkinleştirin.',
+    qrGenerationError: 'QR kod oluşturulamadı',
+    shareError: 'QR kod paylaşılamadı',
+    shareAllError: 'Tüm QR kodları paylaşılamadı',
+    pdfExported: 'PDF başarıyla dışa aktarıldı',
+    pdfExportError: 'PDF dışa aktarılamadı',
+    
+    // Notifications
+    notificationPermission: 'Bildirim İzni',
+    notificationPermissionMessage: 'Sipariş güncellemelerini almak için lütfen bildirimleri etkinleştirin',
+    orderReady: 'Sipariş Hazır',
+    orderReadyMessage: 'Sipariş teslime hazır:',
+    kitchenDisplay: 'Mutfak Ekranı',
+    readyForPickup: 'Teslime hazır',
+    kitchenAlert: 'Mutfak Uyarısı',
+    pendingOrders: 'bekleyen sipariş',
+    awaitingPreparation: 'hazırlanmayı bekliyor',
+    statusUpdate: 'Durum Güncellemesi',
+    tableStatus: 'Masa durumu değişti:',
+    occupied: 'Dolu',
+    available: 'Müsait',
+    cleaning: 'Temizleniyor',
+    reserved: 'Rezerve',
+    preparationReminder: 'Hazırlık Hatırlatıcısı',
+    orderShouldBeReady: 'Sipariş hazır olması gereken süre:',
+    minutes: 'dakika',
+    sold: 'satıldı',
   },
   
   bg: {
@@ -627,6 +757,71 @@ export const translations: Record<string, Translation> = {
     importFailed: 'Неуспешно импортиране на данни',
     dataImported: 'Данните са импортирани успешно',
     importProcessingFailed: 'Грешка при обработката на данните',
+    
+    // Analytics
+    analytics: 'Аналитика',
+    salesAnalytics: 'Анализ на продажбите',
+    totalRevenue: 'Общ приход',
+    averageOrder: 'Средна поръчка',
+    topSellingItems: 'Най-продавани продукти',
+    noItemsSold: 'Няма продадени продукти за този период',
+    salesChart: 'Графика на продажбите',
+    revenue: 'Приход',
+    categories: 'Категории',
+    peakHours: 'Пикови часове',
+    noDataAvailable: 'Няма налични данни',
+    noCategoryData: 'Няма данни за категорията',
+    today: 'Днес',
+    thisWeek: 'Тази седмица',
+    thisMonth: 'Този месец',
+    thisYear: 'Тази година',
+    custom: 'Персонализиран',
+    
+    // QR Menu
+    qrMenu: 'QR Меню',
+    qrMenuManagement: 'Управление на QR меню',
+    qrMenuSettings: 'Настройки на QR меню',
+    enableQRMenu: 'Активиране на QR меню',
+    enableQRMenuDescription: 'Позволете на клиентите да видят менюто чрез QR код',
+    allowDirectOrdering: 'Разреши директни поръчки',
+    allowDirectOrderingDescription: 'Клиентите могат да правят директни поръчки',
+    showPrices: 'Покажи цени',
+    showPricesDescription: 'Покажи цените на продуктите в QR менюто',
+    selectTable: 'Изберете маса',
+    qrCode: 'QR Код',
+    share: 'Споделяне',
+    regenerate: 'Възстанови',
+    bulkActions: 'Групови действия',
+    shareAllQRCodes: 'Споделете всички QR кодове',
+    exportQRPDF: 'Експортиране като PDF',
+    qrMenuDisabled: 'QR менюто е деактивирано',
+    qrMenuDisabledDescription: 'Активирайте QR менюто, за да генерирате QR кодове за вашите маси и да позволите на клиентите да видят менюто ви цифрово.',
+    qrGenerationError: 'QR кодът не можа да бъде генериран',
+    shareError: 'QR кодът не можа да бъде споделен',
+    shareAllError: 'Всички QR кодове не можаха да бъдат споделени',
+    pdfExported: 'PDF файлът е експортиран успешно',
+    pdfExportError: 'PDF файлът не можа да бъде експортиран',
+    
+    // Notifications
+    notificationPermission: 'Разрешение за известяване',
+    notificationPermissionMessage: 'Моля, активирайте известяванията, за да получавате актуализации за поръчките',
+    orderReady: 'Поръчката е готова',
+    orderReadyMessage: 'Поръчката е готова за доставка:',
+    kitchenDisplay: 'Кухненски дисплей',
+    readyForPickup: 'Готова за взимане',
+    kitchenAlert: 'Кухненско предупреждение',
+    pendingOrders: 'чакащи поръчки',
+    awaitingPreparation: 'очаква приготвяне',
+    statusUpdate: 'Актуализация на статуса',
+    tableStatus: 'Статусът на масата се промени:',
+    occupied: 'Заета',
+    available: 'Свободна',
+    cleaning: 'Почистване',
+    reserved: 'Резервирана',
+    preparationReminder: 'Напомняне за приготвяне',
+    orderShouldBeReady: 'Поръчката трябва да бъде готова за:',
+    minutes: 'минути',
+    sold: 'продадени',
   },
   
   en: {
@@ -837,5 +1032,70 @@ export const translations: Record<string, Translation> = {
     importFailed: 'Data import failed',
     dataImported: 'Data imported successfully',
     importProcessingFailed: 'Error processing data',
+    
+    // Analytics
+    analytics: 'Analytics',
+    salesAnalytics: 'Sales Analytics',
+    totalRevenue: 'Total Revenue',
+    averageOrder: 'Average Order',
+    topSellingItems: 'Top Selling Items',
+    noItemsSold: 'No items sold in this period',
+    salesChart: 'Sales Chart',
+    revenue: 'Revenue',
+    categories: 'Categories',
+    peakHours: 'Peak Hours',
+    noDataAvailable: 'No data available',
+    noCategoryData: 'No category data available',
+    today: 'Today',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    thisYear: 'This Year',
+    custom: 'Custom',
+    
+    // QR Menu
+    qrMenu: 'QR Menu',
+    qrMenuManagement: 'QR Menu Management',
+    qrMenuSettings: 'QR Menu Settings',
+    enableQRMenu: 'Enable QR Menu',
+    enableQRMenuDescription: 'Allow customers to view menu via QR code',
+    allowDirectOrdering: 'Allow Direct Ordering',
+    allowDirectOrderingDescription: 'Customers can place orders directly',
+    showPrices: 'Show Prices',
+    showPricesDescription: 'Display product prices in QR menu',
+    selectTable: 'Select Table',
+    qrCode: 'QR Code',
+    share: 'Share',
+    regenerate: 'Regenerate',
+    bulkActions: 'Bulk Actions',
+    shareAllQRCodes: 'Share All QR Codes',
+    exportQRPDF: 'Export as PDF',
+    qrMenuDisabled: 'QR Menu Disabled',
+    qrMenuDisabledDescription: 'Enable QR Menu to generate QR codes for your tables and allow customers to view your menu digitally.',
+    qrGenerationError: 'Could not generate QR code',
+    shareError: 'Could not share QR code',
+    shareAllError: 'Could not share all QR codes',
+    pdfExported: 'PDF exported successfully',
+    pdfExportError: 'Could not export PDF',
+    
+    // Notifications
+    notificationPermission: 'Notification Permission',
+    notificationPermissionMessage: 'Please enable notifications to receive order updates',
+    orderReady: 'Order Ready',
+    orderReadyMessage: 'Order ready for pickup:',
+    kitchenDisplay: 'Kitchen Display',
+    readyForPickup: 'Ready for pickup',
+    kitchenAlert: 'Kitchen Alert',
+    pendingOrders: 'pending orders',
+    awaitingPreparation: 'awaiting preparation',
+    statusUpdate: 'Status Update',
+    tableStatus: 'Table status changed:',
+    occupied: 'Occupied',
+    available: 'Available',
+    cleaning: 'Cleaning',
+    reserved: 'Reserved',
+    preparationReminder: 'Preparation Reminder',
+    orderShouldBeReady: 'Order should be ready in:',
+    minutes: 'minutes',
+    sold: 'sold',
   },
 };

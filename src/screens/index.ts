@@ -7,3 +7,5 @@ export { default as AddMenuItemScreen } from './AddMenuItemScreen';
 export { default as AddHallScreen } from './AddHallScreen';
 export { default as EditTableScreen } from './EditTableScreen';
 export { default as AddCategoryScreen } from './AddCategoryScreen';
+export { default as AnalyticsScreen } from './AnalyticsScreen';
+export { default as QRMenuScreen } from './QRMenuScreen';

@@ -15,7 +15,9 @@ import {
   AddMenuItemScreen,
   AddHallScreen,
   EditTableScreen,
-  AddCategoryScreen
+  AddCategoryScreen,
+  AnalyticsScreen,
+  QRMenuScreen
 } from '../screens';
 import { PrimaryButton } from '../components';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -31,12 +33,15 @@ export type RootStackParamList = {
   AddHall: { hallId?: string };
   EditTable: { tableId: string };
   AddCategory: { categoryId?: string };
+  Analytics: undefined;
+  QRMenu: undefined;
 };
 
 export type TabParamList = {
   Tables: undefined;
   Menu: undefined;
-  History: undefined;
+  Analytics: undefined;
+  QRMenu: undefined;
   Settings: undefined;
 };
 
@@ -61,8 +66,11 @@ function MainTabs() {
             case 'Menu':
               iconName = focused ? 'menu' : 'menu-outline';
               break;
-            case 'History':
-              iconName = focused ? 'time' : 'time-outline';
+            case 'Analytics':
+              iconName = focused ? 'analytics' : 'analytics-outline';
+              break;
+            case 'QRMenu':
+              iconName = focused ? 'qr-code' : 'qr-code-outline';
               break;
             case 'Settings':
               iconName = focused ? 'settings' : 'settings-outline';
@@ -123,21 +131,22 @@ function MainTabs() {
         options={{
           title: t.menu,
           headerTitle: t.menuManagement,
-          // headerLeft: () => (
-          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
-          // ),
-        
         }}
       />
       <Tab.Screen 
-        name="History" 
-        component={HistoryScreen}
+        name="Analytics" 
+        component={AnalyticsScreen}
         options={{
-          title: t.history,
-          headerTitle: t.salesHistory,
-          // headerLeft: () => (
-          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
-          // ),
+          title: t.analytics || 'Analytics',
+          headerTitle: t.salesAnalytics || 'Sales Analytics',
+        }}
+      />
+      <Tab.Screen 
+        name="QRMenu" 
+        component={QRMenuScreen}
+        options={{
+          title: t.qrMenu || 'QR Menu',
+          headerTitle: t.qrMenuManagement || 'QR Menu Management',
         }}
       />
       <Tab.Screen 
@@ -146,9 +155,6 @@ function MainTabs() {
         options={{
           title: t.settings,
           headerTitle: t.settings,
-          // headerLeft: () => (
-          //   <OrderiaTextIcon width={120} height={32} style={{ marginLeft: 12 }} />
-          // ),
         }}
       />
     </Tab.Navigator>
@@ -214,6 +220,22 @@ export default function AppNavigator() {
           component={AddCategoryScreen}
           options={{
             title: t.addCategory,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="Analytics" 
+          component={AnalyticsScreen}
+          options={{
+            title: t.analytics || 'Analytics',
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen 
+          name="QRMenu" 
+          component={QRMenuScreen}
+          options={{
+            title: t.qrMenu || 'QR Menu',
             presentation: 'modal',
           }}
         />

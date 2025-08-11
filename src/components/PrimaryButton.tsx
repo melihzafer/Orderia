@@ -5,17 +5,21 @@ import {
   ViewStyle, 
   TextStyle, 
   ActivityIndicator,
-  TouchableOpacityProps 
+  TouchableOpacityProps,
+  View
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { typography } from '../constants/branding';
+import { brand, elevation, radius, spacing } from '../constants/branding';
 
 interface PrimaryButtonProps extends TouchableOpacityProps {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'small' | 'medium' | 'large';
   loading?: boolean;
   fullWidth?: boolean;
+  icon?: keyof typeof Ionicons.glyphMap;
+  iconPosition?: 'left' | 'right';
 }
 
 export function PrimaryButton({
@@ -26,56 +30,77 @@ export function PrimaryButton({
   fullWidth = false,
   disabled,
   style,
+  icon,
+  iconPosition = 'left',
   ...props
 }: PrimaryButtonProps) {
   const { colors } = useTheme();
 
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
-      borderRadius: 8,
+      borderRadius: radius.md,
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
+      borderWidth: 1,
+      ...elevation.sm,
     };
 
     // Size styles
     switch (size) {
       case 'small':
-        baseStyle.paddingHorizontal = 12;
-        baseStyle.paddingVertical = 6;
-        baseStyle.minHeight = 32;
+        baseStyle.paddingHorizontal = spacing.md;
+        baseStyle.paddingVertical = spacing.sm;
+        baseStyle.minHeight = 36;
         break;
       case 'large':
-        baseStyle.paddingHorizontal = 20;
-        baseStyle.paddingVertical = 14;
-        baseStyle.minHeight = 48;
+        baseStyle.paddingHorizontal = spacing.xl;
+        baseStyle.paddingVertical = spacing.lg;
+        baseStyle.minHeight = 52;
         break;
       default: // medium
-        baseStyle.paddingHorizontal = 16;
-        baseStyle.paddingVertical = 10;
-        baseStyle.minHeight = 40;
+        baseStyle.paddingHorizontal = spacing.lg;
+        baseStyle.paddingVertical = spacing.md;
+        baseStyle.minHeight = 44;
         break;
     }
 
     // Variant styles
+    const isDisabled = disabled || loading;
+    
     switch (variant) {
+      case 'primary':
+        baseStyle.backgroundColor = isDisabled ? colors.textMuted : colors.primary;
+        baseStyle.borderColor = isDisabled ? colors.textMuted : colors.primary;
+        baseStyle.shadowColor = colors.primary;
+        break;
       case 'secondary':
-        baseStyle.backgroundColor = colors.surfaceAlt;
-        baseStyle.borderWidth = 1;
-        baseStyle.borderColor = colors.border;
+        baseStyle.backgroundColor = isDisabled ? colors.textMuted : colors.secondary;
+        baseStyle.borderColor = isDisabled ? colors.textMuted : colors.secondary;
+        baseStyle.shadowColor = colors.secondary;
         break;
       case 'outline':
         baseStyle.backgroundColor = 'transparent';
-        baseStyle.borderWidth = 1;
-        baseStyle.borderColor = colors.primary;
+        baseStyle.borderColor = isDisabled ? colors.border : colors.primary;
+        baseStyle.shadowOpacity = 0;
+        baseStyle.elevation = 0;
         break;
-      default: // primary
-        baseStyle.backgroundColor = colors.primary;
+      case 'ghost':
+        baseStyle.backgroundColor = isDisabled ? colors.border : colors.surfaceAlt;
+        baseStyle.borderColor = 'transparent';
+        baseStyle.shadowOpacity = 0;
+        baseStyle.elevation = 0;
+        break;
+      case 'danger':
+        baseStyle.backgroundColor = isDisabled ? colors.textMuted : colors.error;
+        baseStyle.borderColor = isDisabled ? colors.textMuted : colors.error;
+        baseStyle.shadowColor = colors.error;
         break;
     }
 
-    if (disabled || loading) {
-      baseStyle.opacity = 0.6;
+    if (isDisabled) {
+      baseStyle.shadowOpacity = 0;
+      baseStyle.elevation = 0;
     }
 
     if (fullWidth) {
@@ -87,10 +112,11 @@ export function PrimaryButton({
 
   const getTextStyle = (): TextStyle => {
     const baseStyle: TextStyle = {
-      ...typography.body,
       fontWeight: '600',
+      textAlign: 'center',
     };
 
+    // Size styles
     switch (size) {
       case 'small':
         baseStyle.fontSize = 14;
@@ -98,38 +124,98 @@ export function PrimaryButton({
       case 'large':
         baseStyle.fontSize = 18;
         break;
+      default: // medium
+        baseStyle.fontSize = 16;
+        break;
     }
 
+    // Variant styles
+    const isDisabled = disabled || loading;
+    
     switch (variant) {
+      case 'primary':
       case 'secondary':
-        baseStyle.color = colors.text;
+      case 'danger':
+        baseStyle.color = colors.primaryContrast;
         break;
       case 'outline':
-        baseStyle.color = colors.primary;
+        baseStyle.color = isDisabled ? colors.textMuted : colors.primary;
         break;
-      default: // primary
-        baseStyle.color = '#FFFFFF';
+      case 'ghost':
+        baseStyle.color = isDisabled ? colors.textMuted : colors.text;
         break;
     }
 
     return baseStyle;
   };
 
+  const getIconSize = () => {
+    switch (size) {
+      case 'small': return 16;
+      case 'large': return 24;
+      default: return 20;
+    }
+  };
+
+  const getIconColor = () => {
+    const isDisabled = disabled || loading;
+    switch (variant) {
+      case 'primary':
+      case 'secondary':
+      case 'danger':
+        return colors.primaryContrast;
+      case 'outline':
+        return isDisabled ? colors.textMuted : colors.primary;
+      case 'ghost':
+        return isDisabled ? colors.textMuted : colors.text;
+      default:
+        return colors.primaryContrast;
+    }
+  };
+
+  const renderContent = () => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {loading && (
+          <ActivityIndicator 
+            size="small" 
+            color={getIconColor()} 
+            style={{ marginRight: title ? spacing.sm : 0 }}
+          />
+        )}
+        {!loading && icon && iconPosition === 'left' && (
+          <Ionicons 
+            name={icon} 
+            size={getIconSize()} 
+            color={getIconColor()} 
+            style={{ marginRight: title ? spacing.sm : 0 }}
+          />
+        )}
+        {title && (
+          <Text style={getTextStyle()}>
+            {title}
+          </Text>
+        )}
+        {!loading && icon && iconPosition === 'right' && (
+          <Ionicons 
+            name={icon} 
+            size={getIconSize()} 
+            color={getIconColor()} 
+            style={{ marginLeft: title ? spacing.sm : 0 }}
+          />
+        )}
+      </View>
+    );
+  };
+
   return (
     <TouchableOpacity
       style={[getButtonStyle(), style]}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={0.8}
       {...props}
     >
-      {loading && (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'primary' ? '#FFFFFF' : colors.primary}
-          style={{ marginRight: 8 }}
-        />
-      )}
-      <Text style={getTextStyle()}>{title}</Text>
+      {renderContent()}
     </TouchableOpacity>
   );
 }

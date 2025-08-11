@@ -17,9 +17,17 @@ export const brand = {
       surface: '#FFFFFF',
       surfaceAlt: '#F3F4F6',
       border: '#E5E7EB',
+      borderLight: '#F3F4F6',
       text: '#111827',
       textSubtle: '#6B7280',
+      textMuted: '#9CA3AF',
       focus: '#6366F1',
+      secondary: '#6B7280',
+      error: '#DC2626',
+      success: '#10B981',
+      warning: '#F59E0B',
+      info: '#3B82F6',
+      overlay: 'rgba(0, 0, 0, 0.5)',
       state: {
         pending: { bg: '#EDE9FE', text: '#6D28D9', border: '#C4B5FD', icon: '🕓' },
         delivered: { bg: '#D1FAE5', text: '#047857', border: '#6EE7B7', icon: '✅' },
@@ -37,9 +45,17 @@ export const brand = {
       surface: '#111827',
       surfaceAlt: '#1F2937',
       border: '#374151',
+      borderLight: '#1F2937',
       text: '#F9FAFB',
       textSubtle: '#9CA3AF',
+      textMuted: '#6B7280',
       focus: '#818CF8',
+      secondary: '#9CA3AF',
+      error: '#F87171',
+      success: '#34D399',
+      warning: '#FBBF24',
+      info: '#60A5FA',
+      overlay: 'rgba(0, 0, 0, 0.7)',
       state: {
         pending: { bg: '#4C1D95', text: '#C4B5FD', border: '#7C3AED', icon: '🕓' },
         delivered: { bg: '#064E3B', text: '#6EE7B7', border: '#10B981', icon: '✅' },
@@ -63,6 +79,44 @@ export const radius = {
   md: 8,
   lg: 12,
   full: 9999,
+};
+
+export const elevation = {
+  none: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 16,
+  },
 };
 
 export const typography = {

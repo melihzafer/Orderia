@@ -4,6 +4,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import { LocalizationProvider } from './src/i18n';
+import { NotificationProvider } from './src/contexts/NotificationContext';
+import { AnalyticsProvider } from './src/contexts/AnalyticsContext';
+import { QRMenuProvider } from './src/contexts/QRMenuContext';
 import { initializeSampleData } from './src/utils/sampleData';
 
 export default function App() {
@@ -18,8 +21,14 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LocalizationProvider>
         <ThemeProvider>
-          <AppNavigator />
-          <StatusBar style="auto" />
+          <NotificationProvider>
+            <AnalyticsProvider>
+              <QRMenuProvider>
+                <AppNavigator />
+                <StatusBar style="auto" />
+              </QRMenuProvider>
+            </AnalyticsProvider>
+          </NotificationProvider>
         </ThemeProvider>
       </LocalizationProvider>
     </GestureHandlerRootView>
