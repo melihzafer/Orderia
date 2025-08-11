@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -13,11 +13,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
-import { PrimaryButton, SurfaceCard, StatusBadge, DeliveryTimePicker } from '../components';
+import { PrimaryButton, SurfaceCard, StatusBadge, DeliveryTimePicker, ActionSheet, ActionSheetAction } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { MenuItem, Ticket, TicketLine, OrderStatus, PaymentInfo } from '../types';
 import { generateOrderBillPDF } from '../utils/pdfGenerator';
@@ -56,9 +57,15 @@ export default function TableDetailScreen() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [showTicketNameModal, setShowTicketNameModal] = useState(false);
   const [newTicketName, setNewTicketName] = useState('');
+  const [editingTicketId, setEditingTicketId] = useState<string | null>(null); // Track which ticket we're editing
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeliveryTimer, setShowDeliveryTimer] = useState(false);
   const [amountReceived, setAmountReceived] = useState('');
+
+  // Action sheet for ticket actions
+  const [showTicketActions, setShowTicketActions] = useState(false);
+  const [selectedTicketForActions, setSelectedTicketForActions] = useState<Ticket | null>(null);
+  const actionSheetRef = useRef<BottomSheet>(null);
 
   const table = getTable(tableId);
   const tickets = getTicketsByTable(tableId) || [];
@@ -281,6 +288,85 @@ export default function TableDetailScreen() {
       ]
     );
   };
+
+  const handleTicketLongPress = (ticket: Ticket) => {
+    setSelectedTicketForActions(ticket);
+    setShowTicketActions(true);
+  };
+
+  const handleRenameTicket = (ticket: Ticket) => {
+    setShowTicketActions(false);
+    setSelectedTicketForActions(null);
+    
+    // Set the ticket for editing
+    setEditingTicketId(ticket.id);
+    setNewTicketName(ticket.name || '');
+    setShowTicketNameModal(true);
+  };
+
+  const handleDeleteTicketFromActions = (ticket: Ticket) => {
+    setShowTicketActions(false);
+    setSelectedTicketForActions(null);
+    handleDeleteTicket(ticket.id);
+  };
+
+  const handleDuplicateTicket = (ticket: Ticket) => {
+    setShowTicketActions(false);
+    setSelectedTicketForActions(null);
+    
+    // Create a new ticket with the same items
+    const newTicketName = `${ticket.name || 'Order'} (Copy)`;
+    const newTicket = openTable(tableId, newTicketName);
+    
+    // Add all items from the original ticket to the new one
+    ticket.lines.forEach(line => {
+      if (line.status !== 'cancelled') {
+        addTicketLine(newTicket.id, {
+          menuItemId: line.menuItemId,
+          quantity: line.quantity,
+          note: line.note,
+        });
+      }
+    });
+    
+    setSelectedTicketId(newTicket.id);
+  };
+
+  const getTicketActions = (): ActionSheetAction[] => {
+    if (!selectedTicketForActions) return [];
+
+    const actions: ActionSheetAction[] = [];
+
+    // Rename action
+    actions.push({
+      id: 'rename',
+      title: 'Rename Order',
+      icon: 'pencil',
+      onPress: () => selectedTicketForActions && handleRenameTicket(selectedTicketForActions),
+    });
+
+    // Duplicate action
+    actions.push({
+      id: 'duplicate',
+      title: 'Duplicate Order',
+      icon: 'copy',
+      onPress: () => selectedTicketForActions && handleDuplicateTicket(selectedTicketForActions),
+    });
+
+    // Delete action (only if there are multiple tickets)
+    if (tickets.length > 1) {
+      actions.push({
+        id: 'delete',
+        title: t.delete || 'Delete',
+        icon: 'trash',
+        destructive: true,
+        onPress: () => selectedTicketForActions && handleDeleteTicketFromActions(selectedTicketForActions),
+      });
+    }
+
+    return actions;
+  };
+
   const renderTicketLine = ({ item: line }: { item: TicketLine }) => {
     return (
       <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
@@ -518,10 +604,10 @@ export default function TableDetailScreen() {
               >
                 <TouchableOpacity
                   onPress={() => setSelectedTicketId(ticket.id)}
-                  onLongPress={() => handleDeleteTicket(ticket.id)}
+                  onLongPress={() => handleTicketLongPress(ticket)}
                   style={{
                     padding: 8,
-                    paddingRight: tickets.length > 1 ? 32 : 8, // Add space for delete button if multiple tickets
+                    paddingRight: 8, // Remove extra space since we're using ActionSheet now
                   }}
                 >
                   <Text style={{
@@ -531,28 +617,14 @@ export default function TableDetailScreen() {
                     {ticket.name || `Order ${index + 1}`}
                   </Text>
                 </TouchableOpacity>
-                {tickets.length > 1 && (
-                  <TouchableOpacity
-                    onPress={() => handleDeleteTicket(ticket.id)}
-                    style={{
-                      position: 'absolute',
-                      right: 4,
-                      top: 4,
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: '#EF4444',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Ionicons name="close" size={12} color="#FFFFFF" />
-                  </TouchableOpacity>
-                )}
               </View>
             ))}
             <TouchableOpacity
-              onPress={() => setShowTicketNameModal(true)}
+              onPress={() => {
+                setEditingTicketId(null); // Clear editing state for new ticket
+                setNewTicketName(''); // Clear the name field
+                setShowTicketNameModal(true);
+              }}
               style={{
                 padding: 8,
                 borderRadius: 8,
@@ -764,7 +836,7 @@ export default function TableDetailScreen() {
               marginBottom: 16,
               textAlign: 'center'
             }}>
-              New Order Name
+              {editingTicketId ? 'Rename Order' : 'New Order Name'}
             </Text>
             
             <TextInput
@@ -789,6 +861,7 @@ export default function TableDetailScreen() {
                 onPress={() => {
                   setShowTicketNameModal(false);
                   setNewTicketName('');
+                  setEditingTicketId(null);
                 }}
                 style={{
                   flex: 1,
@@ -806,9 +879,17 @@ export default function TableDetailScreen() {
               
               <TouchableOpacity
                 onPress={() => {
-                  handleOpenTable(newTicketName.trim() || undefined);
+                  if (editingTicketId) {
+                    // Update existing ticket name
+                    const trimmedName = newTicketName.trim();
+                    updateTicketName(editingTicketId, trimmedName || `Order ${tickets.indexOf(tickets.find(t => t.id === editingTicketId)!) + 1}`);
+                  } else {
+                    // Create new ticket
+                    handleOpenTable(newTicketName.trim() || undefined);
+                  }
                   setShowTicketNameModal(false);
                   setNewTicketName('');
+                  setEditingTicketId(null);
                 }}
                 style={{
                   flex: 1,
@@ -818,7 +899,7 @@ export default function TableDetailScreen() {
                 }}
               >
                 <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '600' }}>
-                  Create
+                  {editingTicketId ? 'Update' : 'Create'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -902,6 +983,21 @@ export default function TableDetailScreen() {
           ticketId={selectedTicket.id}
           currentMinutes={selectedTicket.deliveryEtaMinutes}
           onClose={() => setShowDeliveryTimer(false)}
+        />
+      )}
+
+      {/* Ticket Action Sheet */}
+      {selectedTicketForActions && (
+        <ActionSheet
+          ref={actionSheetRef}
+          title={selectedTicketForActions.name || `Order ${tickets.indexOf(selectedTicketForActions) + 1}`}
+          subtitle="Manage this order"
+          actions={getTicketActions()}
+          isVisible={showTicketActions}
+          onClose={() => {
+            setShowTicketActions(false);
+            setSelectedTicketForActions(null);
+          }}
         />
       )}
     </SafeAreaView>
