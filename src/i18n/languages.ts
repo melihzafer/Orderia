@@ -17,6 +17,8 @@ export interface Translation {
   error: string;
   success: string;
   genericError: string;
+  all: string;
+  close: string;
   
   // Navigation
   tables: string;
@@ -95,6 +97,8 @@ export interface Translation {
   quantity: string;
   notes: string;
   orderNotes: string;
+  addNote: string;
+  addNoteHint: string;
   deliverAll: string;
   deliverAllConfirm: string;
   deliver: string;
@@ -271,6 +275,46 @@ export interface Translation {
   orderShouldBeReady: string;
   minutes: string;
   sold: string;
+  
+  // Search & Product Selection
+  searchProducts: string;
+  searchProductsHint: string;
+  selectProduct: string;
+  allCategories: string;
+  clearSearch: string;
+  noSearchResults: string;
+  noProductsInCategory: string;
+  noProducts: string;
+  tryDifferentSearch: string;
+  selectDifferentCategory: string;
+  itemsFound: string;
+  tapToAddItem: string;
+  
+  // Timer & Notifications
+  notifications: string;
+  activeTimers: string;
+  recentUpdates: string;
+  noActiveTimers: string;
+  noRecentUpdates: string;
+  startTimerToTrack: string;
+  cancelTimer: string;
+  cancelTimerConfirm: string;
+  pause: string;
+  resume: string;
+  complete: string;
+  markAsComplete: string;
+  
+  // PDF Export
+  poweredBy: string;
+  smartOrderPad: string;
+  generatedOn: string;
+  scanForMore: string;
+  
+  // QR Codes
+  qrCodes: string;
+  generateQR: string;
+  shareQRCodes: string;
+  exportQRCodes: string;
 }
 
 export const translations: Record<string, Translation> = {
@@ -293,6 +337,8 @@ export const translations: Record<string, Translation> = {
     error: 'Hata',
     success: 'Başarılı',
     genericError: 'Bir hata oluştu',
+    all: 'Tümü',
+    close: 'Kapat',
     
     // Navigation
     tables: 'Masalar',
@@ -389,6 +435,8 @@ export const translations: Record<string, Translation> = {
     total: 'Toplam',
     note: 'Not',
     orderNote: 'Sipariş notu (opsiyonel)...',
+    addNote: 'Not Ekle',
+    addNoteHint: 'Özel talimatlar veya notlar ekleyin...',
     
     // Status
     open: 'AÇIK',
@@ -547,6 +595,46 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Sipariş hazır olması gereken süre:',
     minutes: 'dakika',
     sold: 'satıldı',
+    
+    // Search & Product Selection
+    searchProducts: 'Ürün ara...',
+    searchProductsHint: 'Ürün aramak için yazın, ok tuşları ile gezinin, Enter ile seçin',
+    selectProduct: 'Ürün Seç',
+    allCategories: 'Tüm Kategoriler',
+    clearSearch: 'Aramayı temizle',
+    noSearchResults: 'Hiçbir ürün bulunamadı',
+    noProductsInCategory: 'Bu kategoride ürün yok',
+    noProducts: 'Hiçbir ürün mevcut değil',
+    tryDifferentSearch: 'Farklı bir arama terimi deneyin veya kategorilere göz atın',
+    selectDifferentCategory: 'Farklı bir kategori seçin veya ürün ekleyin',
+    itemsFound: 'ürün bulundu',
+    tapToAddItem: 'Bu ürünü eklemek için dokunun',
+    
+    // Timer & Notifications
+    notifications: 'Bildirimler',
+    activeTimers: 'Aktif Zamanlayıcılar',
+    recentUpdates: 'Son Güncellemeler',
+    noActiveTimers: 'Aktif zamanlayıcı yok',
+    noRecentUpdates: 'Son güncelleme yok',
+    startTimerToTrack: 'Pişirme ilerlemesini takip etmek için zamanlayıcı başlatın',
+    cancelTimer: 'Zamanlayıcıyı İptal Et',
+    cancelTimerConfirm: 'şu ürün için zamanlayıcıyı iptal etmek istediğinizden emin misiniz',
+    pause: 'Duraklat',
+    resume: 'Devam Et',
+    complete: 'Tamamla',
+    markAsComplete: 'Tamamlandı olarak işaretle',
+    
+    // PDF Export
+    poweredBy: 'Destekleyen',
+    smartOrderPad: 'Akıllı Sipariş Defteriniz',
+    generatedOn: 'Oluşturulma tarihi',
+    scanForMore: 'Daha fazla bilgi için tarayın',
+    
+    // QR Codes
+    qrCodes: 'QR Kodları',
+    generateQR: 'QR Kodu Oluştur',
+    shareQRCodes: 'QR Kodlarını Paylaş',
+    exportQRCodes: 'QR Kodlarını Dışa Aktar',
   },
   
   bg: {
@@ -568,6 +656,8 @@ export const translations: Record<string, Translation> = {
     error: 'Грешка',
     success: 'Успешно',
     genericError: 'Възникна грешка',
+    all: 'Всички',
+    close: 'Затвори',
     
     // Navigation
     tables: 'Маси',
@@ -664,6 +754,8 @@ export const translations: Record<string, Translation> = {
     total: 'Общо',
     note: 'Бележка',
     orderNote: 'Бележка за поръчката (незадължително)...',
+    addNote: 'Добави Бележка',
+    addNoteHint: 'Добавете специални инструкции или бележки...',
     
     // Status
     open: 'ОТВОРЕНА',
@@ -822,6 +914,46 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Поръчката трябва да бъде готова за:',
     minutes: 'минути',
     sold: 'продадени',
+    
+    // Search & Product Selection
+    searchProducts: 'Търсене на продукти...',
+    searchProductsHint: 'Напишете за търсене на продукти, използвайте стрелките за навигация, Enter за избор',
+    selectProduct: 'Избор на продукт',
+    allCategories: 'Всички категории',
+    clearSearch: 'Изчистване на търсенето',
+    noSearchResults: 'Няма намерени продукти',
+    noProductsInCategory: 'Няма продукти в тази категория',
+    noProducts: 'Няма налични продукти',
+    tryDifferentSearch: 'Опитайте различен термин за търсене или прегледайте категориите',
+    selectDifferentCategory: 'Изберете различна категория или добавете продукти',
+    itemsFound: 'намерени артикула',
+    tapToAddItem: 'Докоснете за добавяне на този артикул',
+    
+    // Timer & Notifications
+    notifications: 'Известия',
+    activeTimers: 'Активни таймери',
+    recentUpdates: 'Последни актуализации',
+    noActiveTimers: 'Няма активни таймери',
+    noRecentUpdates: 'Няма скорошни актуализации',
+    startTimerToTrack: 'Стартирайте таймер за проследяване на готвенето',
+    cancelTimer: 'Отказ на таймер',
+    cancelTimerConfirm: 'сигурни ли сте, че искате да отмените таймера за',
+    pause: 'Пауза',
+    resume: 'Продължи',
+    complete: 'Завърши',
+    markAsComplete: 'Маркирай като завършен',
+    
+    // PDF Export
+    poweredBy: 'Задвижван от',
+    smartOrderPad: 'Вашият умен падок за поръчки',
+    generatedOn: 'Генериран на',
+    scanForMore: 'Сканирайте за повече информация',
+    
+    // QR Codes
+    qrCodes: 'QR кодове',
+    generateQR: 'Генериране на QR код',
+    shareQRCodes: 'Споделяне на QR кодове',
+    exportQRCodes: 'Експорт на QR кодове',
   },
   
   en: {
@@ -843,6 +975,8 @@ export const translations: Record<string, Translation> = {
     error: 'Error',
     success: 'Success',
     genericError: 'An error occurred',
+    all: 'All',
+    close: 'Close',
     
     // Navigation
     tables: 'Tables',
@@ -939,6 +1073,8 @@ export const translations: Record<string, Translation> = {
     total: 'Total',
     note: 'Note',
     orderNote: 'Order note (optional)...',
+    addNote: 'Add Note',
+    addNoteHint: 'Add special instructions or notes...',
     
     // Status
     open: 'OPEN',
@@ -1097,5 +1233,45 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Order should be ready in:',
     minutes: 'minutes',
     sold: 'sold',
+    
+    // Search & Product Selection
+    searchProducts: 'Search products...',
+    searchProductsHint: 'Type to search products, use arrow keys to navigate, Enter to select',
+    selectProduct: 'Select Product',
+    allCategories: 'All Categories',
+    clearSearch: 'Clear search',
+    noSearchResults: 'No products found',
+    noProductsInCategory: 'No products in this category',
+    noProducts: 'No products available',
+    tryDifferentSearch: 'Try a different search term or browse categories',
+    selectDifferentCategory: 'Try selecting a different category or add some products',
+    itemsFound: 'items found',
+    tapToAddItem: 'Tap to add this item',
+    
+    // Timer & Notifications
+    notifications: 'Notifications',
+    activeTimers: 'Active Timers',
+    recentUpdates: 'Recent Updates',
+    noActiveTimers: 'No active timers',
+    noRecentUpdates: 'No recent updates',
+    startTimerToTrack: 'Start a timer to track cooking progress',
+    cancelTimer: 'Cancel Timer',
+    cancelTimerConfirm: 'Are you sure you want to cancel the timer for',
+    pause: 'Pause',
+    resume: 'Resume',
+    complete: 'Complete',
+    markAsComplete: 'Mark as complete',
+    
+    // PDF Export
+    poweredBy: 'Powered by',
+    smartOrderPad: 'Your Smart Order Pad',
+    generatedOn: 'Generated on',
+    scanForMore: 'Scan for more information',
+    
+    // QR Codes
+    qrCodes: 'QR Codes',
+    generateQR: 'Generate QR Code',
+    shareQRCodes: 'Share QR Codes',
+    exportQRCodes: 'Export QR Codes',
   },
 };

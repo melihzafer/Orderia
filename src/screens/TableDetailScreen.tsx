@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -18,11 +18,12 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
-import { PrimaryButton, SurfaceCard, StatusBadge, DeliveryTimePicker, ActionSheet, ActionSheetAction } from '../components';
+import { PrimaryButton, SurfaceCard, StatusBadge, DeliveryTimePicker, ActionSheet, ActionSheetAction, ProductSearch, NotificationCenter } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { MenuItem, Ticket, TicketLine, OrderStatus, PaymentInfo } from '../types';
 import { generateOrderBillPDF } from '../utils/pdfGenerator';
 import { generateAndShareBill } from '../utils/exportUtils';
+import { orderTimerService } from '../services';
 
 type TableDetailRouteProp = RouteProp<RootStackParamList, 'TableDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -44,6 +45,7 @@ export default function TableDetailScreen() {
     addTicketLine,
     updateLineQuantity,
     updateLineStatus,
+    updateTicketLine,
     markAllDelivered,
     payTicket,
     updateTicketName,
@@ -52,6 +54,7 @@ export default function TableDetailScreen() {
   const { getCategoriesWithItems } = useMenuStore();
 
   const [showMenuModal, setShowMenuModal] = useState(false);
+  const [showProductSearch, setShowProductSearch] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -67,10 +70,24 @@ export default function TableDetailScreen() {
   const [selectedTicketForActions, setSelectedTicketForActions] = useState<Ticket | null>(null);
   const actionSheetRef = useRef<BottomSheet>(null);
 
+  // Note editing modal
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [selectedLineForNote, setSelectedLineForNote] = useState<TicketLine | null>(null);
+  const [editingNote, setEditingNote] = useState('');
+
   const table = getTable(tableId);
   const tickets = getTicketsByTable(tableId) || [];
   const selectedTicket = selectedTicketId ? tickets.find(t => t.id === selectedTicketId) : null;
   const categoriesWithItems = getCategoriesWithItems();
+
+  // Extract all menu items and categories for ProductSearch
+  const allMenuItems = useMemo(() => {
+    return categoriesWithItems.flatMap(cat => cat.items.filter(item => item.isActive));
+  }, [categoriesWithItems]);
+
+  const allCategories = useMemo(() => {
+    return categoriesWithItems.map(cat => ({ id: cat.id, name: cat.name, order: 0 }));
+  }, [categoriesWithItems]);
 
   useEffect(() => {
     if (categoriesWithItems.length > 0 && !selectedCategory) {
@@ -94,20 +111,45 @@ export default function TableDetailScreen() {
     if (!selectedTicket) {
       const newTicket = openTable(tableId);
       setSelectedTicketId(newTicket.id);
-      addTicketLine(newTicket.id, {
+      const ticketLine = addTicketLine(newTicket.id, {
         menuItemId: menuItem.id,
         quantity: 1,
         note: note.trim() || undefined,
       });
+      
+      // Start timer for this item if it has estimated preparation time
+      if (menuItem.prepTime && menuItem.prepTime > 0) {
+        orderTimerService.startTimer(
+          newTicket.id,
+          ticketLine.id,
+          menuItem.name,
+          menuItem.prepTime
+        );
+      }
     } else {
-      addTicketLine(selectedTicket.id, {
+      const ticketLine = addTicketLine(selectedTicket.id, {
         menuItemId: menuItem.id,
         quantity: 1,
         note: note.trim() || undefined,
       });
+      
+      // Start timer for this item if it has estimated preparation time  
+      if (menuItem.prepTime && menuItem.prepTime > 0) {
+        orderTimerService.startTimer(
+          selectedTicket.id,
+          ticketLine.id,
+          menuItem.name,
+          menuItem.prepTime
+        );
+      }
     }
     setNote('');
     setShowMenuModal(false);
+    setShowProductSearch(false);
+  };
+
+  const handleProductSelect = (menuItem: MenuItem) => {
+    handleAddItem(menuItem);
   };
 
   const handleQuantityChange = (line: TicketLine, delta: number) => {
@@ -131,6 +173,30 @@ export default function TableDetailScreen() {
         { text: t.deliver, onPress: () => markAllDelivered(selectedTicket.id) }
       ]
     );
+  };
+
+  const handleLineNoteLongPress = (line: TicketLine) => {
+    setSelectedLineForNote(line);
+    setEditingNote(line.note || '');
+    setShowNoteModal(true);
+  };
+
+  const handleSaveNote = () => {
+    if (!selectedLineForNote || !selectedTicket) return;
+    
+    updateTicketLine(selectedTicket.id, selectedLineForNote.id, {
+      note: editingNote.trim()
+    });
+    
+    setShowNoteModal(false);
+    setSelectedLineForNote(null);
+    setEditingNote('');
+  };
+
+  const handleCancelNoteEdit = () => {
+    setShowNoteModal(false);
+    setSelectedLineForNote(null);
+    setEditingNote('');
   };
 
   const handleDeleteTicket = (ticketId: string) => {
@@ -369,31 +435,36 @@ export default function TableDetailScreen() {
 
   const renderTicketLine = ({ item: line }: { item: TicketLine }) => {
     return (
-      <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <View style={{ flex: 1, marginRight: 12 }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-              {line.nameSnapshot}
-            </Text>
-            
-            {line.note && (
-              <Text style={{ fontSize: 14, color: colors.textSubtle, marginTop: 2, fontStyle: 'italic' }}>
-                {t.note}: {line.note}
+      <TouchableOpacity
+        onLongPress={() => handleLineNoteLongPress(line)}
+        delayLongPress={500}
+        activeOpacity={0.8}
+      >
+        <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
+                {line.nameSnapshot}
               </Text>
-            )}
-            
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-              <StatusBadge status={line.status} size="small" />
-              <Text style={{ 
-                fontSize: 16, 
-                fontWeight: '700', 
-                color: colors.primary,
-                marginLeft: 8
-              }}>
-                {formatPrice(line.priceSnapshot * line.quantity)}
-              </Text>
+              
+              {line.note && (
+                <Text style={{ fontSize: 14, color: colors.textSubtle, marginTop: 2, fontStyle: 'italic' }}>
+                  {t.note}: {line.note}
+                </Text>
+              )}
+              
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <StatusBadge status={line.status} size="small" />
+                <Text style={{ 
+                  fontSize: 16, 
+                  fontWeight: '700', 
+                  color: colors.primary,
+                  marginLeft: 8
+                }}>
+                  {formatPrice(line.priceSnapshot * line.quantity)}
+                </Text>
+              </View>
             </View>
-          </View>
 
           <View style={{ alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -474,6 +545,7 @@ export default function TableDetailScreen() {
           </View>
         </View>
       </SurfaceCard>
+      </TouchableOpacity>
     );
   };
 
@@ -668,7 +740,7 @@ export default function TableDetailScreen() {
                 </Text>
                 <PrimaryButton
                   title={t.addFirstOrder}
-                  onPress={() => setShowMenuModal(true)}
+                  onPress={() => setShowProductSearch(true)}
                   fullWidth
                 />
               </SurfaceCard>
@@ -688,9 +760,25 @@ export default function TableDetailScreen() {
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               <PrimaryButton
                 title={t.addOrder}
-                onPress={() => setShowMenuModal(true)}
+                onPress={() => setShowProductSearch(true)}
                 style={{ flex: 1 }}
               />
+              
+              {/* <TouchableOpacity
+                onPress={() => setShowMenuModal(true)}
+                style={{
+                  backgroundColor: colors.surfaceAlt,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Ionicons name="grid-outline" size={20} color={colors.text} />
+              </TouchableOpacity> */}
               
               {selectedTicket.lines.some(line => line.status === 'pending') && (
                 <PrimaryButton
@@ -977,6 +1065,15 @@ export default function TableDetailScreen() {
         </View>
       </Modal>
 
+      {/* Product Search Modal */}
+      <ProductSearch
+        items={allMenuItems}
+        categories={allCategories}
+        isVisible={showProductSearch}
+        onClose={() => setShowProductSearch(false)}
+        onSelectItem={handleProductSelect}
+      />
+
       {/* Delivery Timer Modal */}
       {showDeliveryTimer && selectedTicket && (
         <DeliveryTimePicker
@@ -1000,6 +1097,101 @@ export default function TableDetailScreen() {
           }}
         />
       )}
+
+      {/* Note Editing Modal */}
+      <Modal
+        visible={showNoteModal}
+        transparent
+        animationType="slide"
+        onRequestClose={handleCancelNoteEdit}
+      >
+        <View style={{ 
+          flex: 1, 
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            padding: 20,
+            maxHeight: '80%'
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 8,
+              textAlign: 'center'
+            }}>
+              {t.addNote || 'Add Note'}
+            </Text>
+            
+            {selectedLineForNote && (
+              <Text style={{
+                fontSize: 16,
+                color: colors.textSubtle,
+                marginBottom: 16,
+                textAlign: 'center'
+              }}>
+                {selectedLineForNote.nameSnapshot}
+              </Text>
+            )}
+            
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                padding: 12,
+                color: colors.text,
+                backgroundColor: colors.bg,
+                marginBottom: 16,
+                minHeight: 100,
+                textAlignVertical: 'top'
+              }}
+              value={editingNote}
+              onChangeText={setEditingNote}
+              placeholder={t.addNoteHint || 'Add special instructions or notes...'}
+              placeholderTextColor={colors.textSubtle}
+              multiline
+              autoFocus
+            />
+            
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                onPress={handleCancelNoteEdit}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.bg
+                }}
+              >
+                <Text style={{ color: colors.text, textAlign: 'center' }}>
+                  {t.cancel}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleSaveNote}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '600' }}>
+                  {t.save}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

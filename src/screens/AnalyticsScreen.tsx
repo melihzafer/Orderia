@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useAnalytics, DateRange } from '../contexts/AnalyticsContext';
+import { useOrderStore, useMenuStore, useHistoryStore } from '../stores';
 import { SurfaceCard, PrimaryButton } from '../components';
 import { brand, radius, spacing } from '../constants/branding';
 
@@ -15,6 +18,9 @@ type ChartType = 'revenue' | 'orders' | 'items' | 'tables';
 export default function AnalyticsScreen() {
   const { colors } = useTheme();
   const { t, formatPrice } = useLocalization();
+  const { getAllOpenTickets, getTicketTotal } = useOrderStore();
+  const { menuItems } = useMenuStore();
+  const { dailyHistory, getHistoryDates } = useHistoryStore();
   const {
     getSalesAnalytics,
     getTopSellingItems,
@@ -67,6 +73,333 @@ export default function AnalyticsScreen() {
   const topItems = useMemo(() => getTopSellingItems(5, dateRange), [dateRange]);
   const peakHours = useMemo(() => getPeakHours(dateRange), [dateRange]);
   const categoryPerformance = useMemo(() => getCategoryPerformance(dateRange), [dateRange]);
+
+  // Export analytics report to PDF
+  const handleExportReport = async () => {
+    try {
+      // Get all tickets for the selected period
+      const allTickets = [];
+      
+      // Add history tickets
+      const historyDates = getHistoryDates();
+      for (const dateKey of historyDates) {
+        const dayHistory = dailyHistory[dateKey];
+        if (dayHistory) {
+          allTickets.push(...dayHistory.tickets);
+        }
+      }
+      
+      // Add open tickets
+      const openTickets = getAllOpenTickets();
+      allTickets.push(...openTickets);
+      
+      // Filter by date range
+      const filteredTickets = dateRange ? 
+        allTickets.filter(ticket => {
+          const ticketDate = ticket.closedAt || ticket.createdAt;
+          return ticketDate >= dateRange.startDate.getTime() && 
+                 ticketDate <= dateRange.endDate.getTime();
+        }) : allTickets;
+      
+      // Calculate totals
+      let grandTotal = 0;
+      const orderDetails = filteredTickets.map(ticket => {
+        const orderTotal = ticket.lines.reduce((sum, line) => {
+          return sum + (line.priceSnapshot * line.quantity);
+        }, 0);
+        grandTotal += orderTotal;
+        
+        return {
+          ticket,
+          orderTotal,
+          items: ticket.lines.map(line => {
+            const menuItem = menuItems.find(item => item.id === line.menuItemId);
+            return {
+              ...line,
+              menuItemName: menuItem?.name || line.nameSnapshot || 'Unknown Item',
+              itemTotal: line.priceSnapshot * line.quantity
+            };
+          })
+        };
+      });
+
+      const reportHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Detailed Analytics Report</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 20px; 
+              line-height: 1.4;
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 3px solid #FF6B35;
+              padding-bottom: 20px;
+            }
+            .header h1 {
+              color: #FF6B35;
+              margin: 0 0 10px 0;
+              font-size: 28px;
+            }
+            .header p {
+              margin: 5px 0;
+              color: #FF6B35;
+            }
+            
+            .summary {
+              background: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              margin-bottom: 30px;
+              border: 1px solid #e9ecef;
+            }
+            .summary h2 {
+              color: #FF6B35;
+              margin-top: 0;
+              border-bottom: 2px solid #FF6B35;
+              padding-bottom: 10px;
+            }
+            .summary-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 15px;
+              margin-top: 15px;
+            }
+            .summary-item {
+              text-align: center;
+              padding: 10px;
+              background: white;
+              border-radius: 6px;
+              border: 1px solid #ddd;
+            }
+            .summary-value {
+              font-size: 24px;
+              font-weight: bold;
+              color: #FF6B35;
+            }
+            .summary-label {
+              font-size: 12px;
+              color: #666;
+              text-transform: uppercase;
+              margin-top: 5px;
+            }
+            
+            .orders-section {
+              margin-top: 30px;
+            }
+            .orders-section h2 {
+              color: #333;
+              border-bottom: 2px solid #FF6B35;
+              padding-bottom: 10px;
+            }
+            
+            .order {
+              margin-bottom: 25px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            .order-header {
+              background: #f8f9fa;
+              padding: 15px;
+              border-bottom: 1px solid #ddd;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .order-id {
+              font-weight: bold;
+              color: #333;
+            }
+            .order-date {
+              color: #666;
+              font-size: 14px;
+            }
+            .order-total {
+              font-weight: bold;
+              color: #FF6B35;
+              font-size: 18px;
+            }
+            
+            .items-table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            .items-table th {
+              background: #f8f9fa;
+              padding: 12px;
+              text-align: left;
+              border-bottom: 2px solid #ddd;
+              font-weight: bold;
+              color: #333;
+            }
+            .items-table td {
+              padding: 10px 12px;
+              border-bottom: 1px solid #eee;
+            }
+            .items-table tr:nth-child(even) {
+              background: #f9f9f9;
+            }
+            .items-table .qty {
+              text-align: center;
+              font-weight: bold;
+            }
+            .items-table .price {
+              text-align: right;
+              font-family: monospace;
+            }
+            .items-table .total {
+              text-align: right;
+              font-weight: bold;
+              color: #FF6B35;
+              font-family: monospace;
+            }
+            
+            .grand-total {
+              margin-top: 30px;
+              text-align: center;
+              font-size: 24px;
+              font-weight: bold;
+              color: #FF6B35;
+              background: #f8f9fa;
+              padding: 20px;
+              border: 2px solid #FF6B35;
+              border-radius: 8px;
+            }
+            
+            .footer {
+              margin-top: 40px;
+              text-align: center;
+              color: #666;
+              font-size: 12px;
+              border-top: 1px solid #ddd;
+              padding-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Detailed Analytics Report</h1>
+            <p><strong>Period:</strong> ${selectedPeriod.toUpperCase()}</p>
+            <p><strong>Generated:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            ${dateRange ? `<p><strong>Date Range:</strong> ${dateRange.startDate.toLocaleDateString()} - ${dateRange.endDate.toLocaleDateString()}</p>` : ''}
+          </div>
+
+          <div class="summary">
+            <h2>Summary</h2>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-value">${filteredTickets.length}</div>
+                <div class="summary-label">Total Orders</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-value">${formatPrice(grandTotal)}</div>
+                <div class="summary-label">Total Revenue</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-value">${filteredTickets.length > 0 ? formatPrice(Math.round(grandTotal / filteredTickets.length)) : '0'}</div>
+                <div class="summary-label">Average Order</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-value">${orderDetails.reduce((sum, order) => sum + order.items.length, 0)}</div>
+                <div class="summary-label">Total Items</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="orders-section">
+            <h2>Order Details</h2>
+            ${orderDetails.map((order, index) => `
+              <div class="order">
+                <div class="order-header">
+                  <div>
+                    <div class="order-id">Order #${index + 1} - ${order.ticket.id}</div>
+                    <div class="order-date">${new Date(order.ticket.createdAt).toLocaleDateString()} ${new Date(order.ticket.createdAt).toLocaleTimeString()}</div>
+                    ${order.ticket.name ? `<div style="color: #666; font-size: 14px;">Name: ${order.ticket.name}</div>` : ''}
+                  </div>
+                  <div class="order-total">${formatPrice(order.orderTotal)}</div>
+                </div>
+                
+                <table class="items-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th style="width: 80px;">Qty</th>
+                      <th style="width: 100px;">Unit Price</th>
+                      <th style="width: 100px;">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${order.items.map(item => `
+                      <tr>
+                        <td>
+                          ${item.menuItemName}
+                          ${item.note ? `<div style="font-size: 12px; color: #666; font-style: italic;">Note: ${item.note}</div>` : ''}
+                        </td>
+                        <td class="qty">${item.quantity}</td>
+                        <td class="price">${formatPrice(item.priceSnapshot)}</td>
+                        <td class="total">${formatPrice(item.itemTotal)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="grand-total">
+            GRAND TOTAL: ${formatPrice(grandTotal)}
+          </div>
+
+          <div class="footer">
+            <p>Generated by Orderia Analytics System</p>
+            <p>Report includes ${filteredTickets.length} orders with ${orderDetails.reduce((sum, order) => sum + order.items.length, 0)} total items</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({
+        html: reportHtml,
+        base64: false,
+        width: 612, // A4 width
+        height: 792, // A4 height
+        margins: {
+          left: 20,
+          top: 20,
+          right: 20,
+          bottom: 20,
+        },
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        const filename = `analytics-detailed-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.pdf`;
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Detailed Analytics Report',
+        });
+      }
+
+      Alert.alert(
+        t.success || 'Success',
+        `Detailed report exported successfully!\n\n${filteredTickets.length} orders\n${formatPrice(grandTotal)} total revenue`,
+        [{ text: t.ok || 'OK' }]
+      );
+    } catch (error) {
+      console.error('Analytics export error:', error);
+      Alert.alert(
+        t.error || 'Error',
+        t.exportFailed || 'Failed to export analytics report. Please try again.',
+        [{ text: t.ok || 'OK' }]
+      );
+    }
+  };
 
   const chartConfig = {
     backgroundColor: colors.surface,
@@ -391,10 +724,7 @@ export default function AnalyticsScreen() {
           <PrimaryButton
             title={t.exportReport || 'Export Report'}
             icon="download-outline"
-            onPress={() => {
-              // Implement export functionality
-              console.log('Export report');
-            }}
+            onPress={handleExportReport}
             fullWidth
           />
         </View>

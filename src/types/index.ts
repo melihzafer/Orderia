@@ -13,6 +13,7 @@ export interface MenuItem {
   price: number; // in cents (e.g., 12.50 => 1250)
   description?: string;
   isActive: boolean;
+  prepTime?: number; // estimated preparation time in minutes
 }
 
 export interface Hall {

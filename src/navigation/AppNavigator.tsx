@@ -141,14 +141,14 @@ function MainTabs() {
           headerTitle: t.salesAnalytics || 'Sales Analytics',
         }}
       />
-      <Tab.Screen 
+      {/* <Tab.Screen 
         name="QRMenu" 
         component={QRMenuScreen}
         options={{
           title: t.qrMenu || 'QR Menu',
           headerTitle: t.qrMenuManagement || 'QR Menu Management',
         }}
-      />
+      /> */}
       <Tab.Screen 
         name="Settings" 
         component={SettingsScreen}

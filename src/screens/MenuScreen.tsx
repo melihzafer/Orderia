@@ -17,7 +17,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 import { useMenuStore } from '../stores';
-import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from '../components';
+import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction, ProductSearch } from '../components';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Category, MenuItem } from '../types';
 import { useDebounceSearch, searchMenuItems } from '../utils/searchUtils';
@@ -46,6 +46,9 @@ export default function MenuScreen() {
   
   // Use debounced search for better performance
   const { searchQuery, setSearchQuery, debouncedQuery } = useDebounceSearch('', 300);
+  
+  // Product search modal state
+  const [showProductSearch, setShowProductSearch] = useState(false);
   
   // Action sheet for menu items
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
