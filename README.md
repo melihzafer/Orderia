@@ -1,4 +1,3 @@
----
 # 🍽️ Orderia - Restaurant Management System
 
 **Orderia** is a comprehensive mobile management system developed for modern restaurants. Built with React Native, Expo, and TypeScript, this app allows restaurant managers to easily handle daily operations.
