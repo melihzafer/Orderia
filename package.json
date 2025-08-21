@@ -41,7 +41,8 @@
     "react-native-uuid": "^2.0.2",
     "react-native-web": "^0.20.0",
     "react-native-worklets-core": "^1.6.2",
-    "zustand": "^4.5.5"
+    "zustand": "^4.5.5",
+    "expo-splash-screen": "~0.30.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
