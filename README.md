@@ -1,90 +1,100 @@
-# 🍽️ Orderia - Restoran Yönetim Sistemi
+---
+# 🍽️ Orderia - Restaurant Management System
 
-**Orderia**, modern restoranlar için geliştirilmiş kapsamlı bir mobil yönetim sistemidir. React Native, Expo ve TypeScript kullanılarak geliştirilmiş olan bu uygulama, restoran işletmecilerinin günlük operasyonlarını kolayca yönetmelerini sağlar.
+**Orderia** is a comprehensive mobile management system developed for modern restaurants. Built with React Native, Expo, and TypeScript, this app allows restaurant managers to easily handle daily operations.
 
-## 📱 Özellikler
+## 📱 Features
 
-### 🏪 Masa Yönetimi
-- **Salon Bazlı Organizasyon**: Restoranınızı farklı salonlara bölebilir ve her salon için ayrı masa düzenleri oluşturabilirsiniz
-- **Dinamik Masa Durumu**: Masaların açık/kapalı durumlarını gerçek zamanlı olarak takip edin
-- **Görsel Masa Haritası**: Her salonun masalarını grid layout ile görsel olarak yönetin
-- **Masa Etiketleme**: Her masaya özel isim veya numara atayabilirsiniz
-- **Kapasite Yönetimi**: Masa başına müşteri kapasitesi belirleme
+### 🏪 Table Management
 
-### 🍕 Menü Yönetimi
-- **Kategori Bazlı Düzenleme**: Yemekleri kategorilere ayırarak düzenli bir menü oluşturun
-- **Dinamik Fiyatlandırma**: Ürün fiyatlarını kolayca güncelleyin
-- **Stok Takibi**: Ürünlerin mevcut durumlarını aktif/pasif olarak yönetin
-- **Detaylı Ürün Bilgileri**: Her ürün için açıklama, fiyat ve kategori bilgileri
-- **Hızlı Arama ve Filtreleme**: Kategori bazlı ürün filtreleme
+* **Hall-Based Organization**: Split your restaurant into different halls and create separate table layouts for each
+* **Dynamic Table Status**: Track table availability (open/closed) in real-time
+* **Visual Table Map**: Manage tables visually with a grid layout per hall
+* **Table Labeling**: Assign custom names or numbers to each table
+* **Capacity Management**: Define customer capacity per table
 
-### 📊 Sipariş Takibi
-- **Gerçek Zamanlı Sipariş Yönetimi**: Açık masaların siparişlerini anlık olarak takip edin
-- **Sipariş Durumu Takibi**: Beklemede, hazırlanıyor, hazır, teslim edildi durumları
-- **Detaylı Sipariş Geçmişi**: Tüm siparişlerin tarihli kayıtları
-- **Masa Bazlı Hesap Toplama**: Her masa için ayrı hesap tutma ve toplam hesaplama
+### 🍕 Menu Management
 
-### 📈 Raporlama ve İstatistikler
-- **Günlük Satış Raporları**: Her gün için detaylı satış verileri
-- **Kategori Bazlı Analiz**: Hangi kategorilerin ne kadar satıldığının analizi
-- **Tarih Aralığı Raporları**: İstediğiniz tarih aralığı için kapsamlı raporlar
-- **Grafik Görselleştirme**: Satış verilerinin grafik halinde sunumu
+* **Category-Based Editing**: Organize dishes into categories for a structured menu
+* **Dynamic Pricing**: Update product prices easily
+* **Stock Tracking**: Manage availability of items (active/inactive)
+* **Detailed Product Info**: Description, price, and category for each item
+* **Quick Search & Filtering**: Filter products by category
 
-## 🎨 Tasarım ve Kullanıcı Deneyimi
+### 📊 Order Tracking
 
-### Renk Paleti
-Orderia, modern ve şık bir görünüm için özel olarak tasarlanmış renk paleti kullanır:
+* **Real-Time Order Management**: Track open table orders instantly
+* **Order Status Tracking**: Pending, preparing, ready, delivered
+* **Detailed Order History**: Timestamped records of all orders
+* **Table-Based Billing**: Keep and calculate bills per table
 
-#### Açık Tema (Light Mode)
-- **Ana Renk (Primary)**: `#2563EB` - Güven veren mavi ton
-- **Vurgu Rengi (Accent)**: `#DC2626` - Dikkat çekici kırmızı
-- **Arkaplan (Background)**: `#F8FAFC` - Temiz beyaz ton
-- **Yüzey (Surface)**: `#FFFFFF` - Saf beyaz
-- **Alternatif Yüzey**: `#F1F5F9` - Hafif gri ton
-- **Kenarlık (Border)**: `#E2E8F0` - Yumuşak gri kenarlık
-- **Metin (Text)**: `#1E293B` - Koyu metin rengi
-- **İkincil Metin**: `#64748B` - Açık gri metin
+### 📈 Reporting & Analytics
 
-#### Koyu Tema (Dark Mode)
-- **Ana Renk**: `#3B82F6` - Parlak mavi
-- **Vurgu Rengi**: `#EF4444` - Canlı kırmızı
-- **Arkaplan**: `#0F172A` - Derin koyu ton
-- **Yüzey**: `#1E293B` - Koyu gri yüzey
-- **Alternatif Yüzey**: `#334155` - Orta gri ton
-- **Kenarlık**: `#475569` - Koyu kenarlık
-- **Metin**: `#F1F5F9` - Açık metin
-- **İkincil Metin**: `#94A3B8` - Gri metin
+* **Daily Sales Reports**: Detailed daily sales data
+* **Category-Based Analysis**: Analyze sales per category
+* **Date Range Reports**: Generate reports for any selected timeframe
+* **Graphical Visualization**: View sales data in chart format
 
-### Durum Renkleri
-- **Beklemede**: `#F59E0B` (Amber) - Sarı/turuncu ton
-- **Hazırlanıyor**: `#3B82F6` (Blue) - Mavi ton  
-- **Hazır**: `#10B981` (Emerald) - Yeşil ton
-- **Teslim Edildi**: `#6B7280` (Gray) - Gri ton
+## 🎨 Design & User Experience
 
-### Typography (Yazı Tipi)
-- **Başlıklar**: System font, ağırlık 600-700
-- **Gövde Metni**: System font, ağırlık 400
-- **Alt Metinler**: System font, ağırlık 300
-- **Buton Metinleri**: System font, ağırlık 500
+### Color Palette
 
-## 🧩 Bileşenler (Components)
+#### Light Mode
+
+* **Primary**: `#2563EB` – Trustworthy blue
+* **Accent**: `#DC2626` – Attention-grabbing red
+* **Background**: `#F8FAFC` – Clean white
+* **Surface**: `#FFFFFF` – Pure white
+* **Alt Surface**: `#F1F5F9` – Light gray
+* **Border**: `#E2E8F0` – Soft gray
+* **Text**: `#1E293B` – Dark text
+* **Secondary Text**: `#64748B` – Light gray text
+
+#### Dark Mode
+
+* **Primary**: `#3B82F6` – Bright blue
+* **Accent**: `#EF4444` – Vivid red
+* **Background**: `#0F172A` – Deep dark tone
+* **Surface**: `#1E293B` – Dark gray surface
+* **Alt Surface**: `#334155` – Medium gray
+* **Border**: `#475569` – Dark border
+* **Text**: `#F1F5F9` – Light text
+* **Secondary Text**: `#94A3B8` – Gray text
+
+### Status Colors
+
+* **Pending**: `#F59E0B` (Amber) – Yellow/Orange
+* **Preparing**: `#3B82F6` (Blue)
+* **Ready**: `#10B981` (Emerald) – Green
+* **Delivered**: `#6B7280` (Gray)
+
+### Typography
+
+* **Headings**: System font, weight 600–700
+* **Body Text**: System font, weight 400
+* **Subtext**: System font, weight 300
+* **Button Text**: System font, weight 500
+
+## 🧩 Components
 
 ### PrimaryButton
-Ana buton bileşeni, üç farklı varyant sunar:
-- **Primary**: Ana eylemler için mavi arka planlı buton
-- **Secondary**: İkincil eylemler için şeffaf arka planlı buton  
-- **Outline**: Kenarlıklı, şeffaf arka planlı buton
 
-**Özellikler:**
-- Loading state (yükleniyor durumu)
-- Disabled state (devre dışı durum)
-- Üç farklı boyut (small, medium, large)
-- Full width seçeneği
-- Özelleştirilebilir renkler
+Main button component with 3 variants:
+
+* **Primary**: Blue background for main actions
+* **Secondary**: Transparent for secondary actions
+* **Outline**: Border with transparent background
+
+Features:
+
+* Loading & Disabled states
+* Sizes: small, medium, large
+* Full-width option
+* Customizable colors
 
 ```tsx
 <PrimaryButton
-  title="Sipariş Ver"
+  title="Place Order"
   variant="primary"
   size="medium"
   loading={false}
@@ -93,304 +103,143 @@ Ana buton bileşeni, üç farklı varyant sunar:
 ```
 
 ### SurfaceCard
-İçerik kartları için kullanılan temel bileşen:
-- **Default**: Standart kart görünümü
-- **Elevated**: Gölgeli, yükseltilmiş görünüm
-- **Outlined**: Kenarlıklı, düz görünüm
 
-**Padding Seçenekleri:**
-- None, Small, Medium, Large
+Reusable card component:
+
+* **Default**: Standard look
+* **Elevated**: With shadow
+* **Outlined**: Border only
 
 ### StatusBadge
-Sipariş durumlarını göstermek için kullanılan badge bileşeni:
-- Durum rengine göre otomatik renklendirme
-- İkon destegi (opsiyonel)
-- Üç farklı boyut seçeneği
 
-## 🗄️ Veri Yönetimi (State Management)
+Badge for order status:
 
-Orderia, **Zustand** state management kütüphanesi kullanarak modüler bir veri yönetimi sistemi sunar:
+* Auto-coloring by status
+* Optional icons
+* Three size options
 
-### MenuStore
-Menü ve kategori yönetimi:
-```typescript
-- categories: Kategori listesi
-- menuItems: Ürün listesi
-- addCategory(): Yeni kategori ekleme
-- updateCategory(): Kategori güncelleme
-- deleteCategory(): Kategori silme
-- addMenuItem(): Ürün ekleme
-- updateMenuItem(): Ürün güncelleme
-- deleteMenuItem(): Ürün silme
-- getCategoriesWithItems(): Kategorileri ürünleriyle birlikte getirme
-```
+## 🗄️ State Management
 
-### LayoutStore
-Salon ve masa yönetimi:
-```typescript
-- halls: Salon listesi
-- tables: Masa listesi
-- addHall(): Salon ekleme
-- updateHall(): Salon güncelleme
-- deleteHall(): Salon silme
-- addTable(): Masa ekleme
-- updateTable(): Masa güncelleme
-- deleteTable(): Masa silme
-- getHallsWithTables(): Salonları masalarıyla birlikte getirme
-```
+Uses **Zustand** for modular state management:
 
-### OrderStore
-Sipariş yönetimi:
-```typescript
-- openTickets: Açık siparişler
-- createTicket(): Yeni sipariş oluşturma
-- addItemToTicket(): Siparişe ürün ekleme
-- updateTicketLine(): Sipariş kalemi güncelleme
-- removeTicketLine(): Sipariş kalemi silme
-- submitTicket(): Siparişi gönderme
-- calculateTicketTotal(): Sipariş toplam hesaplama
-```
+* **MenuStore** → categories, items, add/update/delete functions
+* **LayoutStore** → halls, tables, add/update/delete functions
+* **OrderStore** → open orders, create/update/remove lines, totals
+* **HistoryStore** → daily sales, completed orders, analytics
 
-### HistoryStore
-Geçmiş ve raporlama:
-```typescript
-- dailyHistory: Günlük satış verileri
-- addCompletedTicket(): Tamamlanan sipariş ekleme
-- getDayRevenue(): Günlük gelir hesaplama
-- getCategoryBreakdown(): Kategori bazlı analiz
-- getDateRangeRevenue(): Tarih aralığı gelir hesaplama
-```
-
-## 🏗️ Proje Yapısı
+## 🏗️ Project Structure
 
 ```
 src/
-├── components/          # Yeniden kullanılabilir UI bileşenleri
-│   ├── PrimaryButton.tsx
-│   ├── SurfaceCard.tsx
-│   ├── StatusBadge.tsx
-│   └── index.ts
-├── screens/            # Uygulama ekranları
-│   ├── TablesScreen.tsx    # Ana masa görünümü
-│   ├── MenuScreen.tsx      # Menü yönetimi
-│   ├── HistoryScreen.tsx   # Satış geçmişi
-│   ├── SettingsScreen.tsx  # Ayarlar
-│   ├── TableDetailScreen.tsx # Masa detay
-│   ├── AddMenuItemScreen.tsx # Ürün ekleme
-│   └── AddHallScreen.tsx   # Salon ekleme
-├── stores/             # State management
-│   ├── menuStore.ts
-│   ├── layoutStore.ts
-│   ├── orderStore.ts
-│   ├── historyStore.ts
-│   └── index.ts
-├── contexts/           # React Context'ler
-│   └── ThemeContext.tsx
-├── navigation/         # Navigasyon yapısı
-│   └── AppNavigator.tsx
-├── constants/          # Sabitler ve yardımcı fonksiyonlar
-│   └── branding.ts
-├── types/             # TypeScript tip tanımları
-│   └── index.ts
-└── utils/             # Yardımcı fonksiyonlar
-    └── sampleData.ts
+├── components/   # Reusable UI
+├── screens/      # App screens
+├── stores/       # State stores
+├── contexts/     # Contexts
+├── navigation/   # Navigation
+├── constants/    # Constants & helpers
+├── types/        # TS types
+└── utils/        # Utilities
 ```
 
-## 🚀 Teknoloji Stack'i
+## 🚀 Tech Stack
 
-### Ana Teknolojiler
-- **React Native 0.79.5**: Cross-platform mobil uygulama geliştirme
-- **Expo ~53.0.0**: Hızlı geliştirme ve deployment platform
-- **TypeScript**: Tip güvenli JavaScript geliştirme
-- **React 18.3.1**: Modern React özellikleri
+* **React Native 0.79.5**
+* **Expo \~53.0.0**
+* **TypeScript**
+* **React 18.3.1**
+* **Zustand 5.0.2**
+* **AsyncStorage**
+* **NativeWind**
+* **React Navigation**
+* **Ionicons**
 
-### State Management
-- **Zustand 5.0.2**: Hafif ve performanslı state management
-- **AsyncStorage**: Kalıcı veri depolama
+## 📋 Installation
 
-### UI ve Styling
-- **NativeWind 4.1.23**: Tailwind CSS benzeri utility-first styling
-- **React Navigation**: Navigasyon yönetimi
-- **Ionicons**: Modern ikon seti
+### Requirements
 
-### Geliştirme Araçları
-- **Metro Bundler**: React Native bundling
-- **Babel**: JavaScript transpiling
-- **ESLint**: Kod kalitesi kontrolü
+* Node.js 18+
+* npm or yarn
+* Expo CLI
+* Android Studio / Xcode
 
-## 📋 Kurulum ve Çalıştırma
+### Steps
 
-### Gereksinimler
-- Node.js 18+ 
-- npm veya yarn
-- Expo CLI
-- Android Studio (Android için)
-- Xcode (iOS için)
-
-### Kurulum Adımları
-
-1. **Proje Klonlama**
 ```bash
-git clone [repository-url]
+git clone [repo-url]
 cd Orderia
-```
-
-2. **Bağımlılıkları Yükleme**
-```bash
 npm install
-```
-
-3. **Uygulamayı Çalıştırma**
-```bash
 npx expo start
 ```
 
-4. **Platform Seçimi**
-- Android: `a` tuşuna basın
-- iOS: `i` tuşuna basın  
-- Web: `w` tuşuna basın
+Press:
 
-## 🔧 Yapılandırma
+* `a` for Android
+* `i` for iOS
+* `w` for Web
 
-### Metro Configuration
-Proje, path alias desteği için özel Metro yapılandırması kullanır:
+## 🔧 Configuration
 
-```javascript
-// metro.config.js
-const { getDefaultConfig } = require('expo/metro-config');
-const path = require('path');
+* **Metro** with path alias
+* **Babel** with nativewind
+* **TSConfig** with `@/*` aliases
 
-const config = getDefaultConfig(__dirname);
+## 🎯 Usage Guide
 
-config.resolver.alias = {
-  '@': path.resolve(__dirname, 'src'),
-};
+1. **Initial Setup** → Sample data auto-loaded
+2. **Table Management** → Add halls/tables, track status
+3. **Orders** → Select table, add products, confirm
+4. **Menu** → Manage categories & items
+5. **Reports** → Daily/weekly/monthly sales
 
-module.exports = config;
-```
+## 🔄 Solved Issues
 
-### Babel Configuration
-```javascript
-// babel.config.js
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-    plugins: [
-      'nativewind/babel',
-    ],
-  };
-};
-```
+* Path alias issues fixed
+* BOM characters removed
+* Metro vs Babel resolver conflicts resolved
 
-### TypeScript Configuration
-```json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-```
+## 🔮 Roadmap
 
-## 🎯 Kullanım Kılavuzu
+* 🔐 User management & roles
+* 💳 Payment integration
+* 📱 QR menu for customers
+* 🖨️ Receipt printing
+* ☁️ Cloud sync
+* 📊 Advanced analytics
+* 🔔 Push notifications
+* 🎨 Theme customization
 
-### 1. İlk Kurulum
-Uygulama ilk açıldığında otomatik olarak örnek veriler yüklenir:
-- 3 ana kategori (Ana Yemekler, İçecekler, Tatlılar)
-- Her kategoride örnek ürünler
-- Varsayılan salon ve masa düzeni
+## 🤝 Contribution
 
-### 2. Masa Yönetimi
-- **Ana Ekran**: Tüm salonları ve masaları görüntüleyin
-- **Yeni Salon Ekleme**: Sağ üst köşedeki "+" butonunu kullanın
-- **Masa Ekleme**: Salon detayında "Masa Ekle" butonunu kullanın
-- **Masa Durumu**: Masaların rengine göre durumlarını takip edin
+1. Fork
+2. Create feature branch
+3. Commit changes
+4. Push
+5. Open PR
 
-### 3. Sipariş Alma
-- Masaya tıklayarak sipariş ekranına geçin
-- Kategorilerden ürün seçin
-- Miktarları ayarlayın
-- "Sipariş Ver" ile siparişi onaylayın
+## 📄 License
 
-### 4. Menü Yönetimi
-- **Menü sekmesi**nden kategori ve ürün yönetimi
-- Yeni kategori ekleyin
-- Kategori başına ürün ekleyin
-- Fiyat ve stok durumlarını güncelleyin
+Licensed under MIT. See `LICENSE` for details.
 
-### 5. Raporlama
-- **Geçmiş sekmesi**nden satış raporlarını görüntüleyin
-- Günlük, haftalık, aylık raporlar
-- Kategori bazlı satış analizleri
+## 📞 Support
 
-## 🔄 Solved Issues (Çözülen Sorunlar)
+* **Email**: [support@orderia.app](mailto:support@orderia.app)
+* **Bugs**: [GitHub Issues](https://github.com/orderia/orderia/issues)
+* **Discussions**: [GitHub Discussions](https://github.com/orderia/orderia/discussions)
 
-### Path Alias Çözümü
-**Problem**: Metro bundler ve Hermes engine ile path alias uyumsuzluğu
-**Çözüm**: Tüm `@/` import'ları relative path'lere dönüştürüldü
+## 🙏 Acknowledgements
 
-### Dosyalar:
-- `src/navigation/AppNavigator.tsx`
-- `src/contexts/ThemeContext.tsx`
-- `src/stores/*.ts` (tüm store dosyaları)
-- `src/constants/branding.ts`
-- `src/utils/sampleData.ts`
-- `src/screens/*.tsx` (tüm ekran dosyaları)
-- `src/components/*.tsx` (tüm component dosyaları)
+Thanks to everyone involved:
 
-### BOM Character Temizliği
-**Problem**: package.json dosyasında BOM karakterleri
-**Çözüm**: PowerShell ile UTF-8 encoding (BOM'suz) kullanılarak dosya yeniden kaydedildi
-
-### Metro ve Babel Koordinasyonu
-**Problem**: Module resolver çakışmaları
-**Çözüm**: Babel module-resolver plugin'i kaldırıldı, sadece Metro alias kullanıldı
-
-## 🔮 Gelecek Özellikler
-
-### Planlanan Geliştirmeler
-- **🔐 Kullanıcı Yönetimi**: Çoklu kullanıcı desteği ve yetki yönetimi
-- **💳 Ödeme Entegrasyonu**: Kredi kartı ve mobil ödeme sistemleri
-- **📱 QR Menü**: Müşteriler için QR kod ile dijital menü
-- **🖨️ Fiş Yazdırma**: Termal yazıcı entegrasyonu
-- **☁️ Cloud Sync**: Bulut tabanlı veri senkronizasyonu
-- **📊 Advanced Analytics**: Gelişmiş raporlama ve analizler
-- **🔔 Push Notifications**: Sipariş durumu bildirimleri
-- **🎨 Theme Customization**: Özelleştirilebilir tema seçenekleri
-
-## 🤝 Katkıda Bulunma
-
-Orderia açık kaynak bir projedir ve katkılarınızı bekliyoruz:
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add some AmazingFeature'`)
-4. Branch'e push edin (`git push origin feature/AmazingFeature`)
-5. Pull Request oluşturun
-
-## 📄 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasını inceleyebilirsiniz.
-
-## 📞 Destek ve İletişim
-
-- **📧 Email**: support@orderia.app
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/orderia/orderia/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/orderia/orderia/discussions)
-
-## 🙏 Teşekkürler
-
-Orderia'nın geliştirilmesinde emeği geçen herkese teşekkür ederiz:
-- React Native Community
-- Expo Team
-- Zustand Maintainers
-- All Contributors
+* React Native Community
+* Expo Team
+* Zustand Maintainers
+* All Contributors
 
 ---
 
-**🍽️ Orderia ile restoran yönetiminizi dijitalleştirin!**
+**🍽️ Digitalize your restaurant management with Orderia!**
 
-*Made with ❤️ by OMNI Tech Solutions*
+*Made with ❤️ by Melih Hyusein from OMNI Tech Solutions*
+
+---
+
