@@ -119,7 +119,7 @@ export default function MenuScreen() {
   };
 
   const handleEditMenuItem = (menuItem: MenuItem) => {
-    navigation.navigate('AddMenuItem', { categoryId: menuItem.categoryId });
+    navigation.navigate('AddMenuItem', { categoryId: menuItem.categoryId, itemId: menuItem.id });
     setShowItemActions(false);
   };
 
