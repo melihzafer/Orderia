@@ -34,6 +34,7 @@ import {
   ModifierOptionId,
   MutationId,
   OrderItem,
+  Receipt,
   RestaurantTableId,
   UserId,
   calculateOrderItemTotal,
@@ -57,6 +58,7 @@ import {
   TableOperationTarget,
   TransferTableSessionCommand,
 } from '../features/table-operations';
+import { PreparedReceiptPdf, ReceiptReadySheet, presentReceiptPdf } from '../features/receipts';
 import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { createTextMatcher } from '../utils/searchUtils';
@@ -110,6 +112,7 @@ function CloudTableWorkspace({
     database,
     confirmCheckPayments,
     errorMessage: runtimeError,
+    prepareReceiptPdf,
     refresh,
     resolveActiveParticipants,
     resolveProfileNames,
@@ -142,6 +145,9 @@ function CloudTableWorkspace({
   const [paymentBusy, setPaymentBusy] = useState(false);
   const [showTableOperation, setShowTableOperation] = useState(false);
   const [tableOperationBusy, setTableOperationBusy] = useState(false);
+  const [readyReceipt, setReadyReceipt] = useState<Receipt>();
+  const [preparedReceiptPdf, setPreparedReceiptPdf] = useState<PreparedReceiptPdf>();
+  const [receiptBusy, setReceiptBusy] = useState(false);
   const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
   const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
   const [incomingMessage, setIncomingMessage] = useState<string>();
@@ -464,10 +470,33 @@ function CloudTableWorkspace({
       const clientMutationId = toDomainId<MutationId>(secureUuid());
       const result = await confirmCheckPayments(deviceId, clientMutationId, command);
       setPayingCheck(undefined);
-      Alert.alert(
-        copy.paymentConfirmed,
-        `${copy.remaining}: ${formatMoney(result.remainingMinor, command.currencyCode, language)}`,
-      );
+      if (result.checkStatus === 'paid' && database && scope) {
+        let after: string | undefined;
+        let receipt: Receipt | undefined;
+        do {
+          const page = await database.repository('receipts').list(scope, {
+            ...(after ? { after } : {}),
+            limit: 200,
+          });
+          receipt = page.items.find((candidate) => candidate.checkId === result.checkId);
+          after = receipt ? undefined : page.nextCursor;
+        } while (after);
+        if (receipt) {
+          setPreparedReceiptPdf(undefined);
+          setReadyReceipt(receipt);
+        } else {
+          Alert.alert(copy.paymentConfirmed, copy.receiptSyncing);
+        }
+      } else {
+        Alert.alert(
+          copy.paymentConfirmed,
+          `${copy.remaining}: ${formatMoney(
+            result.remainingMinor,
+            command.currencyCode,
+            language,
+          )}`,
+        );
+      }
       await reload();
     } catch (error) {
       const message =
@@ -481,6 +510,20 @@ function CloudTableWorkspace({
       throw new Error(message);
     } finally {
       setPaymentBusy(false);
+    }
+  };
+
+  const openReceiptPdf = async (mode: 'download' | 'share') => {
+    if (!readyReceipt) return;
+    setReceiptBusy(true);
+    try {
+      const prepared = preparedReceiptPdf ?? (await prepareReceiptPdf(readyReceipt));
+      setPreparedReceiptPdf(prepared);
+      await presentReceiptPdf(prepared.signedUrl, readyReceipt.receiptNumber, mode);
+    } catch (error) {
+      Alert.alert(copy.pdfFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } finally {
+      setReceiptBusy(false);
     }
   };
 
@@ -811,6 +854,21 @@ function CloudTableWorkspace({
           sourceTable={snapshot.table}
           targets={tableOperationTargets}
           visible
+        />
+      ) : null}
+      {readyReceipt ? (
+        <ReceiptReadySheet
+          busy={receiptBusy}
+          language={language}
+          onClose={() => {
+            if (!receiptBusy) {
+              setReadyReceipt(undefined);
+              setPreparedReceiptPdf(undefined);
+            }
+          }}
+          onDownload={() => void openReceiptPdf('download')}
+          onShare={() => void openReceiptPdf('share')}
+          receipt={readyReceipt}
         />
       ) : null}
 
@@ -1886,6 +1944,8 @@ interface WorkspaceCopy {
   readonly tableMoved: string;
   readonly tablesMerged: string;
   readonly tableChanged: string;
+  readonly receiptSyncing: string;
+  readonly pdfFailed: string;
 }
 
 function workspaceCopy(language: Language): WorkspaceCopy {
@@ -1956,6 +2016,8 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       tableMoved: 'Masa taşındı',
       tablesMerged: 'Masalar birleştirildi',
       tableChanged: 'Kaynak veya hedef masa başka bir cihazda değişti. Güncel durumu kontrol edin.',
+      receiptSyncing: 'Fiş oluşturuldu ve arşive senkronize ediliyor.',
+      pdfFailed: 'Fiş PDF’i hazırlanamadı',
     };
   }
   if (language === 'bg') {
@@ -2025,6 +2087,8 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       tableMoved: 'Масата е преместена',
       tablesMerged: 'Масите са обединени',
       tableChanged: 'Източникът или целта са променени. Проверете текущото състояние.',
+      receiptSyncing: 'Разписката е създадена и се синхронизира с архива.',
+      pdfFailed: 'PDF файлът не бе подготвен',
     };
   }
   return {
@@ -2093,5 +2157,7 @@ function workspaceCopy(language: Language): WorkspaceCopy {
     tableMoved: 'Table moved',
     tablesMerged: 'Tables merged',
     tableChanged: 'The source or target changed on another device. Review the current state.',
+    receiptSyncing: 'The receipt was issued and is syncing to the archive.',
+    pdfFailed: 'Receipt PDF could not be prepared',
   };
 }

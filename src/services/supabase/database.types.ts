@@ -179,6 +179,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      finalize_receipt_pdf: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_receipt_id: string;
+          requested_pdf_hash: string;
+        };
+        Returns: Json;
+      };
       list_active_session_participants: {
         Args: {
           requested_organization_id: string;

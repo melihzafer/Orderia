@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { BranchId, DeviceId, MutationId, OrganizationId, toDomainId } from '../../domain';
+import { BranchId, DeviceId, MutationId, OrganizationId, Receipt, toDomainId } from '../../domain';
 import {
   ConfirmCheckPaymentsCommand,
   ConfirmCheckPaymentsResult,
@@ -21,6 +21,7 @@ import {
   TransferTableSessionCommand,
   TransferTableSessionResult,
 } from '../../features/table-operations';
+import { PreparedReceiptPdf, ReceiptPdfGateway } from '../../features/receipts';
 import { ActiveSessionParticipantRow, Database, getSupabaseClient } from '../../services/supabase';
 import { LocalDatabase, RepositoryScope } from '../contracts';
 import {
@@ -62,6 +63,7 @@ export interface OrderiaDataContextValue {
     clientMutationId: MutationId,
     command: TransferTableSessionCommand,
   ): Promise<TransferTableSessionResult>;
+  prepareReceiptPdf(receipt: Receipt): Promise<PreparedReceiptPdf>;
 }
 
 interface OrderiaDataProviderProps {
@@ -281,6 +283,19 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const prepareReceiptPdf = useCallback(
+    async (receipt: Receipt): Promise<PreparedReceiptPdf> => {
+      if (!client || !scope) throw new Error('Cloud receipt PDF service is unavailable');
+      if (receipt.organizationId !== scope.organizationId || receipt.branchId !== scope.branchId) {
+        throw new Error('Receipt is outside the active branch');
+      }
+      const result = await new ReceiptPdfGateway(client).prepare(receipt);
+      await refresh();
+      return result;
+    },
+    [client, refresh, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -373,6 +388,7 @@ export function OrderiaDataProvider({
       resolveActiveParticipants,
       confirmCheckPayments,
       transferOrMergeTableSession,
+      prepareReceiptPdf,
     }),
     [
       client,
@@ -380,6 +396,7 @@ export function OrderiaDataProvider({
       database,
       errorMessage,
       lastSuccessfulSyncAt,
+      prepareReceiptPdf,
       readiness,
       refresh,
       resolveActiveParticipants,

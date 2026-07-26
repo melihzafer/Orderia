@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(49);
+select plan(72);
 
 insert into auth.users (
   instance_id,
@@ -654,6 +654,53 @@ select is(
   'the winning note remains unchanged after the stale edit'
 );
 
+select lives_ok(
+  $$
+    select public.apply_concurrent_order_batch(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000020',
+      'd5000000-0000-4000-8000-000000000150',
+      jsonb_build_object(
+        'tableId', '65000000-0000-4000-8000-000000000001',
+        'session', jsonb_build_object(
+          'id', 'e5000000-0000-4000-8000-000000000001',
+          'openedAt', (
+            select opened_at
+            from public.table_sessions
+            where id = 'e5000000-0000-4000-8000-000000000001'
+          )
+        ),
+        'check', jsonb_build_object(
+          'id', 'f5000000-0000-4000-8000-000000000150',
+          'name', 'Bar',
+          'openedAt', now()
+        ),
+        'batch', jsonb_build_object(
+          'id', 'd5000000-0000-4000-8000-000000000150',
+          'createdAt', now()
+        ),
+        'items', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000151',
+            'menuItemId', '85000000-0000-4000-8000-000000000001',
+            'menuItemVersion', 1,
+            'quantity', 1,
+            'modifierSelections', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000152',
+                'optionId', 'a5000000-0000-4000-8000-000000000001'
+              )
+            )
+          )
+        )
+      )
+    )
+  $$,
+  'a second named check remains open while the first check is paid and receipted'
+);
+
 select is(
   (
     public.confirm_check_payments(
@@ -841,6 +888,169 @@ select is(
   ),
   500::numeric,
   'the final confirmed allocation total equals the server-derived check total'
+);
+select is(
+  (
+    select count(*)
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+      and status = 'issued'
+  ),
+  1::bigint,
+  'paying a check automatically issues exactly one immutable receipt'
+);
+select matches(
+  (
+    select receipt_number
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  '^WB1-[0-9]{8}-000001$',
+  'the first receipt uses the branch prefix, business date, and monotonic sequence'
+);
+select is(
+  (
+    select total_minor
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  500::bigint,
+  'the receipt total is derived from billable item snapshots'
+);
+select is(
+  (
+    select business_date
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  (
+    timezone('Europe/Sofia', now())
+    - (time '04:00' - time '00:00')
+  )::date,
+  'the receipt business date uses the branch timezone and cutoff'
+);
+select is(
+  (
+    select snapshot_json ->> 'organizationName'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'Workspace Tenant',
+  'the immutable snapshot retains the historical organization name'
+);
+select is(
+  (
+    select snapshot_json ->> 'tableLabel'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'Masa 4',
+  'the receipt freezes the table label before later transfers'
+);
+select is(
+  (
+    select snapshot_json #>> '{checks,0,name}'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'Pencere tarafı',
+  'the receipt freezes the named check'
+);
+select is(
+  (
+    select snapshot_json #>> '{checks,0,items,0,name}'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'Patates kızartması',
+  'the receipt freezes the purchased item name'
+);
+select is(
+  (
+    select snapshot_json #>> '{checks,0,items,0,modifiers,0,name}'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'Peynirli',
+  'the receipt freezes modifier names and prices'
+);
+select is(
+  (
+    select jsonb_array_length(snapshot_json -> 'payments')
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  3,
+  'the receipt records every cash and card payment component'
+);
+select ok(
+  (
+    select snapshot_json -> 'waiterDisplayNames' ? 'Workspace Waiter'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'the receipt attributes the original waiter'
+);
+select ok(
+  (
+    select snapshot_json -> 'waiterDisplayNames' ? 'Second Waiter'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'the receipt attributes every contributing waiter'
+);
+select matches(
+  (
+    select pdf_storage_path
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  '^25000000-0000-4000-8000-000000000001/35000000-0000-4000-8000-000000000001/[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9a-f-]+[.]pdf$',
+  'the PDF path is tenant scoped and deterministic'
+);
+select is(
+  (
+    select public
+    from storage.buckets
+    where id = 'receipt-pdfs'
+  ),
+  false,
+  'receipt PDFs are stored in a private bucket'
+);
+select is(
+  (
+    public.finalize_receipt_pdf(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (
+        select id
+        from public.receipts
+        where check_id = 'f5000000-0000-4000-8000-000000000001'
+      ),
+      repeat('a', 64)
+    ) ->> 'status'
+  ),
+  'ready',
+  'a one-time PDF SHA-256 finalization succeeds after private upload'
+);
+select is(
+  (
+    select pdf_hash
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  repeat('a', 64),
+  'the finalized PDF hash is retained for integrity checks'
+);
+select throws_ok(
+  $$
+    update public.receipts
+    set receipt_number = 'MUTATED'
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  $$,
+  '55000',
+  'receipts_are_immutable_create_an_adjustment',
+  'commercial receipt fields remain immutable after PDF finalization'
 );
 select is(
   (
@@ -1050,7 +1260,7 @@ select is(
     where table_session_id = 'e5000000-0000-4000-8000-000000000301'
   ),
   2::bigint,
-  'all named checks are preserved separately on the merged session'
+  'only unsettled named checks move to the merged session'
 );
 select is(
   (
@@ -1058,8 +1268,8 @@ select is(
     from public.checks
     where table_session_id = 'e5000000-0000-4000-8000-000000000301'
   ),
-  'Bahçe,Pencere tarafı',
-  'a merge preserves every check name without mixing their contents'
+  'Bahçe,Bar',
+  'a merge preserves active check names without mixing their contents'
 );
 select is(
   (
@@ -1067,8 +1277,17 @@ select is(
     from public.order_items
     where id = 'd5000000-0000-4000-8000-000000000111'
   ),
-  'e5000000-0000-4000-8000-000000000301'::uuid,
-  'order items follow their named check to the canonical target session'
+  'e5000000-0000-4000-8000-000000000001'::uuid,
+  'paid order history remains attached to its immutable source session'
+);
+select is(
+  (
+    select table_session_id
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'e5000000-0000-4000-8000-000000000001'::uuid,
+  'the immutable receipt remains attached to its historical source session'
 );
 select is(
   (
@@ -1085,8 +1304,8 @@ select is(
     from public.payments
     where table_session_id = 'e5000000-0000-4000-8000-000000000301'
   ),
-  3::bigint,
-  'the confirmed payment ledger follows the merged checks'
+  0::bigint,
+  'settled payment history remains attached to its source session'
 );
 select is(
   (
@@ -1114,6 +1333,67 @@ select is(
   ),
   2::bigint,
   'an idempotent merge replay never duplicates named checks'
+);
+
+select is(
+  (
+    public.confirm_check_payments(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000041',
+      jsonb_build_object(
+        'checkId', 'f5000000-0000-4000-8000-000000000150',
+        'expectedCheckVersion', 2,
+        'currencyCode', 'EUR',
+        'payments', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000401',
+            'method', 'card',
+            'amountMinor', 500,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000411',
+                'orderItemId', 'd5000000-0000-4000-8000-000000000151',
+                'quantity', 1,
+                'amountMinor', 500
+              )
+            )
+          )
+        )
+      )
+    ) ->> 'checkStatus'
+  ),
+  'paid',
+  'a named check can be paid and receipted after its session was merged'
+);
+select matches(
+  (
+    select receipt_number
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000150'
+  ),
+  '^WB1-[0-9]{8}-000002$',
+  'the next receipt on the same business date receives the next branch sequence'
+);
+select is(
+  (
+    select snapshot_json ->> 'tableLabel'
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000150'
+  ),
+  'Masa 6',
+  'the second receipt freezes the table label at its own issue time'
+);
+select is(
+  (
+    select count(*)
+    from public.receipts
+    where branch_id = '35000000-0000-4000-8000-000000000001'
+      and status = 'issued'
+  ),
+  2::bigint,
+  'two paid named checks produce two distinct immutable receipts'
 );
 
 select * from finish();

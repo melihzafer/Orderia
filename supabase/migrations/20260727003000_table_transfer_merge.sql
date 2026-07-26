@@ -10,9 +10,6 @@ alter table public.order_batches
 alter table public.order_items
   alter constraint order_items_batch_scope_fkey
   deferrable initially immediate;
-alter table public.receipts
-  alter constraint receipts_check_scope_fkey
-  deferrable initially immediate;
 
 create or replace function public.transfer_or_merge_table_session(
   requested_organization_id uuid,
@@ -255,6 +252,7 @@ begin
   where check_row.organization_id = requested_organization_id
     and check_row.branch_id = requested_branch_id
     and check_row.table_session_id = source_session.id
+    and check_row.status in ('open', 'partially_paid')
     and check_row.deleted_at is null;
 
   if target_session.id is null then
@@ -282,8 +280,7 @@ begin
 
     set constraints
       public.order_batches_check_scope_fkey,
-      public.order_items_batch_scope_fkey,
-      public.receipts_check_scope_fkey
+      public.order_items_batch_scope_fkey
     deferred;
 
     update public.checks
@@ -292,12 +289,21 @@ begin
         version = version + 1
     where organization_id = requested_organization_id
       and branch_id = requested_branch_id
-      and table_session_id = source_session.id;
+      and table_session_id = source_session.id
+      and status in ('open', 'partially_paid');
     update public.order_batches
     set table_session_id = target_session.id
     where organization_id = requested_organization_id
       and branch_id = requested_branch_id
-      and table_session_id = source_session.id;
+      and table_session_id = source_session.id
+      and check_id in (
+        select check_row.id
+        from public.checks as check_row
+        where check_row.organization_id = requested_organization_id
+          and check_row.branch_id = requested_branch_id
+          and check_row.table_session_id = target_session.id
+          and check_row.status in ('open', 'partially_paid')
+      );
 
     update public.order_items
     set table_session_id = target_session.id,
@@ -306,19 +312,34 @@ begin
         version = version + 1
     where organization_id = requested_organization_id
       and branch_id = requested_branch_id
-      and table_session_id = source_session.id;
+      and table_session_id = source_session.id
+      and check_id in (
+        select check_row.id
+        from public.checks as check_row
+        where check_row.organization_id = requested_organization_id
+          and check_row.branch_id = requested_branch_id
+          and check_row.table_session_id = target_session.id
+          and check_row.status in ('open', 'partially_paid')
+      );
 
     update public.payments
     set table_session_id = target_session.id
     where organization_id = requested_organization_id
       and branch_id = requested_branch_id
-      and table_session_id = source_session.id;
-
-    update public.receipts
-    set table_session_id = target_session.id
-    where organization_id = requested_organization_id
-      and branch_id = requested_branch_id
-      and table_session_id = source_session.id;
+      and table_session_id = source_session.id
+      and exists (
+        select 1
+        from public.payment_allocations as allocation
+        join public.checks as check_row
+          on check_row.organization_id = allocation.organization_id
+         and check_row.branch_id = allocation.branch_id
+         and check_row.id = allocation.check_id
+        where allocation.organization_id = requested_organization_id
+          and allocation.branch_id = requested_branch_id
+          and allocation.payment_id = public.payments.id
+          and check_row.table_session_id = target_session.id
+          and check_row.status in ('open', 'partially_paid')
+      );
 
     insert into public.session_participants (
       organization_id,
