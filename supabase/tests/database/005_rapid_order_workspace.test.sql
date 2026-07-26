@@ -1539,8 +1539,8 @@ select is(
       )
     )
   ),
-  1::bigint,
-  'archive time filters evaluate issue time in the branch timezone'
+  2::bigint,
+  'archive time filters evaluate the shared transaction issue time in the branch timezone'
 );
 select is(
   (
@@ -1567,12 +1567,16 @@ select is(
       requested_after_issued_at => (
         select issued_at
         from public.receipts
-        where check_id = 'f5000000-0000-4000-8000-000000000150'
+        where branch_id = '35000000-0000-4000-8000-000000000001'
+        order by issued_at desc, id desc
+        limit 1
       ),
       requested_after_id => (
         select id
         from public.receipts
-        where check_id = 'f5000000-0000-4000-8000-000000000150'
+        where branch_id = '35000000-0000-4000-8000-000000000001'
+        order by issued_at desc, id desc
+        limit 1
       ),
       requested_page_size => 1
     )
@@ -1580,7 +1584,10 @@ select is(
   (
     select receipt_number
     from public.receipts
-    where check_id = 'f5000000-0000-4000-8000-000000000001'
+    where branch_id = '35000000-0000-4000-8000-000000000001'
+    order by issued_at desc, id desc
+    offset 1
+    limit 1
   ),
   'the archive cursor continues after the exact issued-at and id key'
 );
