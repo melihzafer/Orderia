@@ -49,7 +49,8 @@
           "sounds": ["./assets/notification-sound.wav"],
           "mode": "development"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {
