@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(83);
+select plan(93);
 
 insert into auth.users (
   instance_id,
@@ -1602,6 +1602,157 @@ select throws_ok(
   '42501',
   'branch_access_denied',
   'a user cannot search another branch receipt archive'
+);
+
+reset role;
+update public.memberships
+set role = 'manager'
+where organization_id = '25000000-0000-4000-8000-000000000001'
+  and branch_id = '35000000-0000-4000-8000-000000000001'
+  and user_id = '15000000-0000-4000-8000-000000000001';
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'summary' ->> 'confirmedRevenueMinor'
+  )::bigint,
+  1000::bigint,
+  'manager revenue is derived only from confirmed allocations for issued receipts'
+);
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'summary' ->> 'receiptCount'
+  )::bigint,
+  2::bigint,
+  'manager reporting counts immutable issued receipts'
+);
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'summary' ->> 'cancelledItemCount'
+  )::bigint,
+  1::bigint,
+  'manager reporting retains cancellation events outside confirmed revenue'
+);
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'summary' ->> 'cancelledValueMinor'
+  )::bigint,
+  1000::bigint,
+  'cancelled value includes immutable quantity and modifier prices'
+);
+select is(
+  jsonb_array_length(
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'waiters'
+  ),
+  2,
+  'every contributing waiter receives an auditable report row'
+);
+select is(
+  (
+    select (waiter ->> 'contributedRevenueMinor')::bigint
+    from jsonb_array_elements(
+      public.get_manager_report(
+        '25000000-0000-4000-8000-000000000001',
+        '35000000-0000-4000-8000-000000000001',
+        (select min(business_date) from public.receipts),
+        (select max(business_date) from public.receipts)
+      ) -> 'waiters'
+    ) as waiter
+    where waiter ->> 'displayName' = 'Second Waiter'
+  ),
+  500::bigint,
+  'item contribution follows the waiter who entered the order'
+);
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts),
+      '15000000-0000-4000-8000-000000000001'
+    ) -> 'summary' ->> 'selectedWaiterContributionMinor'
+  )::bigint,
+  500::bigint,
+  'a waiter filter excludes their cancelled items from contribution'
+);
+select is(
+  (
+    select sum((day ->> 'confirmedRevenueMinor')::bigint)
+    from jsonb_array_elements(
+      public.get_manager_report(
+        '25000000-0000-4000-8000-000000000001',
+        '35000000-0000-4000-8000-000000000001',
+        (select min(business_date) from public.receipts),
+        (select max(business_date) from public.receipts)
+      ) -> 'daily'
+    ) as day
+  ),
+  1000::numeric,
+  'daily confirmed totals reconcile to the report total'
+);
+select is(
+  (
+    public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (select min(business_date) from public.receipts),
+      (select max(business_date) from public.receipts)
+    ) -> 'cancellations' -> 0 ->> 'reasonName'
+  ),
+  'Müşteri vazgeçti',
+  'the manager can audit the exact cancellation reason and context'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000002","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+select throws_ok(
+  $$
+    select public.get_manager_report(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      current_date,
+      current_date
+    )
+  $$,
+  '42501',
+  'manager_role_required',
+  'waiters cannot access manager reporting'
 );
 
 select * from finish();

@@ -84,3 +84,23 @@ test('opens the searchable receipt archive with explicit offline recovery', asyn
     page.getByText(/Arşiv şu anda kullanılamıyor|Архивът не е достъпен|Archive unavailable/i),
   ).toBeVisible();
 });
+
+test('opens the manager report with auditable filters and offline recovery', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await page
+    .getByText(/Raporlar|Отчети|Reports/i)
+    .last()
+    .click();
+  await expect(
+    page.getByText(/Yönetici raporu|Управленски отчет|Manager report/i).first(),
+  ).toBeVisible();
+  await expect(page.getByLabel(/Başlangıç|Начало|From/i)).toBeVisible();
+  await expect(page.getByLabel(/Bitiş|Край|To/i)).toBeVisible();
+  await expect(
+    page.getByText(
+      /Yönetici raporu için internet bağlantısı gerekli|За управленския отчет е необходим интернет|An internet connection is required for manager reporting/i,
+    ),
+  ).toBeVisible();
+});

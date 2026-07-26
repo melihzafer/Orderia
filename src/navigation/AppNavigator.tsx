@@ -106,7 +106,7 @@ function MainTabs() {
             component={AnalyticsScreen}
             name="Reports"
             options={{
-              headerTitle: t.salesAnalytics,
+              headerShown: false,
               title: t.reportsNav,
             }}
           />

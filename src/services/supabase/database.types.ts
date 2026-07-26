@@ -210,6 +210,16 @@ export type Database = {
         };
         Returns: Json;
       };
+      get_manager_report: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_date_from: string;
+          requested_date_to: string;
+          requested_waiter_id?: string | null;
+        };
+        Returns: Json;
+      };
       list_active_session_participants: {
         Args: {
           requested_organization_id: string;

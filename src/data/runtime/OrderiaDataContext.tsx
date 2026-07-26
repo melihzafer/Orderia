@@ -10,12 +10,21 @@ import React, {
 } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { BranchId, DeviceId, MutationId, OrganizationId, Receipt, toDomainId } from '../../domain';
+import {
+  BranchId,
+  DeviceId,
+  MutationId,
+  OrganizationId,
+  Receipt,
+  UserId,
+  toDomainId,
+} from '../../domain';
 import {
   ConfirmCheckPaymentsCommand,
   ConfirmCheckPaymentsResult,
   SupabasePaymentGateway,
 } from '../../features/payments';
+import { ManagerReport, ManagerReportGateway } from '../../features/manager-reports';
 import {
   ReceiptArchiveCursor,
   ReceiptArchiveFilters,
@@ -75,6 +84,7 @@ export interface OrderiaDataContextValue {
     cursor?: ReceiptArchiveCursor,
     pageSize?: number,
   ): Promise<ReceiptArchivePage>;
+  loadManagerReport(dateFrom: string, dateTo: string, waiterId?: UserId): Promise<ManagerReport>;
 }
 
 interface OrderiaDataProviderProps {
@@ -324,6 +334,19 @@ export function OrderiaDataProvider({
     [client, scope],
   );
 
+  const loadManagerReport = useCallback(
+    async (dateFrom: string, dateTo: string, waiterId?: UserId): Promise<ManagerReport> => {
+      if (!client || !scope) throw new Error('Cloud manager reporting is unavailable');
+      return new ManagerReportGateway(client).load({
+        ...scope,
+        dateFrom,
+        dateTo,
+        ...(waiterId ? { waiterId } : {}),
+      });
+    },
+    [client, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -418,6 +441,7 @@ export function OrderiaDataProvider({
       transferOrMergeTableSession,
       prepareReceiptPdf,
       searchReceiptArchive,
+      loadManagerReport,
     }),
     [
       client,
@@ -425,6 +449,7 @@ export function OrderiaDataProvider({
       database,
       errorMessage,
       lastSuccessfulSyncAt,
+      loadManagerReport,
       prepareReceiptPdf,
       readiness,
       refresh,
