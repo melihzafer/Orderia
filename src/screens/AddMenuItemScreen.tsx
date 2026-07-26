@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,20 +9,20 @@ import {
   Alert,
   TouchableOpacity,
   FlatList,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BottomSheet from '@gorhom/bottom-sheet';
 
-import { useTheme } from "../contexts/ThemeContext";
-import { useLocalization } from "../i18n";
-import { useMenuStore } from "../stores";
-import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from "../components";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { MenuItem } from "../types";
+import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
+import { useMenuStore } from '../stores';
+import { PrimaryButton, SurfaceCard, ActionSheet, ActionSheetAction } from '../components';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { MenuItem } from '../types';
 
-type AddMenuItemRouteProp = RouteProp<RootStackParamList, "AddMenuItem">;
+type AddMenuItemRouteProp = RouteProp<RootStackParamList, 'AddMenuItem'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AddMenuItemScreen() {
@@ -35,14 +35,14 @@ export default function AddMenuItemScreen() {
   const { categoryId, itemId } = route.params || {};
 
   // Check if we're editing an existing item
-  const editingItem = itemId ? menuItems.find(item => item.id === itemId) : null;
+  const editingItem = itemId ? menuItems.find((item) => item.id === itemId) : null;
   const isEditing = !!editingItem;
 
-  const [name, setName] = useState(editingItem?.name || "");
-  const [price, setPrice] = useState(editingItem?.price?.toString() || "");
-  const [description, setDescription] = useState(editingItem?.description || "");
+  const [name, setName] = useState(editingItem?.name || '');
+  const [price, setPrice] = useState(editingItem?.price?.toString() || '');
+  const [description, setDescription] = useState(editingItem?.description || '');
   const [selectedCategoryId, setSelectedCategoryId] = useState(
-    categoryId || editingItem?.categoryId || ""
+    categoryId || editingItem?.categoryId || '',
   );
   const [loading, setLoading] = useState(false);
 
@@ -93,10 +93,10 @@ export default function AddMenuItemScreen() {
 
       // Clear form if adding new item
       if (!isEditing) {
-        setName("");
-        setPrice("");
-        setDescription("");
-        setSelectedCategoryId(categoryId || "");
+        setName('');
+        setPrice('');
+        setDescription('');
+        setSelectedCategoryId(categoryId || '');
       } else {
         navigation.goBack();
       }
@@ -121,7 +121,7 @@ export default function AddMenuItemScreen() {
   const handleDeleteMenuItem = (item: MenuItem) => {
     setShowItemActions(false);
     setSelectedMenuItem(null);
-    
+
     Alert.alert(
       t.confirmDelete || 'Confirm Delete',
       `Are you sure you want to delete "${item.name}"?`,
@@ -139,9 +139,9 @@ export default function AddMenuItemScreen() {
             } catch (error) {
               Alert.alert(t.error, t.genericError);
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
@@ -162,11 +162,17 @@ export default function AddMenuItemScreen() {
   ];
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => {
-    const category = categories.find(cat => cat.id === item.categoryId);
+    const category = categories.find((cat) => cat.id === item.categoryId);
     return (
       <TouchableOpacity onLongPress={() => handleMenuItemLongPress(item)}>
         <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
+          >
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
                 {item.name}
@@ -183,7 +189,8 @@ export default function AddMenuItemScreen() {
               )}
             </View>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-              {currency}{(item.price / 100).toFixed(2)}
+              {currency}
+              {(item.price / 100).toFixed(2)}
             </Text>
           </View>
         </SurfaceCard>
@@ -194,22 +201,23 @@ export default function AddMenuItemScreen() {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.bg }}
-      edges={["bottom", "left", "right"]}
+      edges={['bottom', 'left', 'right']}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-          
           {/* Add/Edit Form */}
           <SurfaceCard style={{ marginBottom: 16 }}>
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text,
-              marginBottom: 16
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: 16,
+              }}
+            >
               {isEditing ? t.editMenuItem || 'Edit Menu Item' : t.addMenuItem || 'Add Menu Item'}
             </Text>
 
@@ -248,7 +256,7 @@ export default function AddMenuItemScreen() {
                 marginBottom: 8,
               }}
             >
-              {t.priceLabel} ({currency === "TRY" ? "₺" : currency === "BGN" ? "лв" : "€"}) *
+              {t.priceLabel} ({currency === 'TRY' ? '₺' : currency === 'BGN' ? 'лв' : '€'}) *
             </Text>
             <TextInput
               style={{
@@ -308,8 +316,8 @@ export default function AddMenuItemScreen() {
             >
               {t.category} *
             </Text>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               style={{ marginBottom: 16 }}
             >
@@ -318,28 +326,22 @@ export default function AddMenuItemScreen() {
                   key={category.id}
                   style={{
                     backgroundColor:
-                      selectedCategoryId === category.id
-                        ? colors.primary
-                        : colors.surface,
+                      selectedCategoryId === category.id ? colors.primary : colors.surface,
                     paddingHorizontal: 16,
                     paddingVertical: 10,
                     borderRadius: 20,
                     marginRight: 8,
                     borderWidth: 1,
                     borderColor:
-                      selectedCategoryId === category.id
-                        ? colors.primary
-                        : colors.border,
+                      selectedCategoryId === category.id ? colors.primary : colors.border,
                   }}
                   onPress={() => setSelectedCategoryId(category.id)}
                 >
                   <Text
                     style={{
                       color:
-                        selectedCategoryId === category.id
-                          ? colors.primaryContrast
-                          : colors.text,
-                      fontWeight: "600",
+                        selectedCategoryId === category.id ? colors.primaryContrast : colors.text,
+                      fontWeight: '600',
                     }}
                   >
                     {category.name}
@@ -348,7 +350,7 @@ export default function AddMenuItemScreen() {
               ))}
             </ScrollView>
 
-            <View style={{ flexDirection: "row", gap: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <PrimaryButton
                 title={t.cancel}
                 variant="outline"
@@ -368,12 +370,14 @@ export default function AddMenuItemScreen() {
           {/* Existing Menu Items List */}
           {!isEditing && menuItems.length > 0 && (
             <View style={{ flex: 1 }}>
-              <Text style={{ 
-                fontSize: 16, 
-                fontWeight: '600', 
-                color: colors.text,
-                marginBottom: 12
-              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.text,
+                  marginBottom: 12,
+                }}
+              >
                 Existing Menu Items
               </Text>
               <FlatList

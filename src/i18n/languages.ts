@@ -19,20 +19,20 @@ export interface Translation {
   genericError: string;
   all: string;
   close: string;
-  
+
   // Navigation
   tables: string;
   menu: string;
   orders: string;
   history: string;
   settings: string;
-  
+
   // Navigation titles
   tablesTitle: string;
   menuManagement: string;
   salesHistory: string;
   addMenuItem: string;
-  
+
   // Tables
   addHall: string;
   addTable: string;
@@ -44,7 +44,7 @@ export interface Translation {
   deleteHall: string;
   deleteHallConfirm: string;
   hallDeleted: string;
-    hallName: string;
+  hallName: string;
   hallNameHint: string;
   hallExamples: string;
   tableName: string;
@@ -63,7 +63,7 @@ export interface Translation {
   tableUpdated: string;
   tableNameHint: string;
   tableDeleted: string;
-  
+
   // Menu & Categories
   addCategory: string;
   editCategory: string;
@@ -87,7 +87,7 @@ export interface Translation {
   addFirstItem: string;
   itemAddError: string;
   addNewItem: string;
-  
+
   // Orders & Tables
   newOrder: string;
   addItem: string;
@@ -117,7 +117,7 @@ export interface Translation {
   total: string;
   note: string;
   orderNote: string;
-  
+
   // Status
   open: string;
   preparing: string;
@@ -127,7 +127,7 @@ export interface Translation {
   pending: string;
   delivered: string;
   cancelled: string;
-  
+
   // History & Reports
   dailyTotal: string;
   totalOrders: string;
@@ -151,7 +151,7 @@ export interface Translation {
   time: string;
   item: string;
   unitPrice: string;
-  
+
   // Payment & Billing
   payment: string;
   totalAmount: string;
@@ -182,26 +182,26 @@ export interface Translation {
   noSalesHistory: string;
   exportCSV: string;
   exportPDF: string;
-  
+
   // Settings
   language: string;
   currency: string;
   theme: string;
   lightMode: string;
   darkMode: string;
-  
+
   // Currencies
   turkish_lira: string;
   bulgarian_lev: string;
   euro: string;
-  
+
   // Messages
   hallAdded: string;
   tableAdded: string;
   orderAdded: string;
   itemAdded: string;
   reportExported: string;
-  
+
   // Data Import/Export
   dataExported: string;
   exportFailed: string;
@@ -210,7 +210,7 @@ export interface Translation {
   importFailed: string;
   dataImported: string;
   importProcessingFailed: string;
-  
+
   // Analytics
   analytics: string;
   salesAnalytics: string;
@@ -229,7 +229,7 @@ export interface Translation {
   thisMonth: string;
   thisYear: string;
   custom: string;
-  
+
   // QR Menu
   qrMenu: string;
   qrMenuManagement: string;
@@ -254,7 +254,7 @@ export interface Translation {
   shareAllError: string;
   pdfExported: string;
   pdfExportError: string;
-  
+
   // Notifications
   notificationPermission: string;
   notificationPermissionMessage: string;
@@ -275,7 +275,7 @@ export interface Translation {
   orderShouldBeReady: string;
   minutes: string;
   sold: string;
-  
+
   // Search & Product Selection
   searchProducts: string;
   searchProductsHint: string;
@@ -289,7 +289,7 @@ export interface Translation {
   selectDifferentCategory: string;
   itemsFound: string;
   tapToAddItem: string;
-  
+
   // Timer & Notifications
   notifications: string;
   activeTimers: string;
@@ -303,13 +303,13 @@ export interface Translation {
   resume: string;
   complete: string;
   markAsComplete: string;
-  
+
   // PDF Export
   poweredBy: string;
   smartOrderPad: string;
   generatedOn: string;
   scanForMore: string;
-  
+
   // QR Codes
   qrCodes: string;
   generateQR: string;
@@ -339,20 +339,20 @@ export const translations: Record<string, Translation> = {
     genericError: 'Bir hata oluştu',
     all: 'Tümü',
     close: 'Kapat',
-    
+
     // Navigation
     tables: 'Masalar',
     menu: 'Menü',
     orders: 'Siparişler',
     history: 'Geçmiş',
     settings: 'Ayarlar',
-    
+
     // Navigation titles
     tablesTitle: 'Orderia - Masalar',
     menuManagement: 'Menü Yönetimi',
     salesHistory: 'Satış Tarihçesi',
     addMenuItem: 'Ürün Ekle',
-    
+
     // Tables
     addHall: 'Salon Ekle',
     addTable: 'Masa Ekle',
@@ -362,7 +362,8 @@ export const translations: Record<string, Translation> = {
     deleteTable: 'Masa Sil',
     deleteTableConfirm: 'Bu masayı silmek istediğinizden emin misiniz?',
     deleteHall: 'Salon Sil',
-    deleteHallConfirm: 'Bu salonu silmek istediğinizden emin misiniz? Salondaki tüm masalar da silinecektir.',
+    deleteHallConfirm:
+      'Bu salonu silmek istediğinizden emin misiniz? Salondaki tüm masalar da silinecektir.',
     hallDeleted: 'Salon silindi',
     hallName: 'Salon Adı',
     hallNameHint: 'Salon oluşturduktan sonra masalar ekleyebilirsiniz.',
@@ -383,7 +384,7 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Masa başarıyla güncellendi',
     tableNameHint: 'Boş bırakırsanız "Masa {seq}" kullanılır',
     tableDeleted: 'Masa başarıyla silindi',
-    
+
     // Menu & Categories
     addCategory: 'Kategori Ekle',
     editCategory: 'Kategori Düzenle',
@@ -407,7 +408,7 @@ export const translations: Record<string, Translation> = {
     addFirstItem: 'İlk Ürünü Ekle',
     itemAddError: 'Ürün eklenirken bir hata oluştu.',
     addNewItem: 'Yeni Ürün Ekle',
-    
+
     // Orders & Tables
     newOrder: 'Yeni Sipariş',
     addItem: 'Ürün Ekle',
@@ -418,7 +419,8 @@ export const translations: Record<string, Translation> = {
     notes: 'Notlar',
     orderNotes: 'Sipariş Notları',
     deliverAll: 'Hepsini Teslim Et',
-    deliverAllConfirm: 'Tüm bekleyen siparişleri teslim edildi olarak işaretlemek istediğinizden emin misiniz?',
+    deliverAllConfirm:
+      'Tüm bekleyen siparişleri teslim edildi olarak işaretlemek istediğinizden emin misiniz?',
     deliver: 'Teslim Et',
     makePayment: 'Ödeme Al',
     paymentConfirm: 'Ödeme almak istediğinizden emin misiniz?',
@@ -437,7 +439,7 @@ export const translations: Record<string, Translation> = {
     orderNote: 'Sipariş notu (opsiyonel)...',
     addNote: 'Not Ekle',
     addNoteHint: 'Özel talimatlar veya notlar ekleyin...',
-    
+
     // Status
     open: 'AÇIK',
     preparing: 'HAZIRLANIYOR',
@@ -447,7 +449,7 @@ export const translations: Record<string, Translation> = {
     pending: 'Bekliyor',
     delivered: 'Teslim Edildi',
     cancelled: 'İptal Edildi',
-    
+
     // History & Reports
     dailyTotal: 'Bugünkü Toplam',
     totalOrders: 'sipariş',
@@ -471,7 +473,7 @@ export const translations: Record<string, Translation> = {
     time: 'Saat',
     item: 'Ürün',
     unitPrice: 'Birim Fiyat',
-    
+
     // Payment & Billing
     payment: 'Ödeme',
     totalAmount: 'Toplam Tutar',
@@ -502,35 +504,36 @@ export const translations: Record<string, Translation> = {
     noSalesHistory: 'Henüz satış tarihçesi yok',
     exportCSV: 'CSV Olarak Dışa Aktar',
     exportPDF: 'PDF Olarak Dışa Aktar',
-    
+
     // Settings
     language: 'Dil',
     currency: 'Para Birimi',
     theme: 'Tema',
     lightMode: 'Açık Mod',
     darkMode: 'Koyu Mod',
-    
+
     // Currencies
     turkish_lira: 'Türk Lirası (₺)',
     bulgarian_lev: 'Bulgar Levası (лв)',
     euro: 'Euro (€)',
-    
+
     // Messages
     hallAdded: 'Salon başarıyla eklendi',
     tableAdded: 'Masa başarıyla eklendi',
     orderAdded: 'Sipariş başarıyla eklendi',
     itemAdded: 'Ürün sepete eklendi',
     reportExported: 'Rapor başarıyla dışa aktarıldı',
-    
+
     // Data Import/Export
     dataExported: 'Veriler başarıyla dışa aktarıldı',
     exportFailed: 'Veri dışa aktarma başarısız oldu',
-    importWarning: 'Bu işlem mevcut tüm verileri siler ve yedek dosyasından verileri geri yükler. Devam etmek istediğinizden emin misiniz?',
+    importWarning:
+      'Bu işlem mevcut tüm verileri siler ve yedek dosyasından verileri geri yükler. Devam etmek istediğinizden emin misiniz?',
     import: 'İçe Aktar',
     importFailed: 'Veri içe aktarma başarısız oldu',
     dataImported: 'Veriler başarıyla içe aktarıldı',
     importProcessingFailed: 'Verileri işlerken hata oluştu',
-    
+
     // Analytics
     analytics: 'Analitik',
     salesAnalytics: 'Satış Analitiği',
@@ -549,7 +552,7 @@ export const translations: Record<string, Translation> = {
     thisMonth: 'Bu Ay',
     thisYear: 'Bu Yıl',
     custom: 'Özel',
-    
+
     // QR Menu
     qrMenu: 'QR Menü',
     qrMenuManagement: 'QR Menü Yönetimi',
@@ -568,16 +571,18 @@ export const translations: Record<string, Translation> = {
     shareAllQRCodes: 'Tüm QR Kodları Paylaş',
     exportQRPDF: 'PDF Olarak Dışa Aktar',
     qrMenuDisabled: 'QR Menü Devre Dışı',
-    qrMenuDisabledDescription: 'Masalarınız için QR kodları oluşturmak ve müşterilerin menünüzü dijital olarak görmesini sağlamak için QR Menüyü etkinleştirin.',
+    qrMenuDisabledDescription:
+      'Masalarınız için QR kodları oluşturmak ve müşterilerin menünüzü dijital olarak görmesini sağlamak için QR Menüyü etkinleştirin.',
     qrGenerationError: 'QR kod oluşturulamadı',
     shareError: 'QR kod paylaşılamadı',
     shareAllError: 'Tüm QR kodları paylaşılamadı',
     pdfExported: 'PDF başarıyla dışa aktarıldı',
     pdfExportError: 'PDF dışa aktarılamadı',
-    
+
     // Notifications
     notificationPermission: 'Bildirim İzni',
-    notificationPermissionMessage: 'Sipariş güncellemelerini almak için lütfen bildirimleri etkinleştirin',
+    notificationPermissionMessage:
+      'Sipariş güncellemelerini almak için lütfen bildirimleri etkinleştirin',
     orderReady: 'Sipariş Hazır',
     orderReadyMessage: 'Sipariş teslime hazır:',
     kitchenDisplay: 'Mutfak Ekranı',
@@ -595,7 +600,7 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Sipariş hazır olması gereken süre:',
     minutes: 'dakika',
     sold: 'satıldı',
-    
+
     // Search & Product Selection
     searchProducts: 'Ürün ara...',
     searchProductsHint: 'Ürün aramak için yazın, ok tuşları ile gezinin, Enter ile seçin',
@@ -609,7 +614,7 @@ export const translations: Record<string, Translation> = {
     selectDifferentCategory: 'Farklı bir kategori seçin veya ürün ekleyin',
     itemsFound: 'ürün bulundu',
     tapToAddItem: 'Bu ürünü eklemek için dokunun',
-    
+
     // Timer & Notifications
     notifications: 'Bildirimler',
     activeTimers: 'Aktif Zamanlayıcılar',
@@ -623,20 +628,20 @@ export const translations: Record<string, Translation> = {
     resume: 'Devam Et',
     complete: 'Tamamla',
     markAsComplete: 'Tamamlandı olarak işaretle',
-    
+
     // PDF Export
     poweredBy: 'Destekleyen',
     smartOrderPad: 'Akıllı Sipariş Defteriniz',
     generatedOn: 'Oluşturulma tarihi',
     scanForMore: 'Daha fazla bilgi için tarayın',
-    
+
     // QR Codes
     qrCodes: 'QR Kodları',
     generateQR: 'QR Kodu Oluştur',
     shareQRCodes: 'QR Kodlarını Paylaş',
     exportQRCodes: 'QR Kodlarını Dışa Aktar',
   },
-  
+
   bg: {
     // Common
     add: 'Добави',
@@ -658,20 +663,20 @@ export const translations: Record<string, Translation> = {
     genericError: 'Възникна грешка',
     all: 'Всички',
     close: 'Затвори',
-    
+
     // Navigation
     tables: 'Маси',
     menu: 'Меню',
     orders: 'Поръчки',
     history: 'История',
     settings: 'Настройки',
-    
+
     // Navigation titles
     tablesTitle: 'Orderia - Маси',
     menuManagement: 'Управление на Меню',
     salesHistory: 'История на Продажбите',
     addMenuItem: 'Добави Артикул',
-    
+
     // Tables
     addHall: 'Добави Зала',
     addTable: 'Добави Маса',
@@ -681,7 +686,8 @@ export const translations: Record<string, Translation> = {
     deleteTable: 'Изтрий Маса',
     deleteTableConfirm: 'Сигурни ли сте, че искате да изтриете тази маса?',
     deleteHall: 'Изтрий Зала',
-    deleteHallConfirm: 'Сигурни ли сте, че искате да изтриете тази зала? Всички маси в залата също ще бъдат изтрити.',
+    deleteHallConfirm:
+      'Сигурни ли сте, че искате да изтриете тази зала? Всички маси в залата също ще бъдат изтрити.',
     hallDeleted: 'Залата е изтрита',
     hallName: 'Име на Залата',
     hallNameHint: 'След създаване на залата можете да добавите маси.',
@@ -702,7 +708,7 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Масата е успешно обновена',
     tableNameHint: 'Ако оставите празно ще се използва "Маса {seq}"',
     tableDeleted: 'Масата е успешно изтрита',
-    
+
     // Menu & Categories
     addCategory: 'Добави Категория',
     editCategory: 'Редактирай Категория',
@@ -726,7 +732,7 @@ export const translations: Record<string, Translation> = {
     addFirstItem: 'Добави Първия Артикул',
     itemAddError: 'Възникна грешка при добавяне на артикула.',
     addNewItem: 'Добави Нов Артикул',
-    
+
     // Orders & Tables
     newOrder: 'Нова Поръчка',
     addItem: 'Добави Артикул',
@@ -737,7 +743,8 @@ export const translations: Record<string, Translation> = {
     notes: 'Бележки',
     orderNotes: 'Бележки за Поръчката',
     deliverAll: 'Достави Всички',
-    deliverAllConfirm: 'Сигурни ли сте, че искате да маркирате всички чакащи поръчки като доставени?',
+    deliverAllConfirm:
+      'Сигурни ли сте, че искате да маркирате всички чакащи поръчки като доставени?',
     deliver: 'Достави',
     makePayment: 'Вземи Плащане',
     paymentConfirm: 'Сигурни ли сте, че искате да вземете плащането?',
@@ -756,7 +763,7 @@ export const translations: Record<string, Translation> = {
     orderNote: 'Бележка за поръчката (незадължително)...',
     addNote: 'Добави Бележка',
     addNoteHint: 'Добавете специални инструкции или бележки...',
-    
+
     // Status
     open: 'ОТВОРЕНА',
     preparing: 'ПОДГОТВЯ СЕ',
@@ -766,7 +773,7 @@ export const translations: Record<string, Translation> = {
     pending: 'Изчакване',
     delivered: 'Доставена',
     cancelled: 'Отказана',
-    
+
     // History & Reports
     dailyTotal: 'Дневен Общ Оборот',
     totalOrders: 'поръчки',
@@ -790,7 +797,7 @@ export const translations: Record<string, Translation> = {
     time: 'Час',
     item: 'Артикул',
     unitPrice: 'Единична Цена',
-    
+
     // Payment & Billing
     payment: 'Плащане',
     totalAmount: 'Обща Сума',
@@ -821,35 +828,36 @@ export const translations: Record<string, Translation> = {
     noSalesHistory: 'Все още няма история на продажбите',
     exportCSV: 'Експортиране като CSV',
     exportPDF: 'Експортиране като PDF',
-    
+
     // Settings
     language: 'Език',
     currency: 'Валута',
     theme: 'Тема',
     lightMode: 'Светъл Режим',
     darkMode: 'Тъмен Режим',
-    
+
     // Currencies
     turkish_lira: 'Турска Лира (₺)',
     bulgarian_lev: 'Български Лев (лв)',
     euro: 'Евро (€)',
-    
+
     // Messages
     hallAdded: 'Залата е добавена успешно',
     tableAdded: 'Масата е добавена успешно',
     orderAdded: 'Поръчката е добавена успешно',
     itemAdded: 'Артикулът е добавен в количката',
     reportExported: 'Отчетът е експортиран успешно',
-    
+
     // Data Import/Export
     dataExported: 'Данните са експортирани успешно',
     exportFailed: 'Неуспешен експорт на данни',
-    importWarning: 'Тази операция ще изтрие всички съществуващи данни и ще възстанови данните от резервния файл. Сигурни ли сте, че искате да продължите?',
+    importWarning:
+      'Тази операция ще изтрие всички съществуващи данни и ще възстанови данните от резервния файл. Сигурни ли сте, че искате да продължите?',
     import: 'Импортиране',
     importFailed: 'Неуспешно импортиране на данни',
     dataImported: 'Данните са импортирани успешно',
     importProcessingFailed: 'Грешка при обработката на данните',
-    
+
     // Analytics
     analytics: 'Аналитика',
     salesAnalytics: 'Анализ на продажбите',
@@ -868,7 +876,7 @@ export const translations: Record<string, Translation> = {
     thisMonth: 'Този месец',
     thisYear: 'Тази година',
     custom: 'Персонализиран',
-    
+
     // QR Menu
     qrMenu: 'QR Меню',
     qrMenuManagement: 'Управление на QR меню',
@@ -887,16 +895,18 @@ export const translations: Record<string, Translation> = {
     shareAllQRCodes: 'Споделете всички QR кодове',
     exportQRPDF: 'Експортиране като PDF',
     qrMenuDisabled: 'QR менюто е деактивирано',
-    qrMenuDisabledDescription: 'Активирайте QR менюто, за да генерирате QR кодове за вашите маси и да позволите на клиентите да видят менюто ви цифрово.',
+    qrMenuDisabledDescription:
+      'Активирайте QR менюто, за да генерирате QR кодове за вашите маси и да позволите на клиентите да видят менюто ви цифрово.',
     qrGenerationError: 'QR кодът не можа да бъде генериран',
     shareError: 'QR кодът не можа да бъде споделен',
     shareAllError: 'Всички QR кодове не можаха да бъдат споделени',
     pdfExported: 'PDF файлът е експортиран успешно',
     pdfExportError: 'PDF файлът не можа да бъде експортиран',
-    
+
     // Notifications
     notificationPermission: 'Разрешение за известяване',
-    notificationPermissionMessage: 'Моля, активирайте известяванията, за да получавате актуализации за поръчките',
+    notificationPermissionMessage:
+      'Моля, активирайте известяванията, за да получавате актуализации за поръчките',
     orderReady: 'Поръчката е готова',
     orderReadyMessage: 'Поръчката е готова за доставка:',
     kitchenDisplay: 'Кухненски дисплей',
@@ -914,10 +924,11 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Поръчката трябва да бъде готова за:',
     minutes: 'минути',
     sold: 'продадени',
-    
+
     // Search & Product Selection
     searchProducts: 'Търсене на продукти...',
-    searchProductsHint: 'Напишете за търсене на продукти, използвайте стрелките за навигация, Enter за избор',
+    searchProductsHint:
+      'Напишете за търсене на продукти, използвайте стрелките за навигация, Enter за избор',
     selectProduct: 'Избор на продукт',
     allCategories: 'Всички категории',
     clearSearch: 'Изчистване на търсенето',
@@ -928,7 +939,7 @@ export const translations: Record<string, Translation> = {
     selectDifferentCategory: 'Изберете различна категория или добавете продукти',
     itemsFound: 'намерени артикула',
     tapToAddItem: 'Докоснете за добавяне на този артикул',
-    
+
     // Timer & Notifications
     notifications: 'Известия',
     activeTimers: 'Активни таймери',
@@ -942,20 +953,20 @@ export const translations: Record<string, Translation> = {
     resume: 'Продължи',
     complete: 'Завърши',
     markAsComplete: 'Маркирай като завършен',
-    
+
     // PDF Export
     poweredBy: 'Задвижван от',
     smartOrderPad: 'Вашият умен падок за поръчки',
     generatedOn: 'Генериран на',
     scanForMore: 'Сканирайте за повече информация',
-    
+
     // QR Codes
     qrCodes: 'QR кодове',
     generateQR: 'Генериране на QR код',
     shareQRCodes: 'Споделяне на QR кодове',
     exportQRCodes: 'Експорт на QR кодове',
   },
-  
+
   en: {
     // Common
     add: 'Add',
@@ -977,20 +988,20 @@ export const translations: Record<string, Translation> = {
     genericError: 'An error occurred',
     all: 'All',
     close: 'Close',
-    
+
     // Navigation
     tables: 'Tables',
     menu: 'Menu',
     orders: 'Orders',
     history: 'History',
     settings: 'Settings',
-    
+
     // Navigation titles
     tablesTitle: 'Orderia - Tables',
     menuManagement: 'Menu Management',
     salesHistory: 'Sales History',
     addMenuItem: 'Add Item',
-    
+
     // Tables
     addHall: 'Add Hall',
     addTable: 'Add Table',
@@ -1000,7 +1011,8 @@ export const translations: Record<string, Translation> = {
     deleteTable: 'Delete Table',
     deleteTableConfirm: 'Are you sure you want to delete this table?',
     deleteHall: 'Delete Hall',
-    deleteHallConfirm: 'Are you sure you want to delete this hall? All tables in the hall will also be deleted.',
+    deleteHallConfirm:
+      'Are you sure you want to delete this hall? All tables in the hall will also be deleted.',
     hallDeleted: 'Hall deleted',
     hallName: 'Hall Name',
     hallNameHint: 'After creating the hall, you can add tables.',
@@ -1021,7 +1033,7 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Table updated successfully',
     tableNameHint: 'If left empty, "Table {seq}" will be used',
     tableDeleted: 'Table deleted successfully',
-    
+
     // Menu & Categories
     addCategory: 'Add Category',
     editCategory: 'Edit Category',
@@ -1045,7 +1057,7 @@ export const translations: Record<string, Translation> = {
     addFirstItem: 'Add First Item',
     itemAddError: 'An error occurred while adding the item.',
     addNewItem: 'Add New Item',
-    
+
     // Orders & Tables
     newOrder: 'New Order',
     addItem: 'Add Item',
@@ -1075,7 +1087,7 @@ export const translations: Record<string, Translation> = {
     orderNote: 'Order note (optional)...',
     addNote: 'Add Note',
     addNoteHint: 'Add special instructions or notes...',
-    
+
     // Status
     open: 'OPEN',
     preparing: 'PREPARING',
@@ -1085,7 +1097,7 @@ export const translations: Record<string, Translation> = {
     pending: 'Pending',
     delivered: 'Delivered',
     cancelled: 'Cancelled',
-    
+
     // History & Reports
     dailyTotal: 'Daily Total',
     totalOrders: 'orders',
@@ -1109,7 +1121,7 @@ export const translations: Record<string, Translation> = {
     time: 'Time',
     item: 'Item',
     unitPrice: 'Unit Price',
-    
+
     // Payment & Billing
     payment: 'Payment',
     totalAmount: 'Total Amount',
@@ -1140,35 +1152,36 @@ export const translations: Record<string, Translation> = {
     noSalesHistory: 'No sales history yet',
     exportCSV: 'Export as CSV',
     exportPDF: 'Export as PDF',
-    
+
     // Settings
     language: 'Language',
     currency: 'Currency',
     theme: 'Theme',
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
-    
+
     // Currencies
     turkish_lira: 'Turkish Lira (₺)',
     bulgarian_lev: 'Bulgarian Lev (лв)',
     euro: 'Euro (€)',
-    
+
     // Messages
     hallAdded: 'Hall added successfully',
     tableAdded: 'Table added successfully',
     orderAdded: 'Order added successfully',
     itemAdded: 'Item added to cart',
     reportExported: 'Report exported successfully',
-    
+
     // Data Import/Export
     dataExported: 'Data exported successfully',
     exportFailed: 'Data export failed',
-    importWarning: 'This operation will delete all existing data and restore data from the backup file. Are you sure you want to continue?',
+    importWarning:
+      'This operation will delete all existing data and restore data from the backup file. Are you sure you want to continue?',
     import: 'Import',
     importFailed: 'Data import failed',
     dataImported: 'Data imported successfully',
     importProcessingFailed: 'Error processing data',
-    
+
     // Analytics
     analytics: 'Analytics',
     salesAnalytics: 'Sales Analytics',
@@ -1187,7 +1200,7 @@ export const translations: Record<string, Translation> = {
     thisMonth: 'This Month',
     thisYear: 'This Year',
     custom: 'Custom',
-    
+
     // QR Menu
     qrMenu: 'QR Menu',
     qrMenuManagement: 'QR Menu Management',
@@ -1206,13 +1219,14 @@ export const translations: Record<string, Translation> = {
     shareAllQRCodes: 'Share All QR Codes',
     exportQRPDF: 'Export as PDF',
     qrMenuDisabled: 'QR Menu Disabled',
-    qrMenuDisabledDescription: 'Enable QR Menu to generate QR codes for your tables and allow customers to view your menu digitally.',
+    qrMenuDisabledDescription:
+      'Enable QR Menu to generate QR codes for your tables and allow customers to view your menu digitally.',
     qrGenerationError: 'Could not generate QR code',
     shareError: 'Could not share QR code',
     shareAllError: 'Could not share all QR codes',
     pdfExported: 'PDF exported successfully',
     pdfExportError: 'Could not export PDF',
-    
+
     // Notifications
     notificationPermission: 'Notification Permission',
     notificationPermissionMessage: 'Please enable notifications to receive order updates',
@@ -1233,7 +1247,7 @@ export const translations: Record<string, Translation> = {
     orderShouldBeReady: 'Order should be ready in:',
     minutes: 'minutes',
     sold: 'sold',
-    
+
     // Search & Product Selection
     searchProducts: 'Search products...',
     searchProductsHint: 'Type to search products, use arrow keys to navigate, Enter to select',
@@ -1247,7 +1261,7 @@ export const translations: Record<string, Translation> = {
     selectDifferentCategory: 'Try selecting a different category or add some products',
     itemsFound: 'items found',
     tapToAddItem: 'Tap to add this item',
-    
+
     // Timer & Notifications
     notifications: 'Notifications',
     activeTimers: 'Active Timers',
@@ -1261,13 +1275,13 @@ export const translations: Record<string, Translation> = {
     resume: 'Resume',
     complete: 'Complete',
     markAsComplete: 'Mark as complete',
-    
+
     // PDF Export
     poweredBy: 'Powered by',
     smartOrderPad: 'Your Smart Order Pad',
     generatedOn: 'Generated on',
     scanForMore: 'Scan for more information',
-    
+
     // QR Codes
     qrCodes: 'QR Codes',
     generateQR: 'Generate QR Code',

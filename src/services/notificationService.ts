@@ -3,11 +3,12 @@ import { Platform } from 'react-native';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  } as Notifications.NotificationBehavior),
+  handleNotification: async () =>
+    ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }) as Notifications.NotificationBehavior,
 });
 
 export interface DeliveryNotificationSchedule {
@@ -59,7 +60,7 @@ class NotificationService {
   async scheduleDeliveryNotifications(
     ticketId: string,
     ticketName: string,
-    estimatedMinutes: number
+    estimatedMinutes: number,
   ): Promise<string[]> {
     await this.initialize();
 
@@ -70,24 +71,30 @@ class NotificationService {
     const progressPoints = [
       { percent: 70, message: '70% progress - Getting close!' },
       { percent: 85, message: '85% progress - Almost ready!' },
-      { percent: 100, message: '🍽️ Order ready for delivery!' }
+      { percent: 100, message: '🍽️ Order ready for delivery!' },
     ];
 
     for (const point of progressPoints) {
       // Calculate trigger time correctly: percentage of TOTAL estimated time
       const triggerMinutes = Math.floor((estimatedMinutes * point.percent) / 100);
-      
+
       // Skip notifications that would trigger immediately or in the past
       if (triggerMinutes < 1) {
-        console.log(`Skipping ${point.percent}% notification - would trigger in ${triggerMinutes} minutes`);
+        console.log(
+          `Skipping ${point.percent}% notification - would trigger in ${triggerMinutes} minutes`,
+        );
         continue;
       }
-      
+
       const triggerTime = new Date(now.getTime() + triggerMinutes * 60 * 1000);
 
       try {
-        console.log(`Scheduling ${point.percent}% notification for ${triggerMinutes} minutes from now (${triggerTime.toLocaleTimeString()})`);
-        console.log(`Estimated total time: ${estimatedMinutes} minutes, trigger at ${point.percent}%`);
+        console.log(
+          `Scheduling ${point.percent}% notification for ${triggerMinutes} minutes from now (${triggerTime.toLocaleTimeString()})`,
+        );
+        console.log(
+          `Estimated total time: ${estimatedMinutes} minutes, trigger at ${point.percent}%`,
+        );
         const notificationId = await Notifications.scheduleNotificationAsync({
           content: {
             title: `${ticketName || 'Order'} Update`,
@@ -95,7 +102,7 @@ class NotificationService {
             data: {
               ticketId,
               progress: point.percent,
-              type: 'delivery-update'
+              type: 'delivery-update',
             },
             sound: 'default',
           },
@@ -119,7 +126,7 @@ class NotificationService {
 
     try {
       await Promise.all(
-        notificationIds.map(id => Notifications.cancelScheduledNotificationAsync(id))
+        notificationIds.map((id) => Notifications.cancelScheduledNotificationAsync(id)),
       );
     } catch (error) {
       console.error('Failed to cancel notifications:', error);
@@ -135,7 +142,9 @@ class NotificationService {
   }
 
   // Get notification listener for handling taps
-  addNotificationResponseListener(callback: (response: Notifications.NotificationResponse) => void) {
+  addNotificationResponseListener(
+    callback: (response: Notifications.NotificationResponse) => void,
+  ) {
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 

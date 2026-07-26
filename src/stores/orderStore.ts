@@ -10,7 +10,7 @@ import { notificationService } from '../services/notificationService';
 
 interface OrderState {
   openTickets: Record<string, Ticket>; // ticketId -> ticket
-  
+
   // Ticket actions
   openTable: (tableId: string, ticketName?: string) => Ticket;
   closeTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
@@ -18,18 +18,18 @@ interface OrderState {
   updateTicketName: (ticketId: string, name: string) => void;
   setTicketDeliveryTime: (ticketId: string, minutes: number) => void;
   clearTicketDeliveryTime: (ticketId: string) => void;
-  
+
   // Line actions
   addTicketLine: (ticketId: string, data: AddTicketLineData) => TicketLine;
   updateTicketLine: (ticketId: string, lineId: string, data: Partial<TicketLine>) => void;
   removeTicketLine: (ticketId: string, lineId: string) => void;
   updateLineStatus: (ticketId: string, lineId: string, status: OrderStatus) => void;
   updateLineQuantity: (ticketId: string, lineId: string, quantity: number) => void;
-  
+
   // Batch actions
   markAllDelivered: (ticketId: string) => void;
   payTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
-  
+
   // Selectors
   getTicket: (ticketId: string) => Ticket | undefined;
   getTicketsByTable: (tableId: string) => Ticket[];
@@ -57,18 +57,18 @@ export const useOrderStore = create<OrderState>()(
         set((state) => ({
           openTickets: {
             ...state.openTickets,
-            [ticket.id]: ticket
-          }
+            [ticket.id]: ticket,
+          },
         }));
 
         // Update table status
         const layoutStore = useLayoutStore.getState();
-        const currentTable = layoutStore.tables.find(t => t.id === tableId);
+        const currentTable = layoutStore.tables.find((t) => t.id === tableId);
         if (currentTable) {
           const currentTicketIds = currentTable.activeTicketIds || [];
           layoutStore.updateTable(tableId, {
             isOpen: true,
-            activeTicketIds: [...currentTicketIds, ticket.id]
+            activeTicketIds: [...currentTicketIds, ticket.id],
           });
         }
 
@@ -89,7 +89,7 @@ export const useOrderStore = create<OrderState>()(
           ...ticket,
           status: 'paid',
           closedAt: Date.now(),
-          paymentInfo
+          paymentInfo,
         };
 
         // Add to history
@@ -102,13 +102,13 @@ export const useOrderStore = create<OrderState>()(
 
         // Update table status
         const layoutStore = useLayoutStore.getState();
-        const currentTable = layoutStore.tables.find(t => t.id === ticket.tableId);
+        const currentTable = layoutStore.tables.find((t) => t.id === ticket.tableId);
         if (currentTable) {
           const currentTicketIds = currentTable.activeTicketIds || [];
-          const updatedTicketIds = currentTicketIds.filter(id => id !== ticketId);
+          const updatedTicketIds = currentTicketIds.filter((id) => id !== ticketId);
           layoutStore.updateTable(ticket.tableId, {
             isOpen: updatedTicketIds.length > 0,
-            activeTicketIds: updatedTicketIds
+            activeTicketIds: updatedTicketIds,
           });
         }
       },
@@ -130,13 +130,13 @@ export const useOrderStore = create<OrderState>()(
 
         // Update table status
         const layoutStore = useLayoutStore.getState();
-        const currentTable = layoutStore.tables.find(t => t.id === ticket.tableId);
+        const currentTable = layoutStore.tables.find((t) => t.id === ticket.tableId);
         if (currentTable) {
           const currentTicketIds = currentTable.activeTicketIds || [];
-          const updatedTicketIds = currentTicketIds.filter(id => id !== ticketId);
+          const updatedTicketIds = currentTicketIds.filter((id) => id !== ticketId);
           layoutStore.updateTable(ticket.tableId, {
             isOpen: updatedTicketIds.length > 0,
-            activeTicketIds: updatedTicketIds
+            activeTicketIds: updatedTicketIds,
           });
         }
       },
@@ -147,60 +147,63 @@ export const useOrderStore = create<OrderState>()(
             ...state.openTickets,
             [ticketId]: {
               ...state.openTickets[ticketId],
-              name
-            }
-          }
+              name,
+            },
+          },
         }));
       },
 
       setTicketDeliveryTime: (ticketId, minutes) => {
         const ticket = get().openTickets[ticketId];
         if (!ticket) return;
-        
+
         const startedAt = Date.now();
-        
+
         // Schedule delivery notifications
-        notificationService.scheduleDeliveryNotifications(
-          ticketId,
-          ticket.name || `Table ${ticket.tableId}`,
-          minutes
-        ).then((notificationIds) => {
-          set((state) => ({
-            openTickets: {
-              ...state.openTickets,
-              [ticketId]: {
-                ...state.openTickets[ticketId],
-                deliveryEtaMinutes: minutes,
-                deliveryStartedAt: startedAt,
-                deliveryNotificationIds: notificationIds,
-              }
-            }
-          }));
-        }).catch((error) => {
-          console.error('Failed to schedule notifications:', error);
-          // Still set the delivery time even if notifications fail
-          set((state) => ({
-            openTickets: {
-              ...state.openTickets,
-              [ticketId]: {
-                ...state.openTickets[ticketId],
-                deliveryEtaMinutes: minutes,
-                deliveryStartedAt: startedAt,
-              }
-            }
-          }));
-        });
+        notificationService
+          .scheduleDeliveryNotifications(
+            ticketId,
+            ticket.name || `Table ${ticket.tableId}`,
+            minutes,
+          )
+          .then((notificationIds) => {
+            set((state) => ({
+              openTickets: {
+                ...state.openTickets,
+                [ticketId]: {
+                  ...state.openTickets[ticketId],
+                  deliveryEtaMinutes: minutes,
+                  deliveryStartedAt: startedAt,
+                  deliveryNotificationIds: notificationIds,
+                },
+              },
+            }));
+          })
+          .catch((error) => {
+            console.error('Failed to schedule notifications:', error);
+            // Still set the delivery time even if notifications fail
+            set((state) => ({
+              openTickets: {
+                ...state.openTickets,
+                [ticketId]: {
+                  ...state.openTickets[ticketId],
+                  deliveryEtaMinutes: minutes,
+                  deliveryStartedAt: startedAt,
+                },
+              },
+            }));
+          });
       },
 
       clearTicketDeliveryTime: (ticketId) => {
         const ticket = get().openTickets[ticketId];
         if (!ticket) return;
-        
+
         // Cancel any existing notifications
         if (ticket.deliveryNotificationIds) {
           notificationService.cancelDeliveryNotifications(ticket.deliveryNotificationIds);
         }
-        
+
         set((state) => ({
           openTickets: {
             ...state.openTickets,
@@ -209,17 +212,17 @@ export const useOrderStore = create<OrderState>()(
               deliveryEtaMinutes: undefined,
               deliveryStartedAt: undefined,
               deliveryNotificationIds: undefined,
-            }
-          }
+            },
+          },
         }));
       },
 
       // Line actions
       addTicketLine: (ticketId, data) => {
-        const menuItem = useMenuStore.getState().menuItems.find(
-          item => item.id === data.menuItemId
-        );
-        
+        const menuItem = useMenuStore
+          .getState()
+          .menuItems.find((item) => item.id === data.menuItemId);
+
         if (!menuItem) {
           throw new Error('Menu item not found');
         }
@@ -241,9 +244,9 @@ export const useOrderStore = create<OrderState>()(
             ...state.openTickets,
             [ticketId]: {
               ...state.openTickets[ticketId],
-              lines: [...state.openTickets[ticketId].lines, line]
-            }
-          }
+              lines: [...state.openTickets[ticketId].lines, line],
+            },
+          },
         }));
 
         return line;
@@ -256,12 +259,10 @@ export const useOrderStore = create<OrderState>()(
             [ticketId]: {
               ...state.openTickets[ticketId],
               lines: state.openTickets[ticketId].lines.map((line) =>
-                line.id === lineId 
-                  ? { ...line, ...data, updatedAt: Date.now() }
-                  : line
-              )
-            }
-          }
+                line.id === lineId ? { ...line, ...data, updatedAt: Date.now() } : line,
+              ),
+            },
+          },
         }));
       },
 
@@ -272,10 +273,10 @@ export const useOrderStore = create<OrderState>()(
             [ticketId]: {
               ...state.openTickets[ticketId],
               lines: state.openTickets[ticketId].lines.filter(
-                (line) => line.id !== lineId || line.status !== 'pending'
-              )
-            }
-          }
+                (line) => line.id !== lineId || line.status !== 'pending',
+              ),
+            },
+          },
         }));
       },
 
@@ -302,12 +303,12 @@ export const useOrderStore = create<OrderState>()(
             [ticketId]: {
               ...ticket,
               lines: ticket.lines.map((line) =>
-                line.status === 'pending' 
+                line.status === 'pending'
                   ? { ...line, status: 'delivered' as OrderStatus, updatedAt: Date.now() }
-                  : line
-              )
-            }
-          }
+                  : line,
+              ),
+            },
+          },
         }));
       },
 
@@ -321,9 +322,7 @@ export const useOrderStore = create<OrderState>()(
       },
 
       getTicketsByTable: (tableId: string) => {
-        return Object.values(get().openTickets).filter(
-          ticket => ticket.tableId === tableId
-        );
+        return Object.values(get().openTickets).filter((ticket) => ticket.tableId === tableId);
       },
 
       getTicketTotal: (ticketId) => {
@@ -333,7 +332,7 @@ export const useOrderStore = create<OrderState>()(
         return ticket.lines.reduce((total, line) => {
           // Exclude cancelled items from total calculation
           if (line.status === 'cancelled') return total;
-          return total + (line.priceSnapshot * line.quantity);
+          return total + line.priceSnapshot * line.quantity;
         }, 0);
       },
 
@@ -354,6 +353,6 @@ export const useOrderStore = create<OrderState>()(
       partialize: (state) => ({
         openTickets: state.openTickets,
       }),
-    }
-  )
+    },
+  ),
 );

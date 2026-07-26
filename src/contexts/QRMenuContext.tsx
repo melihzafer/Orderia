@@ -80,7 +80,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
   const updateSettings = async (newSettings: Partial<QRMenuSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    
+
     try {
       await AsyncStorage.setItem('@qr_menu_settings', JSON.stringify(updatedSettings));
     } catch (error) {
@@ -97,11 +97,11 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
     try {
       const menuUrl = getMenuUrl(tableId);
       const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(menuUrl)}`;
-      
+
       // Download QR code image
       const fileUri = `${FileSystem.documentDirectory}qr_table_${tableId}.png`;
       const downloadResult = await FileSystem.downloadAsync(qrCodeApiUrl, fileUri);
-      
+
       if (downloadResult.status === 200) {
         return downloadResult.uri;
       } else {
@@ -115,7 +115,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
 
   const generateAllQRCodes = async (): Promise<{ tableId: string; qrCodeUrl: string }[]> => {
     const results: { tableId: string; qrCodeUrl: string }[] = [];
-    
+
     for (const table of tables) {
       try {
         const qrCodeUrl = await generateQRCode(table.id);
@@ -124,18 +124,18 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
         console.error(`Error generating QR code for table ${table.seq}:`, error);
       }
     }
-    
+
     return results;
   };
 
   const shareQRCode = async (tableId: string): Promise<void> => {
     try {
-      const table = tables.find(t => t.id === tableId);
+      const table = tables.find((t) => t.id === tableId);
       if (!table) throw new Error('Table not found');
 
       const qrCodeUri = await generateQRCode(tableId);
       const menuUrl = getMenuUrl(tableId);
-      
+
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(qrCodeUri, {
           mimeType: 'image/png',
@@ -155,7 +155,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
     try {
       // Generate PDF with all QR codes
       const pdfUri = await exportQRCodesAsPDF();
-      
+
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(pdfUri, {
           mimeType: 'application/pdf',
@@ -172,9 +172,9 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
     try {
       // This would require a PDF generation library like react-native-html-to-pdf
       // For now, we'll create a simple HTML file that can be converted to PDF
-      
+
       const qrCodes = await generateAllQRCodes();
-      
+
       let htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -201,7 +201,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
       `;
 
       for (const { tableId, qrCodeUrl } of qrCodes) {
-        const table = tables.find(t => t.id === tableId);
+        const table = tables.find((t) => t.id === tableId);
         if (table) {
           htmlContent += `
             <div class="qr-item">
@@ -221,7 +221,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
 
       const htmlUri = `${FileSystem.documentDirectory}qr_codes.html`;
       await FileSystem.writeAsStringAsync(htmlUri, htmlContent);
-      
+
       return htmlUri;
     } catch (error) {
       console.error('Error exporting QR codes as PDF:', error);
@@ -230,15 +230,15 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getQRMenuData = (tableId: string): QRMenuData | null => {
-    const table = tables.find(t => t.id === tableId);
+    const table = tables.find((t) => t.id === tableId);
     if (!table || !settings.enabled) return null;
 
     // Filter menu items to only show active ones
-    const activeMenuItems = menuItems.filter(item => item.isActive);
-    
+    const activeMenuItems = menuItems.filter((item) => item.isActive);
+
     // Filter categories that have at least one active menu item
-    const activeCategories = categories.filter(category => 
-      activeMenuItems.some(item => item.categoryId === category.id)
+    const activeCategories = categories.filter((category) =>
+      activeMenuItems.some((item) => item.categoryId === category.id),
     );
 
     return {
@@ -253,13 +253,13 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
 
   const validateQRAccess = (tableId: string, sessionId?: string): boolean => {
     if (!settings.enabled) return false;
-    
-    const table = tables.find(t => t.id === tableId);
+
+    const table = tables.find((t) => t.id === tableId);
     if (!table) return false;
 
     // Add additional validation logic here if needed
     // For example, check if table is available, session is valid, etc.
-    
+
     return true;
   };
 
@@ -276,11 +276,7 @@ export function QRMenuProvider({ children }: { children: React.ReactNode }) {
     validateQRAccess,
   };
 
-  return (
-    <QRMenuContext.Provider value={value}>
-      {children}
-    </QRMenuContext.Provider>
-  );
+  return <QRMenuContext.Provider value={value}>{children}</QRMenuContext.Provider>;
 }
 
 export function useQRMenu() {

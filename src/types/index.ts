@@ -69,17 +69,11 @@ export interface TicketLine {
 export interface DayHistory {
   id: string; // YYYY-MM-DD format
   tickets: Ticket[]; // closed tickets snapshot
-  totals: { 
-    gross: number; 
-    byCategory: Record<string, number>; 
+  totals: {
+    gross: number;
+    byCategory: Record<string, number>;
   };
   generatedAt: number;
-}
-
-export interface AddTicketLineData {
-  menuItemId: string;
-  quantity: number;
-  note?: string;
 }
 
 export type OrderStatus = 'pending' | 'delivered' | 'paid' | 'cancelled';

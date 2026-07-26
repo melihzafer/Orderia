@@ -13,14 +13,14 @@ import { brand, elevation, radius, spacing } from '../constants/branding';
 export default function QRMenuScreen() {
   const { colors } = useTheme();
   const { t } = useLocalization();
-  const { 
-    settings, 
-    updateSettings, 
-    generateQRCode, 
-    shareQRCode, 
-    shareAllQRCodes, 
+  const {
+    settings,
+    updateSettings,
+    generateQRCode,
+    shareQRCode,
+    shareAllQRCodes,
     getMenuUrl,
-    exportQRCodesAsPDF 
+    exportQRCodesAsPDF,
   } = useQRMenu();
   const { tables } = useLayoutStore();
 
@@ -71,26 +71,34 @@ export default function QRMenuScreen() {
     updateSettings({ enabled: !settings.enabled });
   };
 
-  const selectedTable = tables.find(t => t.id === selectedTableId);
+  const selectedTable = tables.find((t) => t.id === selectedTableId);
 
   const renderQRMenuSettings = () => (
-    <SurfaceCard variant="elevated" padding="medium" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+    <SurfaceCard
+      variant="elevated"
+      padding="medium"
+      style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
         <Ionicons name="settings-outline" size={20} color={colors.primary} />
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+        <Text
+          style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}
+        >
           {t.qrMenuSettings || 'QR Menu Settings'}
         </Text>
       </View>
 
       {/* Enable/Disable QR Menu */}
-      <View style={{ 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        paddingVertical: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.borderLight,
-      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.borderLight,
+        }}
+      >
         <View>
           <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
             {t.enableQRMenu || 'Enable QR Menu'}
@@ -110,26 +118,30 @@ export default function QRMenuScreen() {
             justifyContent: 'center',
           }}
         >
-          <View style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: colors.primaryContrast,
-            alignSelf: settings.enabled ? 'flex-end' : 'flex-start',
-            ...elevation.sm,
-          }} />
+          <View
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: colors.primaryContrast,
+              alignSelf: settings.enabled ? 'flex-end' : 'flex-start',
+              ...elevation.sm,
+            }}
+          />
         </TouchableOpacity>
       </View>
 
       {/* Direct Ordering */}
-      <View style={{ 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        paddingVertical: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.borderLight,
-      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.borderLight,
+        }}
+      >
         <View>
           <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
             {t.allowDirectOrdering || 'Allow Direct Ordering'}
@@ -149,24 +161,28 @@ export default function QRMenuScreen() {
             justifyContent: 'center',
           }}
         >
-          <View style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: colors.primaryContrast,
-            alignSelf: settings.allowDirectOrdering ? 'flex-end' : 'flex-start',
-            ...elevation.sm,
-          }} />
+          <View
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: colors.primaryContrast,
+              alignSelf: settings.allowDirectOrdering ? 'flex-end' : 'flex-start',
+              ...elevation.sm,
+            }}
+          />
         </TouchableOpacity>
       </View>
 
       {/* Show Prices */}
-      <View style={{ 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        paddingVertical: spacing.md,
-      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: spacing.md,
+        }}
+      >
         <View>
           <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
             {t.showPrices || 'Show Prices'}
@@ -186,24 +202,32 @@ export default function QRMenuScreen() {
             justifyContent: 'center',
           }}
         >
-          <View style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: colors.primaryContrast,
-            alignSelf: settings.showPrices ? 'flex-end' : 'flex-start',
-            ...elevation.sm,
-          }} />
+          <View
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: colors.primaryContrast,
+              alignSelf: settings.showPrices ? 'flex-end' : 'flex-start',
+              ...elevation.sm,
+            }}
+          />
         </TouchableOpacity>
       </View>
     </SurfaceCard>
   );
 
   const renderTableSelector = () => (
-    <SurfaceCard variant="elevated" padding="medium" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+    <SurfaceCard
+      variant="elevated"
+      padding="medium"
+      style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
         <Ionicons name="restaurant-outline" size={20} color={colors.primary} />
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+        <Text
+          style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}
+        >
           {t.selectTable || 'Select Table'}
         </Text>
       </View>
@@ -223,11 +247,13 @@ export default function QRMenuScreen() {
                 borderColor: selectedTableId === table.id ? colors.primary : colors.border,
               }}
             >
-              <Text style={{
-                color: selectedTableId === table.id ? colors.primaryContrast : colors.text,
-                fontWeight: selectedTableId === table.id ? '600' : '400',
-                fontSize: 14,
-              }}>
+              <Text
+                style={{
+                  color: selectedTableId === table.id ? colors.primaryContrast : colors.text,
+                  fontWeight: selectedTableId === table.id ? '600' : '400',
+                  fontSize: 14,
+                }}
+              >
                 {t.table || 'Table'} {table.seq}
               </Text>
             </TouchableOpacity>
@@ -243,22 +269,30 @@ export default function QRMenuScreen() {
     const menuUrl = getMenuUrl(selectedTable.id);
 
     return (
-      <SurfaceCard variant="elevated" padding="large" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md, alignItems: 'center' }}>
+      <SurfaceCard
+        variant="elevated"
+        padding="large"
+        style={{ marginHorizontal: spacing.md, marginBottom: spacing.md, alignItems: 'center' }}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
           <Ionicons name="qr-code-outline" size={20} color={colors.primary} />
-          <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+          <Text
+            style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}
+          >
             {t.table || 'Table'} {selectedTable.seq} {t.qrCode || 'QR Code'}
           </Text>
         </View>
 
         {/* QR Code */}
-        <View style={{ 
-          backgroundColor: colors.primaryContrast, 
-          padding: spacing.lg,
-          borderRadius: radius.md,
-          ...elevation.md,
-          marginBottom: spacing.lg,
-        }}>
+        <View
+          style={{
+            backgroundColor: colors.primaryContrast,
+            padding: spacing.lg,
+            borderRadius: radius.md,
+            ...elevation.md,
+            marginBottom: spacing.lg,
+          }}
+        >
           <QRCode
             value={menuUrl}
             size={200}
@@ -271,19 +305,23 @@ export default function QRMenuScreen() {
         </View>
 
         {/* URL Display */}
-        <View style={{ 
-          backgroundColor: colors.surfaceAlt, 
-          padding: spacing.md,
-          borderRadius: radius.sm,
-          width: '100%',
-          marginBottom: spacing.lg,
-        }}>
-          <Text style={{ 
-            fontSize: 12, 
-            color: colors.textSubtle, 
-            textAlign: 'center',
-            fontFamily: 'monospace',
-          }}>
+        <View
+          style={{
+            backgroundColor: colors.surfaceAlt,
+            padding: spacing.md,
+            borderRadius: radius.sm,
+            width: '100%',
+            marginBottom: spacing.lg,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.textSubtle,
+              textAlign: 'center',
+              fontFamily: 'monospace',
+            }}
+          >
             {menuUrl}
           </Text>
         </View>
@@ -310,10 +348,16 @@ export default function QRMenuScreen() {
   };
 
   const renderBulkActions = () => (
-    <SurfaceCard variant="elevated" padding="medium" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+    <SurfaceCard
+      variant="elevated"
+      padding="medium"
+      style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
         <Ionicons name="layers-outline" size={20} color={colors.primary} />
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+        <Text
+          style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}
+        >
           {t.bulkActions || 'Bulk Actions'}
         </Text>
       </View>
@@ -327,7 +371,7 @@ export default function QRMenuScreen() {
           variant="secondary"
           fullWidth
         />
-        
+
         <PrimaryButton
           title={t.exportPDF || 'Export as PDF'}
           icon="document-outline"
@@ -351,7 +395,10 @@ export default function QRMenuScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* QR Menu Settings */}
         {renderQRMenuSettings()}
@@ -370,25 +417,34 @@ export default function QRMenuScreen() {
         )}
 
         {!settings.enabled && (
-          <SurfaceCard variant="outlined" padding="xl" style={{ marginHorizontal: spacing.md, alignItems: 'center' }}>
+          <SurfaceCard
+            variant="outlined"
+            padding="xl"
+            style={{ marginHorizontal: spacing.md, alignItems: 'center' }}
+          >
             <Ionicons name="qr-code-outline" size={64} color={colors.textMuted} />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.textSubtle, 
-              textAlign: 'center',
-              marginTop: spacing.md,
-              marginBottom: spacing.sm,
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.textSubtle,
+                textAlign: 'center',
+                marginTop: spacing.md,
+                marginBottom: spacing.sm,
+              }}
+            >
               {t.qrMenuDisabled || 'QR Menu is Disabled'}
             </Text>
-            <Text style={{ 
-              fontSize: 14, 
-              color: colors.textSubtle, 
-              textAlign: 'center',
-              lineHeight: 20,
-            }}>
-              {t.qrMenuDisabledDescription || 'Enable QR Menu to generate QR codes for your tables and allow customers to view your menu digitally.'}
+            <Text
+              style={{
+                fontSize: 14,
+                color: colors.textSubtle,
+                textAlign: 'center',
+                lineHeight: 20,
+              }}
+            >
+              {t.qrMenuDisabledDescription ||
+                'Enable QR Menu to generate QR codes for your tables and allow customers to view your menu digitally.'}
             </Text>
           </SurfaceCard>
         )}

@@ -7,12 +7,12 @@ import { useMenuStore } from './menuStore';
 
 interface HistoryState {
   dailyHistory: Record<string, DayHistory>; // date -> history
-  
+
   // Actions
   addTicketToHistory: (ticket: Ticket) => void;
   getDayHistory: (date: string) => DayHistory | undefined;
   generateDayReport: (date: string) => DayHistory;
-  
+
   // Selectors
   getHistoryDates: () => string[];
   getTotalGrossForDate: (date: string) => number;
@@ -29,7 +29,7 @@ export const useHistoryStore = create<HistoryState>()(
       addTicketToHistory: (ticket) => {
         const dateKey = generateDateKey(new Date(ticket.closedAt || Date.now()));
         const currentHistory = get().dailyHistory[dateKey];
-        
+
         if (currentHistory) {
           // Update existing day history
           const updatedHistory: DayHistory = {
@@ -38,12 +38,12 @@ export const useHistoryStore = create<HistoryState>()(
             totals: calculateDayTotals([...currentHistory.tickets, ticket]),
             generatedAt: Date.now(),
           };
-          
+
           set((state) => ({
             dailyHistory: {
               ...state.dailyHistory,
-              [dateKey]: updatedHistory
-            }
+              [dateKey]: updatedHistory,
+            },
           }));
         } else {
           // Create new day history
@@ -53,12 +53,12 @@ export const useHistoryStore = create<HistoryState>()(
             totals: calculateDayTotals([ticket]),
             generatedAt: Date.now(),
           };
-          
+
           set((state) => ({
             dailyHistory: {
               ...state.dailyHistory,
-              [dateKey]: newHistory
-            }
+              [dateKey]: newHistory,
+            },
           }));
         }
       },
@@ -84,8 +84,8 @@ export const useHistoryStore = create<HistoryState>()(
         set((state) => ({
           dailyHistory: {
             ...state.dailyHistory,
-            [date]: emptyHistory
-          }
+            [date]: emptyHistory,
+          },
         }));
 
         return emptyHistory;
@@ -109,7 +109,7 @@ export const useHistoryStore = create<HistoryState>()(
       getWeeklyTotal: (startDate) => {
         const start = new Date(startDate);
         const dates = [];
-        
+
         for (let i = 0; i < 7; i++) {
           const date = new Date(start);
           date.setDate(start.getDate() + i);
@@ -140,32 +140,35 @@ export const useHistoryStore = create<HistoryState>()(
       partialize: (state) => ({
         dailyHistory: state.dailyHistory,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Helper function to calculate day totals
-function calculateDayTotals(tickets: Ticket[]): { gross: number; byCategory: Record<string, number> } {
+function calculateDayTotals(tickets: Ticket[]): {
+  gross: number;
+  byCategory: Record<string, number>;
+} {
   const categories = useMenuStore.getState().categories;
   const menuItems = useMenuStore.getState().menuItems;
-  
+
   let gross = 0;
   const byCategory: Record<string, number> = {};
 
   // Initialize category totals
-  categories.forEach(cat => {
+  categories.forEach((cat) => {
     byCategory[cat.name] = 0;
   });
 
-  tickets.forEach(ticket => {
-    ticket.lines.forEach(line => {
+  tickets.forEach((ticket) => {
+    ticket.lines.forEach((line) => {
       const lineTotal = line.priceSnapshot * line.quantity;
       gross += lineTotal;
 
       // Find category for this menu item
-      const menuItem = menuItems.find(item => item.id === line.menuItemId);
+      const menuItem = menuItems.find((item) => item.id === line.menuItemId);
       if (menuItem) {
-        const category = categories.find(cat => cat.id === menuItem.categoryId);
+        const category = categories.find((cat) => cat.id === menuItem.categoryId);
         if (category) {
           byCategory[category.name] = (byCategory[category.name] || 0) + lineTotal;
         }

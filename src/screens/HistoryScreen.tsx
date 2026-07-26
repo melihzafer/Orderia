@@ -21,7 +21,7 @@ export default function HistoryScreen() {
       setExporting(true);
       const exportData = prepareExportData(dailyHistory);
       const success = await exportToCSV(exportData, 'orderia_report', t);
-      
+
       if (success) {
         Alert.alert(t.success, t.reportExported);
       } else {
@@ -39,7 +39,7 @@ export default function HistoryScreen() {
       setExporting(true);
       const exportData = prepareExportData(dailyHistory);
       const success = await exportToPDF(exportData, 'orderia_report', t, formatPrice);
-      
+
       if (success) {
         Alert.alert(t.success, t.reportExported);
       } else {
@@ -58,7 +58,9 @@ export default function HistoryScreen() {
 
     return (
       <SurfaceCard style={{ marginBottom: 12 }} variant="outlined">
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+        >
           <View>
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
               {formatDate(new Date(date).getTime())}
@@ -71,9 +73,7 @@ export default function HistoryScreen() {
             <Text style={{ fontSize: 18, fontWeight: '700', color: colors.primary }}>
               {formatPrice(history.totals.gross)}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.textSubtle }}>
-              {t.totalSales}
-            </Text>
+            <Text style={{ fontSize: 12, color: colors.textSubtle }}>{t.totalSales}</Text>
           </View>
         </View>
       </SurfaceCard>
@@ -81,17 +81,22 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
         {/* Export Buttons */}
         {historyDates.length > 0 && (
           <SurfaceCard style={{ marginBottom: 16 }} variant="outlined">
-            <Text style={{ 
-              fontSize: 16, 
-              fontWeight: '600', 
-              color: colors.text,
-              marginBottom: 12
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: 12,
+              }}
+            >
               {t.exportReport}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -110,21 +115,23 @@ export default function HistoryScreen() {
                   opacity: exporting ? 0.6 : 1,
                 }}
               >
-                <Ionicons 
-                  name="document-text-outline" 
-                  size={16} 
-                  color="#FFFFFF" 
+                <Ionicons
+                  name="document-text-outline"
+                  size={16}
+                  color="#FFFFFF"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={{ 
-                  color: '#FFFFFF', 
-                  fontSize: 14, 
-                  fontWeight: '600' 
-                }}>
+                <Text
+                  style={{
+                    color: '#FFFFFF',
+                    fontSize: 14,
+                    fontWeight: '600',
+                  }}
+                >
                   CSV
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 onPress={handleExportPDF}
                 disabled={exporting}
@@ -140,17 +147,19 @@ export default function HistoryScreen() {
                   opacity: exporting ? 0.6 : 1,
                 }}
               >
-                <Ionicons 
-                  name="document-outline" 
-                  size={16} 
-                  color="#FFFFFF" 
+                <Ionicons
+                  name="document-outline"
+                  size={16}
+                  color="#FFFFFF"
                   style={{ marginRight: 8 }}
                 />
-                <Text style={{ 
-                  color: '#FFFFFF', 
-                  fontSize: 14, 
-                  fontWeight: '600' 
-                }}>
+                <Text
+                  style={{
+                    color: '#FFFFFF',
+                    fontSize: 14,
+                    fontWeight: '600',
+                  }}
+                >
                   PDF
                 </Text>
               </TouchableOpacity>
@@ -160,11 +169,13 @@ export default function HistoryScreen() {
 
         {historyDates.length === 0 ? (
           <SurfaceCard style={{ padding: 32 }}>
-            <Text style={{ 
-              textAlign: 'center', 
-              color: colors.textSubtle,
-              fontSize: 16
-            }}>
+            <Text
+              style={{
+                textAlign: 'center',
+                color: colors.textSubtle,
+                fontSize: 16,
+              }}
+            >
               {t.noSalesHistory}
             </Text>
           </SurfaceCard>

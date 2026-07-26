@@ -1,6 +1,6 @@
 const babel = require('@babel/core');
 
-module.exports = function() {
+module.exports = function () {
   return {
     name: 'transform-import-meta',
     visitor: {

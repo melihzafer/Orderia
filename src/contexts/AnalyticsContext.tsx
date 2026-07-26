@@ -6,44 +6,44 @@ export interface SalesAnalytics {
   totalRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
-  topSellingItems: Array<{
+  topSellingItems: {
     item: MenuItem;
     quantity: number;
     revenue: number;
-  }>;
-  dailySales: Array<{
+  }[];
+  dailySales: {
     date: string;
     revenue: number;
     orders: number;
-  }>;
-  weeklySales: Array<{
+  }[];
+  weeklySales: {
     week: string;
     revenue: number;
     orders: number;
-  }>;
-  monthlySales: Array<{
+  }[];
+  monthlySales: {
     month: string;
     revenue: number;
     orders: number;
-  }>;
-  peakHours: Array<{
+  }[];
+  peakHours: {
     hour: number;
     orders: number;
     revenue: number;
-  }>;
-  tableAnalytics: Array<{
+  }[];
+  tableAnalytics: {
     tableId: string;
     turnoverRate: number;
     averageOrderValue: number;
     totalRevenue: number;
-  }>;
-  categoryPerformance: Array<{
+  }[];
+  categoryPerformance: {
     categoryId: string;
     categoryName: string;
     revenue: number;
     quantity: number;
     percentage: number;
-  }>;
+  }[];
 }
 
 export interface DateRange {
@@ -53,44 +53,47 @@ export interface DateRange {
 
 interface AnalyticsContextType {
   getSalesAnalytics: (dateRange?: DateRange) => SalesAnalytics;
-  getTopSellingItems: (limit?: number, dateRange?: DateRange) => Array<{
+  getTopSellingItems: (
+    limit?: number,
+    dateRange?: DateRange,
+  ) => {
     item: MenuItem;
     quantity: number;
     revenue: number;
-  }>;
-  getPeakHours: (dateRange?: DateRange) => Array<{
+  }[];
+  getPeakHours: (dateRange?: DateRange) => {
     hour: number;
     orders: number;
     revenue: number;
-  }>;
-  getTableTurnoverAnalysis: (dateRange?: DateRange) => Array<{
+  }[];
+  getTableTurnoverAnalysis: (dateRange?: DateRange) => {
     tableId: string;
     turnoverRate: number;
     averageOrderValue: number;
     totalRevenue: number;
-  }>;
-  getCategoryPerformance: (dateRange?: DateRange) => Array<{
+  }[];
+  getCategoryPerformance: (dateRange?: DateRange) => {
     categoryId: string;
     categoryName: string;
     revenue: number;
     quantity: number;
     percentage: number;
-  }>;
-  getDailySalesChart: (days?: number) => Array<{
+  }[];
+  getDailySalesChart: (days?: number) => {
     date: string;
     revenue: number;
     orders: number;
-  }>;
-  getWeeklySalesChart: (weeks?: number) => Array<{
+  }[];
+  getWeeklySalesChart: (weeks?: number) => {
     week: string;
     revenue: number;
     orders: number;
-  }>;
-  getMonthlySalesChart: (months?: number) => Array<{
+  }[];
+  getMonthlySalesChart: (months?: number) => {
     month: string;
     revenue: number;
     orders: number;
-  }>;
+  }[];
   getRevenueGrowth: (dateRange?: DateRange) => {
     currentPeriod: number;
     previousPeriod: number;
@@ -105,13 +108,16 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const { menuItems, categories } = useMenuStore();
 
   const calculateTicketTotal = (ticket: any): number => {
-    return ticket.lines.reduce((sum: number, line: any) => sum + (line.quantity * line.priceSnapshot), 0);
+    return ticket.lines.reduce(
+      (sum: number, line: any) => sum + line.quantity * line.priceSnapshot,
+      0,
+    );
   };
 
   const filterDataByDateRange = (data: DayHistory[], dateRange?: DateRange): DayHistory[] => {
     if (!dateRange) return data;
 
-    return data.filter(day => {
+    return data.filter((day) => {
       const dayDate = new Date(day.id); // id is in YYYY-MM-DD format
       return dayDate >= dateRange.startDate && dayDate <= dateRange.endDate;
     });
@@ -120,7 +126,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const getSalesAnalytics = (dateRange?: DateRange): SalesAnalytics => {
     const historyArray = Object.values(dailyHistory);
     const filteredData = filterDataByDateRange(historyArray, dateRange);
-    
+
     let totalRevenue = 0;
     let totalOrders = 0;
     const itemSales = new Map<string, { quantity: number; revenue: number }>();
@@ -128,8 +134,8 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     const tableData = new Map<string, { orders: number; revenue: number; sessions: number }>();
     const categoryData = new Map<string, { quantity: number; revenue: number }>();
 
-    filteredData.forEach(day => {
-      day.tickets.forEach(ticket => {
+    filteredData.forEach((day) => {
+      day.tickets.forEach((ticket) => {
         const ticketTotal = calculateTicketTotal(ticket);
         totalRevenue += ticketTotal;
         totalOrders += 1;
@@ -143,7 +149,11 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Table analysis
-        const tableDataEntry = tableData.get(ticket.tableId) || { orders: 0, revenue: 0, sessions: 0 };
+        const tableDataEntry = tableData.get(ticket.tableId) || {
+          orders: 0,
+          revenue: 0,
+          sessions: 0,
+        };
         tableData.set(ticket.tableId, {
           orders: tableDataEntry.orders + 1,
           revenue: tableDataEntry.revenue + ticketTotal,
@@ -151,11 +161,11 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Item and category analysis
-        ticket.lines.forEach(line => {
-          const item = menuItems.find(m => m.id === line.menuItemId);
+        ticket.lines.forEach((line) => {
+          const item = menuItems.find((m) => m.id === line.menuItemId);
           if (item) {
             const itemRevenue = line.quantity * line.priceSnapshot;
-            
+
             // Item sales
             const itemData = itemSales.get(item.id) || { quantity: 0, revenue: 0 };
             itemSales.set(item.id, {
@@ -164,7 +174,10 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
             });
 
             // Category sales
-            const categoryDataEntry = categoryData.get(item.categoryId) || { quantity: 0, revenue: 0 };
+            const categoryDataEntry = categoryData.get(item.categoryId) || {
+              quantity: 0,
+              revenue: 0,
+            };
             categoryData.set(item.categoryId, {
               quantity: categoryDataEntry.quantity + line.quantity,
               revenue: categoryDataEntry.revenue + itemRevenue,
@@ -177,11 +190,11 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     // Top selling items
     const topSellingItems = Array.from(itemSales.entries())
       .map(([itemId, data]) => ({
-        item: menuItems.find(m => m.id === itemId)!,
+        item: menuItems.find((m) => m.id === itemId)!,
         quantity: data.quantity,
         revenue: data.revenue,
       }))
-      .filter(item => item.item)
+      .filter((item) => item.item)
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
@@ -203,7 +216,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     // Category performance
     const categoryPerformance = Array.from(categoryData.entries())
       .map(([categoryId, data]) => {
-        const category = categories.find(c => c.id === categoryId);
+        const category = categories.find((c) => c.id === categoryId);
         return {
           categoryId,
           categoryName: category?.name || 'Unknown',
@@ -212,21 +225,21 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
           percentage: (data.revenue / totalRevenue) * 100,
         };
       })
-      .filter(cat => cat.categoryName !== 'Unknown')
+      .filter((cat) => cat.categoryName !== 'Unknown')
       .sort((a, b) => b.revenue - a.revenue);
 
     // Daily sales
-    const dailySales = filteredData.map(day => ({
+    const dailySales = filteredData.map((day) => ({
       date: day.id, // id is in YYYY-MM-DD format
       revenue: day.tickets.reduce((sum, ticket) => sum + calculateTicketTotal(ticket), 0),
       orders: day.tickets.length,
     }));
 
     // Weekly sales
-    const weeklySales: Array<{ week: string; revenue: number; orders: number }> = [];
+    const weeklySales: { week: string; revenue: number; orders: number }[] = [];
     const weeklyMap = new Map<string, { revenue: number; orders: number }>();
 
-    filteredData.forEach(day => {
+    filteredData.forEach((day) => {
       const date = new Date(day.id); // id is in YYYY-MM-DD format
       const weekStart = new Date(date);
       weekStart.setDate(date.getDate() - date.getDay());
@@ -234,7 +247,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
       const weekData = weeklyMap.get(weekKey) || { revenue: 0, orders: 0 };
       const dayRevenue = day.tickets.reduce((sum, ticket) => sum + calculateTicketTotal(ticket), 0);
-      
+
       weeklyMap.set(weekKey, {
         revenue: weekData.revenue + dayRevenue,
         orders: weekData.orders + day.tickets.length,
@@ -246,16 +259,16 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Monthly sales
-    const monthlySales: Array<{ month: string; revenue: number; orders: number }> = [];
+    const monthlySales: { month: string; revenue: number; orders: number }[] = [];
     const monthlyMap = new Map<string, { revenue: number; orders: number }>();
 
-    filteredData.forEach(day => {
+    filteredData.forEach((day) => {
       const date = new Date(day.id); // id is in YYYY-MM-DD format
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
       const monthData = monthlyMap.get(monthKey) || { revenue: 0, orders: 0 };
       const dayRevenue = day.tickets.reduce((sum, ticket) => sum + calculateTicketTotal(ticket), 0);
-      
+
       monthlyMap.set(monthKey, {
         revenue: monthData.revenue + dayRevenue,
         orders: monthData.orders + day.tickets.length,
@@ -312,7 +325,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const getWeeklySalesChart = (weeks = 12) => {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - (weeks * 7));
+    startDate.setDate(endDate.getDate() - weeks * 7);
 
     const analytics = getSalesAnalytics({ startDate, endDate });
     return analytics.weeklySales.slice(-weeks);
@@ -336,19 +349,18 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       const previousMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
       const previousMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
 
-      const currentPeriod = getSalesAnalytics({ 
-        startDate: currentMonthStart, 
-        endDate: currentMonthEnd 
-      }).totalRevenue;
-      
-      const previousPeriod = getSalesAnalytics({ 
-        startDate: previousMonthStart, 
-        endDate: previousMonthEnd 
+      const currentPeriod = getSalesAnalytics({
+        startDate: currentMonthStart,
+        endDate: currentMonthEnd,
       }).totalRevenue;
 
-      const growthPercentage = previousPeriod > 0 
-        ? ((currentPeriod - previousPeriod) / previousPeriod) * 100 
-        : 0;
+      const previousPeriod = getSalesAnalytics({
+        startDate: previousMonthStart,
+        endDate: previousMonthEnd,
+      }).totalRevenue;
+
+      const growthPercentage =
+        previousPeriod > 0 ? ((currentPeriod - previousPeriod) / previousPeriod) * 100 : 0;
 
       return { currentPeriod, previousPeriod, growthPercentage };
     }
@@ -359,14 +371,13 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     const previousEndDate = new Date(dateRange.endDate.getTime() - periodLength);
 
     const currentPeriod = getSalesAnalytics(dateRange).totalRevenue;
-    const previousPeriod = getSalesAnalytics({ 
-      startDate: previousStartDate, 
-      endDate: previousEndDate 
+    const previousPeriod = getSalesAnalytics({
+      startDate: previousStartDate,
+      endDate: previousEndDate,
     }).totalRevenue;
 
-    const growthPercentage = previousPeriod > 0 
-      ? ((currentPeriod - previousPeriod) / previousPeriod) * 100 
-      : 0;
+    const growthPercentage =
+      previousPeriod > 0 ? ((currentPeriod - previousPeriod) / previousPeriod) * 100 : 0;
 
     return { currentPeriod, previousPeriod, growthPercentage };
   };
@@ -383,11 +394,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     getRevenueGrowth,
   };
 
-  return (
-    <AnalyticsContext.Provider value={value}>
-      {children}
-    </AnalyticsContext.Provider>
-  );
+  return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
 }
 
 export function useAnalytics() {

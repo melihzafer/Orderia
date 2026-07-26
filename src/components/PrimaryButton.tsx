@@ -1,12 +1,12 @@
 import React from 'react';
-import { 
-  TouchableOpacity, 
-  Text, 
-  ViewStyle, 
-  TextStyle, 
+import {
+  TouchableOpacity,
+  Text,
+  ViewStyle,
+  TextStyle,
   ActivityIndicator,
   TouchableOpacityProps,
-  View
+  View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -67,7 +67,7 @@ export function PrimaryButton({
 
     // Variant styles
     const isDisabled = disabled || loading;
-    
+
     switch (variant) {
       case 'primary':
         baseStyle.backgroundColor = isDisabled ? colors.textMuted : colors.primary;
@@ -131,7 +131,7 @@ export function PrimaryButton({
 
     // Variant styles
     const isDisabled = disabled || loading;
-    
+
     switch (variant) {
       case 'primary':
       case 'secondary':
@@ -151,9 +151,12 @@ export function PrimaryButton({
 
   const getIconSize = () => {
     switch (size) {
-      case 'small': return 16;
-      case 'large': return 24;
-      default: return 20;
+      case 'small':
+        return 16;
+      case 'large':
+        return 24;
+      default:
+        return 20;
     }
   };
 
@@ -177,30 +180,26 @@ export function PrimaryButton({
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         {loading && (
-          <ActivityIndicator 
-            size="small" 
-            color={getIconColor()} 
+          <ActivityIndicator
+            size="small"
+            color={getIconColor()}
             style={{ marginRight: title ? spacing.sm : 0 }}
           />
         )}
         {!loading && icon && iconPosition === 'left' && (
-          <Ionicons 
-            name={icon} 
-            size={getIconSize()} 
-            color={getIconColor()} 
+          <Ionicons
+            name={icon}
+            size={getIconSize()}
+            color={getIconColor()}
             style={{ marginRight: title ? spacing.sm : 0 }}
           />
         )}
-        {title && (
-          <Text style={getTextStyle()}>
-            {title}
-          </Text>
-        )}
+        {title && <Text style={getTextStyle()}>{title}</Text>}
         {!loading && icon && iconPosition === 'right' && (
-          <Ionicons 
-            name={icon} 
-            size={getIconSize()} 
-            color={getIconColor()} 
+          <Ionicons
+            name={icon}
+            size={getIconSize()}
+            color={getIconColor()}
             style={{ marginLeft: title ? spacing.sm : 0 }}
           />
         )}

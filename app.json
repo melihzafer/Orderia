@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#4F46E5"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/icon.png",
@@ -48,9 +46,7 @@
         {
           "icon": "./assets/icon.png",
           "color": "#4F46E5",
-          "sounds": [
-            "./assets/notification-sound.wav"
-          ],
+          "sounds": ["./assets/notification-sound.wav"],
           "mode": "development"
         }
       ]

@@ -7,20 +7,20 @@ import { generateId } from '../constants/branding';
 interface MenuState {
   categories: Category[];
   menuItems: MenuItem[];
-  
+
   // Category actions
   addCategory: (data: CreateCategoryData) => Category;
   updateCategory: (id: string, data: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
-  
+
   // Menu item actions
   addMenuItem: (data: CreateMenuItemData) => MenuItem;
   updateMenuItem: (id: string, data: Partial<MenuItem>) => void;
   deleteMenuItem: (id: string) => void;
   toggleMenuItemActive: (id: string) => void;
-  
+
   // Selectors
-  getCategoriesWithItems: () => Array<Category & { items: MenuItem[] }>;
+  getCategoriesWithItems: () => (Category & { items: MenuItem[] })[];
   getActiveMenuItems: () => MenuItem[];
   getMenuItemsByCategory: (categoryId: string) => MenuItem[];
 }
@@ -38,26 +38,26 @@ export const useMenuStore = create<MenuState>()(
           name: data.name,
           order: data.order ?? get().categories.length,
         };
-        
+
         set((state) => ({
-          categories: [...state.categories, category].sort((a, b) => a.order - b.order)
+          categories: [...state.categories, category].sort((a, b) => a.order - b.order),
         }));
-        
+
         return category;
       },
 
       updateCategory: (id, data) => {
         set((state) => ({
-          categories: state.categories.map((cat) =>
-            cat.id === id ? { ...cat, ...data } : cat
-          ).sort((a, b) => a.order - b.order)
+          categories: state.categories
+            .map((cat) => (cat.id === id ? { ...cat, ...data } : cat))
+            .sort((a, b) => a.order - b.order),
         }));
       },
 
       deleteCategory: (id) => {
         set((state) => ({
           categories: state.categories.filter((cat) => cat.id !== id),
-          menuItems: state.menuItems.filter((item) => item.categoryId !== id)
+          menuItems: state.menuItems.filter((item) => item.categoryId !== id),
         }));
       },
 
@@ -71,33 +71,31 @@ export const useMenuStore = create<MenuState>()(
           description: data.description,
           isActive: true,
         };
-        
+
         set((state) => ({
-          menuItems: [...state.menuItems, menuItem]
+          menuItems: [...state.menuItems, menuItem],
         }));
-        
+
         return menuItem;
       },
 
       updateMenuItem: (id, data) => {
         set((state) => ({
-          menuItems: state.menuItems.map((item) =>
-            item.id === id ? { ...item, ...data } : item
-          )
+          menuItems: state.menuItems.map((item) => (item.id === id ? { ...item, ...data } : item)),
         }));
       },
 
       deleteMenuItem: (id) => {
         set((state) => ({
-          menuItems: state.menuItems.filter((item) => item.id !== id)
+          menuItems: state.menuItems.filter((item) => item.id !== id),
         }));
       },
 
       toggleMenuItemActive: (id) => {
         set((state) => ({
           menuItems: state.menuItems.map((item) =>
-            item.id === id ? { ...item, isActive: !item.isActive } : item
-          )
+            item.id === id ? { ...item, isActive: !item.isActive } : item,
+          ),
         }));
       },
 
@@ -106,7 +104,7 @@ export const useMenuStore = create<MenuState>()(
         const { categories, menuItems } = get();
         return categories.map((category) => ({
           ...category,
-          items: menuItems.filter((item) => item.categoryId === category.id)
+          items: menuItems.filter((item) => item.categoryId === category.id),
         }));
       },
 
@@ -125,6 +123,6 @@ export const useMenuStore = create<MenuState>()(
         categories: state.categories,
         menuItems: state.menuItems,
       }),
-    }
-  )
+    },
+  ),
 );

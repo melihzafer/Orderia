@@ -19,19 +19,22 @@ export default function EditTableScreen() {
   const route = useRoute<EditTableRouteProp>();
   const { colors } = useTheme();
   const { t } = useLocalization();
-  
+
   const { updateTable, getTable, deleteTable } = useLayoutStore();
-  
+
   const { tableId } = route.params;
   const table = getTable(tableId);
-  
+
   const [tableName, setTableName] = useState(table?.label || '');
   const [showActions, setShowActions] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   if (!table) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.bg }}
+        edges={['bottom', 'left', 'right']}
+      >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: colors.text }}>{t.tableNotFound}</Text>
         </View>
@@ -66,9 +69,9 @@ export default function EditTableScreen() {
             } catch (error) {
               Alert.alert(t.error, t.genericError);
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
@@ -87,31 +90,34 @@ export default function EditTableScreen() {
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-        <TouchableOpacity 
-          onLongPress={handleLongPress}
-          activeOpacity={1}
-          style={{ flex: 1 }}
-        >
+        <TouchableOpacity onLongPress={handleLongPress} activeOpacity={1} style={{ flex: 1 }}>
           <SurfaceCard style={{ marginBottom: 24 }}>
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text,
-              marginBottom: 16
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: 16,
+              }}
+            >
               {t.editTable}
             </Text>
-            
-            <Text style={{ 
-              fontSize: 14, 
-              color: colors.textSubtle,
-              marginBottom: 8
-            }}>
+
+            <Text
+              style={{
+                fontSize: 14,
+                color: colors.textSubtle,
+                marginBottom: 8,
+              }}
+            >
               {t.tableName}
             </Text>
-            
+
             <TextInput
               style={{
                 borderWidth: 1,
@@ -122,7 +128,7 @@ export default function EditTableScreen() {
                 fontSize: 16,
                 color: colors.text,
                 backgroundColor: colors.surface,
-                marginBottom: 8
+                marginBottom: 8,
               }}
               placeholder={t.enterNewTableName}
               placeholderTextColor={colors.textSubtle}
@@ -130,12 +136,14 @@ export default function EditTableScreen() {
               onChangeText={setTableName}
               autoFocus
             />
-            
-            <Text style={{ 
-              fontSize: 12, 
-              color: colors.textSubtle,
-              fontStyle: 'italic'
-            }}>
+
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.textSubtle,
+                fontStyle: 'italic',
+              }}
+            >
               {t.tableNameHint.replace('{seq}', table.seq.toString())}
             </Text>
           </SurfaceCard>
@@ -147,11 +155,7 @@ export default function EditTableScreen() {
               onPress={() => navigation.goBack()}
               style={{ flex: 1 }}
             />
-            <PrimaryButton
-              title={t.save}
-              onPress={handleSave}
-              style={{ flex: 1 }}
-            />
+            <PrimaryButton title={t.save} onPress={handleSave} style={{ flex: 1 }} />
           </View>
         </TouchableOpacity>
 

@@ -7,19 +7,19 @@ import { generateId, generateTableId } from '../constants/branding';
 interface LayoutState {
   halls: Hall[];
   tables: Table[];
-  
+
   // Hall actions
   addHall: (data: CreateHallData) => Hall;
   updateHall: (id: string, data: Partial<Hall>) => void;
   deleteHall: (id: string) => void;
-  
+
   // Table actions
   addTable: (data: CreateTableData) => Table;
   updateTable: (id: string, data: Partial<Table>) => void;
   deleteTable: (id: string) => void;
-  
+
   // Selectors
-  getHallsWithTables: () => Array<Hall & { tables: Table[] }>;
+  getHallsWithTables: () => (Hall & { tables: Table[] })[];
   getTablesByHall: (hallId: string) => Table[];
   getOpenTables: () => Table[];
   getTable: (tableId: string) => Table | undefined;
@@ -39,32 +39,30 @@ export const useLayoutStore = create<LayoutState>()(
           createdAt: Date.now(),
           nextTableSequence: 1,
         };
-        
+
         set((state) => ({
-          halls: [...state.halls, hall]
+          halls: [...state.halls, hall],
         }));
-        
+
         return hall;
       },
 
       updateHall: (id, data) => {
         set((state) => ({
-          halls: state.halls.map((hall) =>
-            hall.id === id ? { ...hall, ...data } : hall
-          )
+          halls: state.halls.map((hall) => (hall.id === id ? { ...hall, ...data } : hall)),
         }));
       },
 
       deleteHall: (id) => {
         set((state) => ({
           halls: state.halls.filter((hall) => hall.id !== id),
-          tables: state.tables.filter((table) => table.hallId !== id)
+          tables: state.tables.filter((table) => table.hallId !== id),
         }));
       },
 
       // Table actions
       addTable: (data) => {
-        const hall = get().halls.find(h => h.id === data.hallId);
+        const hall = get().halls.find((h) => h.id === data.hallId);
         if (!hall) {
           throw new Error('Hall not found');
         }
@@ -77,30 +75,26 @@ export const useLayoutStore = create<LayoutState>()(
           isOpen: false,
           activeTicketIds: [],
         };
-        
+
         set((state) => ({
           tables: [...state.tables, table],
           halls: state.halls.map((h) =>
-            h.id === data.hallId 
-              ? { ...h, nextTableSequence: h.nextTableSequence + 1 }
-              : h
-          )
+            h.id === data.hallId ? { ...h, nextTableSequence: h.nextTableSequence + 1 } : h,
+          ),
         }));
-        
+
         return table;
       },
 
       updateTable: (id, data) => {
         set((state) => ({
-          tables: state.tables.map((table) =>
-            table.id === id ? { ...table, ...data } : table
-          )
+          tables: state.tables.map((table) => (table.id === id ? { ...table, ...data } : table)),
         }));
       },
 
       deleteTable: (id) => {
         set((state) => ({
-          tables: state.tables.filter((table) => table.id !== id)
+          tables: state.tables.filter((table) => table.id !== id),
         }));
       },
 
@@ -109,7 +103,7 @@ export const useLayoutStore = create<LayoutState>()(
         const { halls, tables } = get();
         return halls.map((hall) => ({
           ...hall,
-          tables: tables.filter((table) => table.hallId === hall.id)
+          tables: tables.filter((table) => table.hallId === hall.id),
         }));
       },
 
@@ -132,6 +126,6 @@ export const useLayoutStore = create<LayoutState>()(
         halls: state.halls,
         tables: state.tables,
       }),
-    }
-  )
+    },
+  ),
 );

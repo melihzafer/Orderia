@@ -9,25 +9,25 @@ export interface ExportData {
   totalOrders: number;
   totalRevenue: number;
   averageOrderValue: number;
-  orders: Array<{
+  orders: {
     orderId: string;
     tableId: string;
     timestamp: string;
     total: number;
     status: string;
-    items: Array<{
+    items: {
       name: string;
       quantity: number;
       price: number;
       total: number;
-    }>;
-  }>;
+    }[];
+  }[];
 }
 
 export async function exportToCSV(
   data: ExportData[],
   filename: string = 'orderia_report',
-  t?: any
+  t?: any,
 ): Promise<boolean> {
   const translations = {
     date: 'Date',
@@ -43,28 +43,28 @@ export async function exportToCSV(
     itemName: 'Item Name',
     quantity: 'Quantity',
     itemPrice: 'Item Price',
-    itemTotal: 'Item Total'
+    itemTotal: 'Item Total',
   };
 
   try {
     let csvContent = `${translations.date},${translations.totalOrders},${translations.totalRevenue},${translations.averageOrderValue}\n`;
-    
+
     // Summary data
-    data.forEach(day => {
+    data.forEach((day) => {
       csvContent += `${day.date},${day.totalOrders},${day.totalRevenue},${day.averageOrderValue}\n`;
     });
-    
+
     csvContent += `\n\n${translations.detailedOrders}\n`;
     csvContent += `${translations.date},${translations.orderId},${translations.tableId},${translations.timestamp},${translations.total},${translations.status},${translations.itemName},${translations.quantity},${translations.itemPrice},${translations.itemTotal}\n`;
-    
+
     // Detailed order data with items
-    data.forEach(day => {
-      day.orders.forEach(order => {
+    data.forEach((day) => {
+      day.orders.forEach((order) => {
         if (order.items.length === 0) {
           // If no items, still show the order with empty item fields
           csvContent += `${day.date},${order.orderId},${order.tableId},${order.timestamp},${order.total},${order.status},,,,\n`;
         } else {
-          order.items.forEach(item => {
+          order.items.forEach((item) => {
             csvContent += `${day.date},${order.orderId},${order.tableId},${order.timestamp},${order.total},${order.status},"${item.name}",${item.quantity},${item.price},${item.total}\n`;
           });
         }
@@ -92,7 +92,7 @@ export async function exportToCSV(
 function generateHTMLContent(
   data: ExportData[],
   translations: any,
-  priceFormatter: (amount: number) => string
+  priceFormatter: (amount: number) => string,
 ): string {
   let htmlContent = `
     <!DOCTYPE html>
@@ -147,7 +147,7 @@ function generateHTMLContent(
             </thead>
             <tbody>`;
 
-  data.forEach(day => {
+  data.forEach((day) => {
     htmlContent += `
                 <tr>
                     <td>${day.date}</td>
@@ -163,14 +163,14 @@ function generateHTMLContent(
         
         <div class="section-title">${translations.detailedOrders}</div>`;
 
-  data.forEach(day => {
+  data.forEach((day) => {
     htmlContent += `<div class="day-section">`;
     htmlContent += `<h3>${day.date}</h3>`;
-    
+
     if (day.orders.length === 0) {
       htmlContent += `<div class="no-orders">Bu tarihte sipariş bulunmamaktadır.</div>`;
     } else {
-      day.orders.forEach(order => {
+      day.orders.forEach((order) => {
         htmlContent += `
         <div class="order-section">
           <div class="order-header">
@@ -190,8 +190,8 @@ function generateHTMLContent(
               </tr>
             </thead>
             <tbody>`;
-        
-        order.items.forEach(item => {
+
+        order.items.forEach((item) => {
           htmlContent += `
               <tr>
                 <td>${item.name}</td>
@@ -200,7 +200,7 @@ function generateHTMLContent(
                 <td class="price-cell">${priceFormatter(item.total)}</td>
               </tr>`;
         });
-        
+
         htmlContent += `
             </tbody>
           </table>
@@ -221,7 +221,7 @@ export async function exportToPDF(
   data: ExportData[],
   filename: string = 'orderia_report',
   t?: any,
-  formatPrice?: (amount: number) => string
+  formatPrice?: (amount: number) => string,
 ): Promise<boolean> {
   const priceFormatter = formatPrice || ((amount: number) => `₺${amount.toFixed(2)}`);
   const translations = t || {
@@ -242,7 +242,7 @@ export async function exportToPDF(
     item: 'Ürün',
     quantity: 'Miktar',
     unitPrice: 'Birim Fiyat',
-    itemTotal: 'Tutar'
+    itemTotal: 'Tutar',
   };
 
   try {
@@ -256,7 +256,7 @@ export async function exportToPDF(
 
     // Create the final file path
     const finalUri = `${FileSystem.documentDirectory}${filename}_${Date.now()}.pdf`;
-    
+
     // Move the generated PDF to the desired location
     await FileSystem.moveAsync({
       from: uri,
@@ -284,15 +284,15 @@ export function prepareExportData(dailyHistory: Record<string, DayHistory>): Exp
 
     const orders = history.tickets.map((ticket: Ticket) => ({
       orderId: ticket.id,
-      tableId: ticket.lines.map(line => line.nameSnapshot).join(', '),
+      tableId: ticket.lines.map((line) => line.nameSnapshot).join(', '),
       timestamp: new Date(ticket.createdAt).toLocaleTimeString('tr-TR'),
-      total: ticket.lines.reduce((sum, line) => sum + (line.priceSnapshot * line.quantity), 0),
+      total: ticket.lines.reduce((sum, line) => sum + line.priceSnapshot * line.quantity, 0),
       status: ticket.status,
       items: ticket.lines.map((item: TicketLine) => ({
         name: item.nameSnapshot,
         quantity: item.quantity,
         price: item.priceSnapshot,
-        total: (item.priceSnapshot * item.quantity),
+        total: item.priceSnapshot * item.quantity,
       })),
     }));
 
@@ -309,18 +309,12 @@ export function prepareExportData(dailyHistory: Record<string, DayHistory>): Exp
 function generateBillHTML(
   ticket: Ticket,
   t: Translation,
-  priceFormatter: (amount: number) => string
+  priceFormatter: (amount: number) => string,
 ): string {
-  const {
-    id,
-    name,
-    lines,
-    paymentInfo,
-    createdAt,
-    closedAt
-  } = ticket;
+  const { id, name, lines, paymentInfo, createdAt, closedAt } = ticket;
 
-  const headerImage = 'https://raw.githubusercontent.com/zwolfe/orderia/main/assets/images/Logo.png';
+  const headerImage =
+    'https://raw.githubusercontent.com/zwolfe/orderia/main/assets/images/Logo.png';
 
   return `
     <!DOCTYPE html>
@@ -368,24 +362,32 @@ function generateBillHTML(
                     </tr>
                 </thead>
                 <tbody>
-                    ${lines.map(line => `
+                    ${lines
+                      .map(
+                        (line) => `
                         <tr>
                             <td>${line.nameSnapshot}</td>
                             <td class="quantity">${line.quantity}</td>
                             <td class="price">${priceFormatter(line.priceSnapshot)}</td>
                             <td class="price">${priceFormatter(line.priceSnapshot * line.quantity)}</td>
                         </tr>
-                    `).join('')}
+                    `,
+                      )
+                      .join('')}
                 </tbody>
             </table>
 
-            ${paymentInfo ? `
+            ${
+              paymentInfo
+                ? `
             <div class="summary">
                 <div class="summary-row total">
                     <span>${t.total}</span>
                     <span class="price">${priceFormatter(paymentInfo.total)}</span>
                 </div>
-                ${paymentInfo.paymentMethod === 'cash' ? `
+                ${
+                  paymentInfo.paymentMethod === 'cash'
+                    ? `
                 <div class="summary-row">
                     <span>${t.amountReceived} (${t.cash})</span>
                     <span class="price">${priceFormatter(paymentInfo.amountReceived || 0)}</span>
@@ -394,14 +396,18 @@ function generateBillHTML(
                     <span>${t.change}</span>
                     <span class="price">${priceFormatter(paymentInfo.change || 0)}</span>
                 </div>
-                ` : `
+                `
+                    : `
                 <div class="summary-row">
                     <span>${t.paymentMethod}</span>
                     <span class="price">${t.card}</span>
                 </div>
-                `}
+                `
+                }
             </div>
-            ` : ''}
+            `
+                : ''
+            }
 
             <div class="footer">
                 <p>${t.thankYouNote || 'Thank you for your visit!'}</p>
@@ -412,11 +418,10 @@ function generateBillHTML(
   `;
 }
 
-
 export async function generateAndShareBill(
   ticket: Ticket,
   t: Translation,
-  priceFormatter: (amount: number) => string
+  priceFormatter: (amount: number) => string,
 ): Promise<boolean> {
   try {
     const htmlContent = generateBillHTML(ticket, t, priceFormatter);
@@ -428,7 +433,7 @@ export async function generateAndShareBill(
 
     const filename = `Orderia_Bill_${ticket.id.slice(-6)}.pdf`;
     const finalUri = `${FileSystem.documentDirectory}${filename}`;
-    
+
     await FileSystem.moveAsync({
       from: uri,
       to: finalUri,

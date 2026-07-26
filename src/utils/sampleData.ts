@@ -20,21 +20,21 @@ export function initializeSampleData() {
     categoryId: beveragesCategory.id,
     name: 'Çay',
     price: 500, // 5.00 TL
-    description: 'Geleneksel Türk çayı'
+    description: 'Geleneksel Türk çayı',
   });
 
   menuStore.addMenuItem({
     categoryId: beveragesCategory.id,
     name: 'Kahve',
     price: 1000, // 10.00 TL
-    description: 'Türk kahvesi'
+    description: 'Türk kahvesi',
   });
 
   menuStore.addMenuItem({
     categoryId: beveragesCategory.id,
     name: 'Ayran',
     price: 750, // 7.50 TL
-    description: 'Ev yapımı ayran'
+    description: 'Ev yapımı ayran',
   });
 
   // Main dishes
@@ -42,21 +42,21 @@ export function initializeSampleData() {
     categoryId: mainsCategory.id,
     name: 'Köfte',
     price: 3500, // 35.00 TL
-    description: 'Ev yapımı köfte, pirinç pilavı ile'
+    description: 'Ev yapımı köfte, pirinç pilavı ile',
   });
 
   menuStore.addMenuItem({
     categoryId: mainsCategory.id,
     name: 'Tavuk Şiş',
     price: 4000, // 40.00 TL
-    description: 'Marine edilmiş tavuk şiş'
+    description: 'Marine edilmiş tavuk şiş',
   });
 
   menuStore.addMenuItem({
     categoryId: mainsCategory.id,
     name: 'Balık',
     price: 5500, // 55.00 TL
-    description: 'Günün balığı, sebze garnitürü ile'
+    description: 'Günün balığı, sebze garnitürü ile',
   });
 
   // Desserts
@@ -64,14 +64,14 @@ export function initializeSampleData() {
     categoryId: dessertsCategory.id,
     name: 'Baklava',
     price: 1500, // 15.00 TL
-    description: 'Antep fıstıklı baklava'
+    description: 'Antep fıstıklı baklava',
   });
 
   menuStore.addMenuItem({
     categoryId: dessertsCategory.id,
     name: 'Sütlaç',
     price: 1200, // 12.00 TL
-    description: 'Ev yapımı sütlaç'
+    description: 'Ev yapımı sütlaç',
   });
 
   // Add sample halls

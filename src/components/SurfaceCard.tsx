@@ -107,11 +107,7 @@ export function SurfaceCard({
       ...props,
     };
 
-    return (
-      <TouchableOpacity {...touchableProps}>
-        {children}
-      </TouchableOpacity>
-    );
+    return <TouchableOpacity {...touchableProps}>{children}</TouchableOpacity>;
   }
 
   return renderContent();

@@ -18,112 +18,112 @@ interface EnhancedBottomSheetProps {
   headerActions?: React.ReactNode;
 }
 
-export const EnhancedBottomSheet = forwardRef<BottomSheet, EnhancedBottomSheetProps>(({
-  title,
-  subtitle,
-  children,
-  isVisible,
-  onClose,
-  enablePanDownToClose = true,
-  snapPoints = ['50%', '75%', '90%'],
-  backdropPressToClose = true,
-  showHandle = true,
-  headerActions,
-}, ref) => {
-  const { colors } = useTheme();
-  const { height } = Dimensions.get('window');
+export const EnhancedBottomSheet = forwardRef<BottomSheet, EnhancedBottomSheetProps>(
+  (
+    {
+      title,
+      subtitle,
+      children,
+      isVisible,
+      onClose,
+      enablePanDownToClose = true,
+      snapPoints = ['50%', '75%', '90%'],
+      backdropPressToClose = true,
+      showHandle = true,
+      headerActions,
+    },
+    ref,
+  ) => {
+    const { colors } = useTheme();
+    const { height } = Dimensions.get('window');
 
-  const dynamicSnapPoints = useMemo(() => {
-    if (Platform.OS === 'ios') {
-      return snapPoints;
-    }
-    // Android optimization for keyboard handling
-    return snapPoints.map(point => {
-      const percentage = parseInt(point.replace('%', ''));
-      return `${Math.min(percentage, 95)}%`;
-    });
-  }, [snapPoints]);
+    const dynamicSnapPoints = useMemo(() => {
+      if (Platform.OS === 'ios') {
+        return snapPoints;
+      }
+      // Android optimization for keyboard handling
+      return snapPoints.map((point) => {
+        const percentage = parseInt(point.replace('%', ''));
+        return `${Math.min(percentage, 95)}%`;
+      });
+    }, [snapPoints]);
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        pressBehavior={backdropPressToClose ? 'close' : 'none'}
-        style={[props.style, { backgroundColor: colors.overlay }]}
-      />
-    ),
-    [colors.overlay, backdropPressToClose]
-  );
+    const renderBackdrop = useCallback(
+      (props: any) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior={backdropPressToClose ? 'close' : 'none'}
+          style={[props.style, { backgroundColor: colors.overlay }]}
+        />
+      ),
+      [colors.overlay, backdropPressToClose],
+    );
 
-  const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
-      onClose();
-    }
-  }, [onClose]);
+    const handleSheetChanges = useCallback(
+      (index: number) => {
+        if (index === -1) {
+          onClose();
+        }
+      },
+      [onClose],
+    );
 
-  if (!isVisible) return null;
+    if (!isVisible) return null;
 
-  return (
-    <BottomSheet
-      ref={ref}
-      index={0}
-      snapPoints={dynamicSnapPoints}
-      onChange={handleSheetChanges}
-      enablePanDownToClose={enablePanDownToClose}
-      backdropComponent={renderBackdrop}
-      handleIndicatorStyle={{
-        backgroundColor: colors.border,
-        width: 40,
-        height: 4,
-        display: showHandle ? 'flex' : 'none',
-      }}
-      backgroundStyle={{
-        backgroundColor: colors.surface,
-        ...elevation.lg,
-      }}
-      style={styles.bottomSheet}
-    >
-      <BottomSheetView style={styles.container}>
-        {/* Header */}
-        {(title || subtitle || headerActions) && (
-          <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
-            <View style={styles.headerContent}>
-              <View style={styles.headerText}>
-                {title && (
-                  <Text style={[styles.title, { color: colors.text }]}>
-                    {title}
-                  </Text>
-                )}
-                {subtitle && (
-                  <Text style={[styles.subtitle, { color: colors.textSubtle }]}>
-                    {subtitle}
-                  </Text>
-                )}
-              </View>
-              <View style={styles.headerActions}>
-                {headerActions}
-                <TouchableOpacity
-                  onPress={onClose}
-                  style={[styles.closeButton, { backgroundColor: colors.surfaceAlt }]}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close" size={20} color={colors.textSubtle} />
-                </TouchableOpacity>
+    return (
+      <BottomSheet
+        ref={ref}
+        index={0}
+        snapPoints={dynamicSnapPoints}
+        onChange={handleSheetChanges}
+        enablePanDownToClose={enablePanDownToClose}
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{
+          backgroundColor: colors.border,
+          width: 40,
+          height: 4,
+          display: showHandle ? 'flex' : 'none',
+        }}
+        backgroundStyle={{
+          backgroundColor: colors.surface,
+          ...elevation.lg,
+        }}
+        style={styles.bottomSheet}
+      >
+        <BottomSheetView style={styles.container}>
+          {/* Header */}
+          {(title || subtitle || headerActions) && (
+            <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
+              <View style={styles.headerContent}>
+                <View style={styles.headerText}>
+                  {title && <Text style={[styles.title, { color: colors.text }]}>{title}</Text>}
+                  {subtitle && (
+                    <Text style={[styles.subtitle, { color: colors.textSubtle }]}>{subtitle}</Text>
+                  )}
+                </View>
+                <View style={styles.headerActions}>
+                  {headerActions}
+                  <TouchableOpacity
+                    onPress={onClose}
+                    style={[styles.closeButton, { backgroundColor: colors.surfaceAlt }]}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="close" size={20} color={colors.textSubtle} />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Content */}
-        <View style={styles.content}>
-          {children}
-        </View>
-      </BottomSheetView>
-    </BottomSheet>
-  );
-});
+          {/* Content */}
+          <View style={styles.content}>{children}</View>
+        </BottomSheetView>
+      </BottomSheet>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   bottomSheet: {

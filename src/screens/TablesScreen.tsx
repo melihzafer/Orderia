@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
   Alert,
   RefreshControl,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -27,26 +27,14 @@ export default function TablesScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { colors } = useTheme();
   const { t, formatPrice } = useLocalization();
-  
-  const { 
-    halls, 
-    tables, 
-    getHallsWithTables, 
-    addHall, 
-    addTable,
-    deleteTable,
-    deleteHall 
-  } = useLayoutStore();
-  
-  const { 
-    openTickets, 
-    getTicketsByTable, 
-    getTicketTotal, 
-    getTodayTotal 
-  } = useOrderStore();
+
+  const { halls, tables, getHallsWithTables, addHall, addTable, deleteTable, deleteHall } =
+    useLayoutStore();
+
+  const { openTickets, getTicketsByTable, getTicketTotal, getTodayTotal } = useOrderStore();
 
   const [refreshing, setRefreshing] = React.useState(false);
-  
+
   // Action sheet states
   const [showHallActions, setShowHallActions] = useState(false);
   const [selectedHall, setSelectedHall] = useState<Hall | null>(null);
@@ -70,39 +58,31 @@ export default function TablesScreen() {
   };
 
   const handleDeleteTable = (table: Table) => {
-    Alert.alert(
-      t.deleteTable,
-      t.deleteTableConfirm,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.delete,
-          style: 'destructive',
-          onPress: () => {
-            deleteTable(table.id);
-            Alert.alert(t.success, t.tableDeleted);
-          }
-        }
-      ]
-    );
+    Alert.alert(t.deleteTable, t.deleteTableConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.delete,
+        style: 'destructive',
+        onPress: () => {
+          deleteTable(table.id);
+          Alert.alert(t.success, t.tableDeleted);
+        },
+      },
+    ]);
   };
 
   const handleDeleteHall = (hall: Hall & { tables: Table[] }) => {
-    Alert.alert(
-      t.deleteHall,
-      t.deleteHallConfirm,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.delete,
-          style: 'destructive',
-          onPress: () => {
-            deleteHall(hall.id);
-            Alert.alert(t.success, t.hallDeleted);
-          }
-        }
-      ]
-    );
+    Alert.alert(t.deleteHall, t.deleteHallConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.delete,
+        style: 'destructive',
+        onPress: () => {
+          deleteHall(hall.id);
+          Alert.alert(t.success, t.hallDeleted);
+        },
+      },
+    ]);
   };
 
   const handleAddHall = () => {
@@ -129,22 +109,18 @@ export default function TablesScreen() {
   const handleDeleteHallAction = (hall: Hall & { tables: Table[] }) => {
     setShowHallActions(false);
     setSelectedHall(null);
-    
-    Alert.alert(
-      t.deleteHall,
-      t.deleteHallConfirm,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.delete,
-          style: 'destructive',
-          onPress: () => {
-            deleteHall(hall.id);
-            Alert.alert(t.success, t.hallDeleted);
-          }
-        }
-      ]
-    );
+
+    Alert.alert(t.deleteHall, t.deleteHallConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.delete,
+        style: 'destructive',
+        onPress: () => {
+          deleteHall(hall.id);
+          Alert.alert(t.success, t.hallDeleted);
+        },
+      },
+    ]);
   };
 
   const handleEditTableAction = (table: Table) => {
@@ -156,22 +132,18 @@ export default function TablesScreen() {
   const handleDeleteTableAction = (table: Table) => {
     setShowTableActions(false);
     setSelectedTable(null);
-    
-    Alert.alert(
-      t.deleteTable,
-      t.deleteTableConfirm,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.delete,
-          style: 'destructive',
-          onPress: () => {
-            deleteTable(table.id);
-            Alert.alert(t.success, t.tableDeleted);
-          }
-        }
-      ]
-    );
+
+    Alert.alert(t.deleteTable, t.deleteTableConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.delete,
+        style: 'destructive',
+        onPress: () => {
+          deleteTable(table.id);
+          Alert.alert(t.success, t.tableDeleted);
+        },
+      },
+    ]);
   };
 
   const getHallActions = (): ActionSheetAction[] => [
@@ -186,7 +158,8 @@ export default function TablesScreen() {
       title: t.delete || 'Delete',
       icon: 'trash',
       destructive: true,
-      onPress: () => selectedHall && handleDeleteHallAction(selectedHall as Hall & { tables: Table[] }),
+      onPress: () =>
+        selectedHall && handleDeleteHallAction(selectedHall as Hall & { tables: Table[] }),
     },
   ];
 
@@ -207,19 +180,15 @@ export default function TablesScreen() {
   ];
 
   const handleAddTable = (hallId: string) => {
-    Alert.alert(
-      t.addTable,
-      t.addTableConfirm,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.add,
-          onPress: () => {
-            addTable({ hallId });
-          }
-        }
-      ]
-    );
+    Alert.alert(t.addTable, t.addTableConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.add,
+        onPress: () => {
+          addTable({ hallId });
+        },
+      },
+    ]);
   };
 
   const handleTablePress = (table: Table) => {
@@ -239,57 +208,67 @@ export default function TablesScreen() {
           style={{ flex: 1 }}
         >
           <SurfaceCard
-        variant="outlined"
-        padding="small"
-        style={{
-          minHeight: 80,
-          backgroundColor: table.isOpen ? colors.accent + '20' : colors.surface,
-          borderColor: table.isOpen ? colors.accent : colors.border,
-          borderWidth: table.isOpen ? 2 : 1,
-        }}
+            variant="outlined"
+            padding="small"
+            style={{
+              minHeight: 80,
+              backgroundColor: table.isOpen ? colors.accent + '20' : colors.surface,
+              borderColor: table.isOpen ? colors.accent : colors.border,
+              borderWidth: table.isOpen ? 2 : 1,
+            }}
           >
-        <View style={{ flex: 1, justifyContent: 'space-between', height: 'auto' }}>
-          <Text style={{ 
-            fontSize: 10, 
-            fontWeight: '600', 
-            color: colors.text,
-            flex: 1
-          }}>
-            {displayName}
-          </Text>
-              
+            <View style={{ flex: 1, justifyContent: 'space-between', height: 'auto' }}>
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: '600',
+                  color: colors.text,
+                  flex: 1,
+                }}
+              >
+                {displayName}
+              </Text>
+
               {table.isOpen && (
                 <View style={{ alignItems: 'center', marginTop: 4 }}>
-                  <View style={{
-                    backgroundColor: colors.accent,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 10,
-                  }}>
-                    <Text style={{ 
-                      fontSize: 10, 
-                      color: '#FFFFFF',
-                      fontWeight: '600'
-                    }}>
+                  <View
+                    style={{
+                      backgroundColor: colors.accent,
+                      paddingHorizontal: 6,
+                      paddingVertical: 2,
+                      borderRadius: 10,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: '#FFFFFF',
+                        fontWeight: '600',
+                      }}
+                    >
                       {t.open}
                     </Text>
                   </View>
                   {totalAmount > 0 && (
-                    <Text style={{ 
-                      fontSize: 12, 
-                      color: colors.textSubtle,
-                      marginTop: 2
-                    }}>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: colors.textSubtle,
+                        marginTop: 2,
+                      }}
+                    >
                       {formatPrice(totalAmount)}
                     </Text>
                   )}
                   {tickets.length > 1 && (
-                    <Text style={{ 
-                      fontSize: 10, 
-                      color: colors.accent,
-                      marginTop: 2,
-                      fontWeight: '600'
-                    }}>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: colors.accent,
+                        marginTop: 2,
+                        fontWeight: '600',
+                      }}
+                    >
                       {tickets.length} orders
                     </Text>
                   )}
@@ -307,22 +286,24 @@ export default function TablesScreen() {
       <SurfaceCard style={{ marginBottom: 16 }}>
         <TouchableOpacity
           onLongPress={() => handleHallLongPress(hall)}
-          style={{ 
-            flexDirection: 'row', 
-            justifyContent: 'space-between', 
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: 12
+            marginBottom: 12,
           }}
         >
-          <Text style={{ 
-            fontSize: 18, 
-            fontWeight: '600', 
-            color: colors.text 
-          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+            }}
+          >
             {hall.name}
           </Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             onPress={() => handleAddTable(hall.id)}
             style={{
               backgroundColor: colors.primary,
@@ -334,32 +315,38 @@ export default function TablesScreen() {
             }}
           >
             <Ionicons name="add" size={16} color="#FFFFFF" />
-            <Text style={{ 
-              color: '#FFFFFF', 
-              fontSize: 12, 
-              fontWeight: '600',
-              marginLeft: 4
-            }}>
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontSize: 12,
+                fontWeight: '600',
+                marginLeft: 4,
+              }}
+            >
               {t.addTable}
             </Text>
           </TouchableOpacity>
         </TouchableOpacity>
 
         {hall.tables.length === 0 ? (
-          <Text style={{ 
-            color: colors.textSubtle, 
-            textAlign: 'center',
-            fontStyle: 'italic',
-            padding: 20
-          }}>
+          <Text
+            style={{
+              color: colors.textSubtle,
+              textAlign: 'center',
+              fontStyle: 'italic',
+              padding: 20,
+            }}
+          >
             {t.noTables}
           </Text>
         ) : (
-          <View style={{ 
-            flexDirection: 'row', 
-            flexWrap: 'wrap',
-            marginHorizontal: -4
-          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              marginHorizontal: -4,
+            }}
+          >
             {hall.tables.map(renderTable)}
           </View>
         )}
@@ -371,7 +358,10 @@ export default function TablesScreen() {
   const todayTotal = getTodayTotal();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <ScrollView
         style={{ flex: 1 }}
         refreshControl={
@@ -382,65 +372,70 @@ export default function TablesScreen() {
           />
         }
       >
-        <TouchableOpacity 
-          activeOpacity={1} 
-          style={{ flex: 1 }}
-        >
-        {/* Today's Summary */}
-        <SurfaceCard style={{ margin: 16, marginBottom: 8 }} variant="elevated">
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View>
-              <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.dailyTotal}</Text>
-              <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>
-                {formatPrice(todayTotal)}
-              </Text>
+        <TouchableOpacity activeOpacity={1} style={{ flex: 1 }}>
+          {/* Today's Summary */}
+          <SurfaceCard style={{ margin: 16, marginBottom: 8 }} variant="elevated">
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <View>
+                <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.dailyTotal}</Text>
+                <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>
+                  {formatPrice(todayTotal)}
+                </Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.openTables}</Text>
+                <Text style={{ fontSize: 20, fontWeight: '600', color: colors.accent }}>
+                  {tables.filter((t) => t.isOpen).length}
+                </Text>
+              </View>
             </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={{ fontSize: 14, color: colors.textSubtle }}>{t.openTables}</Text>
-              <Text style={{ fontSize: 20, fontWeight: '600', color: colors.accent }}>
-                {tables.filter(t => t.isOpen).length}
-              </Text>
-            </View>
-          </View>
-        </SurfaceCard>
+          </SurfaceCard>
 
-        {/* Halls and Tables */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-          {hallsWithTables.length === 0 ? (
-            <SurfaceCard style={{ padding: 32 }}>
-              <Text style={{ 
-                textAlign: 'center', 
-                color: colors.textSubtle,
-                fontSize: 16,
-                marginBottom: 16
-              }}>
-                {t.noHalls}
-              </Text>
-              {/* <PrimaryButton
+          {/* Halls and Tables */}
+          <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+            {hallsWithTables.length === 0 ? (
+              <SurfaceCard style={{ padding: 32 }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: colors.textSubtle,
+                    fontSize: 16,
+                    marginBottom: 16,
+                  }}
+                >
+                  {t.noHalls}
+                </Text>
+                {/* <PrimaryButton
                 title={t.addFirstHall}
                 onPress={handleAddHall}
                 fullWidth
               /> */}
-            </SurfaceCard>
-          ) : (
-            <FlatList
-              data={hallsWithTables}
-              renderItem={renderHall}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              ListFooterComponent={
-                <>
-                {/* <PrimaryButton
+              </SurfaceCard>
+            ) : (
+              <FlatList
+                data={hallsWithTables}
+                renderItem={renderHall}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                ListFooterComponent={
+                  <>
+                    {/* <PrimaryButton
                   title={t.addNewHall}
                   onPress={handleAddHall}
                   variant="outline"
                   fullWidth
                 /> */}
-                </>
-              }
-            />
-          )}
-        </View>
+                  </>
+                }
+              />
+            )}
+          </View>
         </TouchableOpacity>
       </ScrollView>
 

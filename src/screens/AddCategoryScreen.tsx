@@ -20,16 +20,18 @@ export default function AddCategoryScreen() {
   const route = useRoute<AddCategoryRouteProp>();
   const { colors } = useTheme();
   const { t } = useLocalization();
-  
+
   const { addCategory, updateCategory, categories, deleteCategory } = useMenuStore();
-  
+
   // Check if we're editing an existing category
   const editingCategoryId = route.params?.categoryId;
-  const editingCategory = editingCategoryId ? categories.find(c => c.id === editingCategoryId) : null;
+  const editingCategory = editingCategoryId
+    ? categories.find((c) => c.id === editingCategoryId)
+    : null;
   const isEditing = !!editingCategory;
-  
+
   const [categoryName, setCategoryName] = useState(editingCategory?.name || '');
-  
+
   // Action sheet for category actions
   const [showCategoryActions, setShowCategoryActions] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -86,9 +88,9 @@ export default function AddCategoryScreen() {
             } catch (error) {
               Alert.alert(t.error, t.genericError);
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
@@ -112,13 +114,11 @@ export default function AddCategoryScreen() {
     return (
       <TouchableOpacity onLongPress={() => handleCategoryLongPress(item)}>
         <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-              {item.name}
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.textSubtle }}>
-              Hold for options
-            </Text>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>{item.name}</Text>
+            <Text style={{ fontSize: 12, color: colors.textSubtle }}>Hold for options</Text>
           </View>
         </SurfaceCard>
       </TouchableOpacity>
@@ -126,28 +126,34 @@ export default function AddCategoryScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-        
         {/* Add/Edit Form */}
         <SurfaceCard style={{ marginBottom: 16 }}>
-          <Text style={{ 
-            fontSize: 18, 
-            fontWeight: '600', 
-            color: colors.text,
-            marginBottom: 16
-          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 16,
+            }}
+          >
             {isEditing ? t.editCategory : t.addCategory}
           </Text>
-          
-          <Text style={{ 
-            fontSize: 14, 
-            color: colors.textSubtle,
-            marginBottom: 8
-          }}>
+
+          <Text
+            style={{
+              fontSize: 14,
+              color: colors.textSubtle,
+              marginBottom: 8,
+            }}
+          >
             {t.categoryName} *
           </Text>
-          
+
           <TextInput
             style={{
               borderWidth: 1,
@@ -158,7 +164,7 @@ export default function AddCategoryScreen() {
               fontSize: 16,
               color: colors.text,
               backgroundColor: colors.surface,
-              marginBottom: 16
+              marginBottom: 16,
             }}
             placeholder={t.enterCategoryName}
             placeholderTextColor={colors.textSubtle}
@@ -166,7 +172,7 @@ export default function AddCategoryScreen() {
             onChangeText={setCategoryName}
             autoFocus={isEditing}
           />
-          
+
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <PrimaryButton
               title={t.cancel}
@@ -185,12 +191,14 @@ export default function AddCategoryScreen() {
         {/* Existing Categories List (only show when not editing) */}
         {!isEditing && categories.length > 0 && (
           <View style={{ flex: 1 }}>
-            <Text style={{ 
-              fontSize: 16, 
-              fontWeight: '600', 
-              color: colors.text,
-              marginBottom: 12
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: 12,
+              }}
+            >
               Existing Categories
             </Text>
             <FlatList

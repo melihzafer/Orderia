@@ -17,20 +17,20 @@ export const currencies: Record<Currency, CurrencyConfig> = {
     symbol: '₺',
     code: 'TRY',
     name: 'Turkish Lira',
-    locale: 'tr-TR'
+    locale: 'tr-TR',
   },
   BGN: {
     symbol: 'лв',
-    code: 'BGN', 
+    code: 'BGN',
     name: 'Bulgarian Lev',
-    locale: 'bg-BG'
+    locale: 'bg-BG',
   },
   EUR: {
     symbol: '€',
     code: 'EUR',
     name: 'Euro',
-    locale: 'en-EU'
-  }
+    locale: 'en-EU',
+  },
 };
 
 interface LocalizationContextType {
@@ -65,11 +65,11 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
     try {
       const savedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
       const savedCurrency = await AsyncStorage.getItem(CURRENCY_KEY);
-      
+
       if (savedLanguage && savedLanguage in translations) {
         setLanguageState(savedLanguage as Language);
       }
-      
+
       if (savedCurrency && savedCurrency in currencies) {
         setCurrencyState(savedCurrency as Currency);
       }
@@ -121,11 +121,7 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
     formatDateTime,
   };
 
-  return (
-    <LocalizationContext.Provider value={value}>
-      {children}
-    </LocalizationContext.Provider>
-  );
+  return <LocalizationContext.Provider value={value}>{children}</LocalizationContext.Provider>;
 }
 
 export function useLocalization() {

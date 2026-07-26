@@ -79,7 +79,7 @@ export default function AnalyticsScreen() {
     try {
       // Get all tickets for the selected period
       const allTickets = [];
-      
+
       // Add history tickets
       const historyDates = getHistoryDates();
       for (const dateKey of historyDates) {
@@ -88,38 +88,41 @@ export default function AnalyticsScreen() {
           allTickets.push(...dayHistory.tickets);
         }
       }
-      
+
       // Add open tickets
       const openTickets = getAllOpenTickets();
       allTickets.push(...openTickets);
-      
+
       // Filter by date range
-      const filteredTickets = dateRange ? 
-        allTickets.filter(ticket => {
-          const ticketDate = ticket.closedAt || ticket.createdAt;
-          return ticketDate >= dateRange.startDate.getTime() && 
-                 ticketDate <= dateRange.endDate.getTime();
-        }) : allTickets;
-      
+      const filteredTickets = dateRange
+        ? allTickets.filter((ticket) => {
+            const ticketDate = ticket.closedAt || ticket.createdAt;
+            return (
+              ticketDate >= dateRange.startDate.getTime() &&
+              ticketDate <= dateRange.endDate.getTime()
+            );
+          })
+        : allTickets;
+
       // Calculate totals
       let grandTotal = 0;
-      const orderDetails = filteredTickets.map(ticket => {
+      const orderDetails = filteredTickets.map((ticket) => {
         const orderTotal = ticket.lines.reduce((sum, line) => {
-          return sum + (line.priceSnapshot * line.quantity);
+          return sum + line.priceSnapshot * line.quantity;
         }, 0);
         grandTotal += orderTotal;
-        
+
         return {
           ticket,
           orderTotal,
-          items: ticket.lines.map(line => {
-            const menuItem = menuItems.find(item => item.id === line.menuItemId);
+          items: ticket.lines.map((line) => {
+            const menuItem = menuItems.find((item) => item.id === line.menuItemId);
             return {
               ...line,
               menuItemName: menuItem?.name || line.nameSnapshot || 'Unknown Item',
-              itemTotal: line.priceSnapshot * line.quantity
+              itemTotal: line.priceSnapshot * line.quantity,
             };
-          })
+          }),
         };
       });
 
@@ -315,7 +318,9 @@ export default function AnalyticsScreen() {
 
           <div class="orders-section">
             <h2>Order Details</h2>
-            ${orderDetails.map((order, index) => `
+            ${orderDetails
+              .map(
+                (order, index) => `
               <div class="order">
                 <div class="order-header">
                   <div>
@@ -336,7 +341,9 @@ export default function AnalyticsScreen() {
                     </tr>
                   </thead>
                   <tbody>
-                    ${order.items.map(item => `
+                    ${order.items
+                      .map(
+                        (item) => `
                       <tr>
                         <td>
                           ${item.menuItemName}
@@ -346,11 +353,15 @@ export default function AnalyticsScreen() {
                         <td class="price">${formatPrice(item.priceSnapshot)}</td>
                         <td class="total">${formatPrice(item.itemTotal)}</td>
                       </tr>
-                    `).join('')}
+                    `,
+                      )
+                      .join('')}
                   </tbody>
                 </table>
               </div>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
 
           <div class="grand-total">
@@ -389,14 +400,14 @@ export default function AnalyticsScreen() {
       Alert.alert(
         t.success || 'Success',
         `Detailed report exported successfully!\n\n${filteredTickets.length} orders\n${formatPrice(grandTotal)} total revenue`,
-        [{ text: t.ok || 'OK' }]
+        [{ text: t.ok || 'OK' }],
       );
     } catch (error) {
       console.error('Analytics export error:', error);
       Alert.alert(
         t.error || 'Error',
         t.exportFailed || 'Failed to export analytics report. Please try again.',
-        [{ text: t.ok || 'OK' }]
+        [{ text: t.ok || 'OK' }],
       );
     }
   };
@@ -419,7 +430,11 @@ export default function AnalyticsScreen() {
   };
 
   const renderPeriodSelector = () => (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginBottom: spacing.md }}
+    >
       <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md }}>
         {[
           { key: 'today', label: t.today || 'Today' },
@@ -439,11 +454,13 @@ export default function AnalyticsScreen() {
               backgroundColor: selectedPeriod === period.key ? colors.primary : colors.surfaceAlt,
             }}
           >
-            <Text style={{
-              color: selectedPeriod === period.key ? colors.primaryContrast : colors.text,
-              fontWeight: selectedPeriod === period.key ? '600' : '400',
-              fontSize: 14,
-            }}>
+            <Text
+              style={{
+                color: selectedPeriod === period.key ? colors.primaryContrast : colors.text,
+                fontWeight: selectedPeriod === period.key ? '600' : '400',
+                fontSize: 14,
+              }}
+            >
               {period.label}
             </Text>
           </TouchableOpacity>
@@ -458,7 +475,9 @@ export default function AnalyticsScreen() {
         <SurfaceCard variant="elevated" padding="medium" style={{ flex: 1 }}>
           <View style={{ alignItems: 'center' }}>
             <Ionicons name="cash-outline" size={24} color={colors.success} />
-            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}>
+            <Text
+              style={{ fontSize: 24, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}
+            >
               {formatPrice(analytics.totalRevenue)}
             </Text>
             <Text style={{ fontSize: 12, color: colors.textSubtle }}>
@@ -466,16 +485,18 @@ export default function AnalyticsScreen() {
             </Text>
             {revenueGrowth.growthPercentage !== 0 && (
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs }}>
-                <Ionicons 
-                  name={revenueGrowth.growthPercentage > 0 ? "trending-up" : "trending-down"} 
-                  size={14} 
-                  color={revenueGrowth.growthPercentage > 0 ? colors.success : colors.error} 
+                <Ionicons
+                  name={revenueGrowth.growthPercentage > 0 ? 'trending-up' : 'trending-down'}
+                  size={14}
+                  color={revenueGrowth.growthPercentage > 0 ? colors.success : colors.error}
                 />
-                <Text style={{ 
-                  fontSize: 12, 
-                  color: revenueGrowth.growthPercentage > 0 ? colors.success : colors.error,
-                  marginLeft: 2,
-                }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: revenueGrowth.growthPercentage > 0 ? colors.success : colors.error,
+                    marginLeft: 2,
+                  }}
+                >
                   {Math.abs(revenueGrowth.growthPercentage).toFixed(1)}%
                 </Text>
               </View>
@@ -486,7 +507,9 @@ export default function AnalyticsScreen() {
         <SurfaceCard variant="elevated" padding="medium" style={{ flex: 1 }}>
           <View style={{ alignItems: 'center' }}>
             <Ionicons name="receipt-outline" size={24} color={colors.info} />
-            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}>
+            <Text
+              style={{ fontSize: 24, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}
+            >
               {analytics.totalOrders}
             </Text>
             <Text style={{ fontSize: 12, color: colors.textSubtle }}>
@@ -498,7 +521,9 @@ export default function AnalyticsScreen() {
         <SurfaceCard variant="elevated" padding="medium" style={{ flex: 1 }}>
           <View style={{ alignItems: 'center' }}>
             <Ionicons name="calculator-outline" size={24} color={colors.warning} />
-            <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}>
+            <Text
+              style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginTop: spacing.xs }}
+            >
               {formatPrice(analytics.averageOrderValue)}
             </Text>
             <Text style={{ fontSize: 12, color: colors.textSubtle, textAlign: 'center' }}>
@@ -512,7 +537,7 @@ export default function AnalyticsScreen() {
 
   const renderRevenueChart = () => {
     const dailySales = getDailySalesChart(30);
-    
+
     if (dailySales.length === 0) {
       return (
         <View style={{ alignItems: 'center', padding: spacing.xl }}>
@@ -524,15 +549,17 @@ export default function AnalyticsScreen() {
     }
 
     const chartData = {
-      labels: dailySales.slice(-7).map(item => {
+      labels: dailySales.slice(-7).map((item) => {
         const date = new Date(item.date);
         return date.toLocaleDateString('en', { weekday: 'short' });
       }),
-      datasets: [{
-        data: dailySales.slice(-7).map(item => item.revenue / 100),
-        color: (opacity = 1) => `rgba(255, 107, 53, ${opacity})`,
-        strokeWidth: 3,
-      }],
+      datasets: [
+        {
+          data: dailySales.slice(-7).map((item) => item.revenue / 100),
+          color: (opacity = 1) => `rgba(255, 107, 53, ${opacity})`,
+          strokeWidth: 3,
+        },
+      ],
     };
 
     return (
@@ -551,28 +578,37 @@ export default function AnalyticsScreen() {
   };
 
   const renderTopItems = () => (
-    <SurfaceCard variant="elevated" padding="medium" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+    <SurfaceCard
+      variant="elevated"
+      padding="medium"
+      style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
         <Ionicons name="trophy-outline" size={20} color={colors.warning} />
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+        <Text
+          style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}
+        >
           {t.topSellingItems || 'Top Selling Items'}
         </Text>
       </View>
-      
+
       {topItems.length === 0 ? (
         <Text style={{ color: colors.textSubtle, textAlign: 'center', padding: spacing.md }}>
           {t.noItemsSold || 'No items sold in this period'}
         </Text>
       ) : (
         topItems.map((item, index) => (
-          <View key={item.item.id} style={{ 
-            flexDirection: 'row', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            paddingVertical: spacing.sm,
-            borderBottomWidth: index < topItems.length - 1 ? 1 : 0,
-            borderBottomColor: colors.borderLight,
-          }}>
+          <View
+            key={item.item.id}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingVertical: spacing.sm,
+              borderBottomWidth: index < topItems.length - 1 ? 1 : 0,
+              borderBottomColor: colors.borderLight,
+            }}
+          >
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
                 {item.item.name}
@@ -604,7 +640,9 @@ export default function AnalyticsScreen() {
     const pieData = categoryPerformance.slice(0, 5).map((category, index) => ({
       name: category.categoryName,
       population: category.revenue / 100,
-      color: [colors.primary, colors.secondary, colors.accent, colors.info, colors.success][index % 5],
+      color: [colors.primary, colors.secondary, colors.accent, colors.info, colors.success][
+        index % 5
+      ],
       legendFontColor: colors.text,
       legendFontSize: 12,
     }));
@@ -625,15 +663,17 @@ export default function AnalyticsScreen() {
 
   const renderPeakHoursChart = () => {
     const hourlyData = Array.from({ length: 24 }, (_, hour) => {
-      const hourData = peakHours.find(p => p.hour === hour);
+      const hourData = peakHours.find((p) => p.hour === hour);
       return hourData ? hourData.orders : 0;
     });
 
     const chartData = {
       labels: ['6', '9', '12', '15', '18', '21', '24'],
-      datasets: [{
-        data: [6, 9, 12, 15, 18, 21, 24].map(hour => hourlyData[hour] || 0),
-      }],
+      datasets: [
+        {
+          data: [6, 9, 12, 15, 18, 21, 24].map((hour) => hourlyData[hour] || 0),
+        },
+      ],
     };
 
     return (
@@ -653,7 +693,10 @@ export default function AnalyticsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Period Selector */}
         {renderPeriodSelector()}
@@ -662,16 +705,31 @@ export default function AnalyticsScreen() {
         {renderKPICards()}
 
         {/* Chart Section */}
-        <SurfaceCard variant="elevated" padding="medium" style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}>
+        <SurfaceCard
+          variant="elevated"
+          padding="medium"
+          style={{ marginHorizontal: spacing.md, marginBottom: spacing.md }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
             <Ionicons name="analytics-outline" size={20} color={colors.primary} />
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginLeft: spacing.sm }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+                marginLeft: spacing.sm,
+              }}
+            >
               {t.salesChart || 'Sales Chart'}
             </Text>
           </View>
 
           {/* Chart Type Selector */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: spacing.md }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginBottom: spacing.md }}
+          >
             <View style={{ flexDirection: 'row' }}>
               {[
                 { key: 'revenue', label: t.revenue || 'Revenue', icon: 'cash-outline' },
@@ -689,20 +747,23 @@ export default function AnalyticsScreen() {
                     paddingVertical: spacing.sm,
                     marginRight: spacing.sm,
                     borderRadius: radius.md,
-                    backgroundColor: selectedChart === chart.key ? colors.primary : colors.surfaceAlt,
+                    backgroundColor:
+                      selectedChart === chart.key ? colors.primary : colors.surfaceAlt,
                   }}
                 >
-                  <Ionicons 
-                    name={chart.icon as any} 
-                    size={16} 
-                    color={selectedChart === chart.key ? colors.primaryContrast : colors.text} 
+                  <Ionicons
+                    name={chart.icon as any}
+                    size={16}
+                    color={selectedChart === chart.key ? colors.primaryContrast : colors.text}
                   />
-                  <Text style={{
-                    color: selectedChart === chart.key ? colors.primaryContrast : colors.text,
-                    fontWeight: selectedChart === chart.key ? '600' : '400',
-                    fontSize: 14,
-                    marginLeft: spacing.xs,
-                  }}>
+                  <Text
+                    style={{
+                      color: selectedChart === chart.key ? colors.primaryContrast : colors.text,
+                      fontWeight: selectedChart === chart.key ? '600' : '400',
+                      fontSize: 14,
+                      marginLeft: spacing.xs,
+                    }}
+                  >
                     {chart.label}
                   </Text>
                 </TouchableOpacity>

@@ -75,9 +75,12 @@ export function FloatingActionButton({
 
   const getIconSize = () => {
     switch (size) {
-      case 'small': return 20;
-      case 'large': return 32;
-      default: return 24;
+      case 'small':
+        return 20;
+      case 'large':
+        return 32;
+      default:
+        return 24;
     }
   };
 
@@ -103,20 +106,18 @@ export function FloatingActionButton({
         disabled={disabled}
         activeOpacity={0.9}
       >
-        <Ionicons 
-          name={icon} 
-          size={getIconSize()} 
-          color={getIconColor()} 
-        />
+        <Ionicons name={icon} size={getIconSize()} color={getIconColor()} />
       </TouchableOpacity>
       {label && (
-        <Text style={{
-          fontSize: 12,
-          fontWeight: '500',
-          color: colors.textSubtle,
-          marginTop: spacing.xs,
-          textAlign: 'center',
-        }}>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: '500',
+            color: colors.textSubtle,
+            marginTop: spacing.xs,
+            textAlign: 'center',
+          }}
+        >
           {label}
         </Text>
       )}

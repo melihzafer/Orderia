@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const colors = brand.color[colorMode];
 
   const toggleColorMode = () => {
-    setColorMode(prev => prev === 'light' ? 'dark' : 'light');
+    setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
   const value: ThemeContextType = {
@@ -36,11 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setColorMode,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
+import {
+  View,
+  Text,
+  TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
   TouchableOpacity,
-  FlatList
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -29,17 +29,17 @@ export default function AddHallScreen() {
   const route = useRoute<AddHallRouteProp>();
   const { colors } = useTheme();
   const { t } = useLocalization();
-  
+
   const { addHall, updateHall, halls, deleteHall } = useLayoutStore();
-  
+
   // Check if we're editing an existing hall
   const editingHallId = route.params?.hallId;
-  const editingHall = editingHallId ? halls.find(h => h.id === editingHallId) : null;
+  const editingHall = editingHallId ? halls.find((h) => h.id === editingHallId) : null;
   const isEditing = !!editingHall;
 
   const [name, setName] = useState(editingHall?.name || '');
   const [loading, setLoading] = useState(false);
-  
+
   // Action sheet for hall actions
   const [showHallActions, setShowHallActions] = useState(false);
   const [selectedHall, setSelectedHall] = useState<Hall | null>(null);
@@ -60,10 +60,10 @@ export default function AddHallScreen() {
           name: name.trim(),
         });
       }
-      
+
       // Clear form
       setName('');
-      
+
       if (isEditing) {
         navigation.goBack();
       }
@@ -88,7 +88,7 @@ export default function AddHallScreen() {
   const handleDeleteHall = (hall: Hall) => {
     setShowHallActions(false);
     setSelectedHall(null);
-    
+
     Alert.alert(
       t.confirmDelete || 'Confirm Delete',
       `Are you sure you want to delete "${hall.name}"?`,
@@ -106,9 +106,9 @@ export default function AddHallScreen() {
             } catch (error) {
               Alert.alert(t.error, t.genericError);
             }
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
@@ -132,10 +132,10 @@ export default function AddHallScreen() {
     return (
       <TouchableOpacity onLongPress={() => handleHallLongPress(item)}>
         <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-              {item.name}
-            </Text>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>{item.name}</Text>
           </View>
         </SurfaceCard>
       </TouchableOpacity>
@@ -143,24 +143,28 @@ export default function AddHallScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={{ flex: 1, padding: 16, backgroundColor: colors.bg }}>
-          
           {/* Add/Edit Form */}
           <SurfaceCard style={{ marginBottom: 16 }}>
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text,
-              marginBottom: 16
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+                marginBottom: 16,
+              }}
+            >
               {isEditing ? t.editHall : t.addHall}
             </Text>
-            
+
             <Text style={{ fontSize: 14, color: colors.textSubtle, marginBottom: 8 }}>
               {t.hallName} *
             </Text>
@@ -174,7 +178,7 @@ export default function AddHallScreen() {
                 fontSize: 16,
                 color: colors.text,
                 backgroundColor: colors.surface,
-                marginBottom: 16
+                marginBottom: 16,
               }}
               value={name}
               onChangeText={setName}
@@ -182,7 +186,7 @@ export default function AddHallScreen() {
               placeholderTextColor={colors.textSubtle}
               autoFocus={isEditing}
             />
-            
+
             <PrimaryButton
               title={isEditing ? t.update : t.addHall}
               onPress={handleSave}
@@ -194,12 +198,14 @@ export default function AddHallScreen() {
           {/* Existing Halls List */}
           {!isEditing && halls.length > 0 && (
             <View style={{ flex: 1 }}>
-              <Text style={{ 
-                fontSize: 16, 
-                fontWeight: '600', 
-                color: colors.text,
-                marginBottom: 12
-              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.text,
+                  marginBottom: 12,
+                }}
+              >
                 Existing Halls
               </Text>
               <FlatList

@@ -1,6 +1,14 @@
-import { NavigationContainer, NavigationProp, useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigationProp,
+  useNavigation,
+  CompositeNavigationProp,
+} from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -17,10 +25,9 @@ import {
   EditTableScreen,
   AddCategoryScreen,
   AnalyticsScreen,
-  QRMenuScreen
+  QRMenuScreen,
 } from '../screens';
 import { PrimaryButton } from '../components';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type MainTabsNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList>,
@@ -98,19 +105,21 @@ function MainTabs() {
         },
       })}
     >
-      <Tab.Screen 
-        name="Tables" 
+      <Tab.Screen
+        name="Tables"
         component={TablesScreen}
         options={{
           title: t.tables,
-          headerTitle: "",
+          headerTitle: '',
           headerLeft: () => (
-            <Text style={{ 
-              marginLeft: 12, 
-              fontSize: 20, 
-              fontWeight: 'bold', 
-              color: colors.primary 
-            }}>
+            <Text
+              style={{
+                marginLeft: 12,
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: colors.primary,
+              }}
+            >
               Orderia
             </Text>
           ),
@@ -125,16 +134,16 @@ function MainTabs() {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Menu" 
+      <Tab.Screen
+        name="Menu"
         component={MenuScreen}
         options={{
           title: t.menu,
           headerTitle: t.menuManagement,
         }}
       />
-      <Tab.Screen 
-        name="Analytics" 
+      <Tab.Screen
+        name="Analytics"
         component={AnalyticsScreen}
         options={{
           title: t.analytics || 'Analytics',
@@ -149,8 +158,8 @@ function MainTabs() {
           headerTitle: t.qrMenuManagement || 'QR Menu Management',
         }}
       /> */}
-      <Tab.Screen 
-        name="Settings" 
+      <Tab.Screen
+        name="Settings"
         component={SettingsScreen}
         options={{
           title: t.settings,
@@ -178,61 +187,57 @@ export default function AppNavigator() {
           },
         }}
       >
-        <Stack.Screen 
-          name="MainTabs" 
-          component={MainTabs}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="TableDetail" 
+        <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="TableDetail"
           component={TableDetailScreen}
           options={{
             title: t.tableDetail,
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AddMenuItem" 
+        <Stack.Screen
+          name="AddMenuItem"
           component={AddMenuItemScreen}
           options={{
             title: t.addMenuItem,
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AddHall" 
+        <Stack.Screen
+          name="AddHall"
           component={AddHallScreen}
           options={{
             title: t.addHall,
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="EditTable" 
+        <Stack.Screen
+          name="EditTable"
           component={EditTableScreen}
           options={{
             title: t.editTable,
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="AddCategory" 
+        <Stack.Screen
+          name="AddCategory"
           component={AddCategoryScreen}
           options={{
             title: t.addCategory,
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="Analytics" 
+        <Stack.Screen
+          name="Analytics"
           component={AnalyticsScreen}
           options={{
             title: t.analytics || 'Analytics',
             presentation: 'modal',
           }}
         />
-        <Stack.Screen 
-          name="QRMenu" 
+        <Stack.Screen
+          name="QRMenu"
           component={QRMenuScreen}
           options={{
             title: t.qrMenu || 'QR Menu',

@@ -62,4 +62,3 @@ config.resolver.alias = aliases;
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
 module.exports = config;
-

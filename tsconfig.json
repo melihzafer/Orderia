@@ -5,6 +5,7 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "types": ["jest", "node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],

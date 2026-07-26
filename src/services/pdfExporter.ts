@@ -11,15 +11,18 @@ interface PdfResult {
 class PdfExporter {
   private readonly pageWidth = 612; // A4 width in points
   private readonly pageHeight = 792; // A4 height in points
-  
-  async exportOrderToPdf(ticket: Ticket, formatPrice: (amount: number) => string): Promise<PdfResult> {
+
+  async exportOrderToPdf(
+    ticket: Ticket,
+    formatPrice: (amount: number) => string,
+  ): Promise<PdfResult> {
     try {
       if (!ticket || !ticket.lines || ticket.lines.length === 0) {
         throw new Error('Invalid ticket data provided');
       }
-      
+
       const html = this.generateOrderHtml(ticket, formatPrice);
-      
+
       const { uri } = await Print.printToFileAsync({
         html,
         base64: false,
@@ -36,7 +39,7 @@ class PdfExporter {
       const date = new Date().toISOString().split('T')[0];
       const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
       const filename = `order-${ticket.id}-${date}-${time}.pdf`;
-      
+
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           mimeType: 'application/pdf',
@@ -47,16 +50,16 @@ class PdfExporter {
       return { success: true, uri };
     } catch (error) {
       console.error('PDF Export Error:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
 
   private generateOrderHtml(ticket: Ticket, formatPrice: (amount: number) => string): string {
-    const total = ticket.lines.reduce((sum, line) => sum + (line.priceSnapshot * line.quantity), 0);
-    
+    const total = ticket.lines.reduce((sum, line) => sum + line.priceSnapshot * line.quantity, 0);
+
     return `
       <!DOCTYPE html>
       <html>
@@ -150,7 +153,9 @@ class PdfExporter {
             </tr>
           </thead>
           <tbody>
-            ${ticket.lines.map(line => `
+            ${ticket.lines
+              .map(
+                (line) => `
               <tr>
                 <td>
                   ${line.nameSnapshot}
@@ -160,7 +165,9 @@ class PdfExporter {
                 <td style="text-align: right;">${formatPrice(line.priceSnapshot)}</td>
                 <td style="text-align: right; font-weight: bold;">${formatPrice(line.priceSnapshot * line.quantity)}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </tbody>
         </table>
 
@@ -209,7 +216,7 @@ class PdfExporter {
         },
       ],
     };
-    
+
     return this.exportOrderToPdf(sampleTicket, (amount) => `$${(amount / 100).toFixed(2)}`);
   }
 }

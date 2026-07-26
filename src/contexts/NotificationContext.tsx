@@ -63,30 +63,32 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     loadSettings();
-    
+
     // Show info about notification limitations in Expo Go
     if (isExpoGo) {
-      console.info('ℹ️ Running in Expo Go: Local notifications will work, but push notifications are limited. For full notification support, use a development build.');
+      console.info(
+        'ℹ️ Running in Expo Go: Local notifications will work, but push notifications are limited. For full notification support, use a development build.',
+      );
     }
 
     // Register for push notifications (skipped in Expo Go)
     registerForPushNotificationsAsync();
 
     // Notification listeners
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       console.log('Notification received:', notification);
-      
+
       // Vibrate if enabled
       if (settings.vibration) {
         Vibration.vibrate(400);
       }
     });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       console.log('Notification response:', response);
       // Handle notification tap
       const { type, tableId } = response.notification.request.content.data || {};
-      
+
       if (type === 'order_ready' && tableId) {
         // Navigate to table detail
         // This could be handled by passing navigation ref or using a navigation service
@@ -117,7 +119,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const updateSettings = async (newSettings: Partial<NotificationSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    
+
     try {
       await AsyncStorage.setItem('@notification_settings', JSON.stringify(updatedSettings));
     } catch (error) {
@@ -130,19 +132,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     // Skip push notification registration in Expo Go
     if (isExpoGo) {
-      console.warn('Push notifications are not fully supported in Expo Go. Local notifications will still work.');
+      console.warn(
+        'Push notifications are not fully supported in Expo Go. Local notifications will still work.',
+      );
       return;
     }
 
     try {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
-      
+
       if (existingStatus !== 'granted') {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
-      
+
       if (finalStatus !== 'granted') {
         Alert.alert(
           t.notificationPermission || 'Notification Permission',
@@ -157,7 +161,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         setExpoPushToken(token);
         console.log('✅ Expo push token obtained:', token);
       } catch (tokenError: any) {
-        console.warn('⚠️ Could not get push token (expected in Expo Go):', tokenError?.message || 'Unknown error');
+        console.warn(
+          '⚠️ Could not get push token (expected in Expo Go):',
+          tokenError?.message || 'Unknown error',
+        );
         setExpoPushToken(null);
       }
 
@@ -194,7 +201,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     try {
       const itemsList = orderItems.slice(0, 3).join(', ') + (orderItems.length > 3 ? '...' : '');
-      
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: `🍽️ ${t.orderReady || 'Order Ready'} - ${t.table || 'Table'} ${tableNumber}`,
@@ -257,7 +264,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     try {
       let emoji = '📍';
       let statusText = status;
-      
+
       switch (status) {
         case 'occupied':
           emoji = '🟢';
@@ -300,7 +307,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     try {
       const notificationId = `prep_reminder_${orderId}`;
-      
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: `⏰ ${t.preparationReminder || 'Preparation Reminder'}`,
@@ -343,11 +350,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     expoPushToken,
   };
 
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-    </NotificationContext.Provider>
-  );
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }
 
 export function useNotifications() {

@@ -17,20 +17,20 @@ import { useHistoryStore } from '../stores/historyStore';
 export default function SettingsScreen() {
   const { colors, colorMode, toggleColorMode } = useTheme();
   const { t, language, currency, setLanguage, setCurrency } = useLocalization();
-  
+
   // Store hooks
   const layoutStore = useLayoutStore();
   const menuStore = useMenuStore();
   const orderStore = useOrderStore();
   const historyStore = useHistoryStore();
 
-  const languages: Array<{ code: Language; name: string; flag: string }> = [
+  const languages: { code: Language; name: string; flag: string }[] = [
     { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
     { code: 'bg', name: 'Български', flag: '🇧🇬' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
   ];
 
-  const currencies: Array<{ code: Currency; name: string; symbol: string }> = [
+  const currencies: { code: Currency; name: string; symbol: string }[] = [
     { code: 'TRY', name: t.turkish_lira, symbol: '₺' },
     { code: 'BGN', name: t.bulgarian_lev, symbol: 'лв' },
     { code: 'EUR', name: t.euro, symbol: '€' },
@@ -52,30 +52,30 @@ export default function SettingsScreen() {
           settings: {
             language,
             currency,
-            colorMode
-          }
-        }
+            colorMode,
+          },
+        },
       };
 
       // Create JSON string
       const jsonString = JSON.stringify(exportData, null, 2);
-      
+
       // Create file name with timestamp
       const timestamp = new Date().toISOString().split('T')[0];
       const fileName = `orderia-backup-${timestamp}.json`;
-      
+
       // Save to device
       const fileUri = `${FileSystem.documentDirectory}${fileName}`;
       await FileSystem.writeAsStringAsync(fileUri, jsonString);
-      
+
       // Share the file
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'application/json',
-          dialogTitle: t.dataExport
+          dialogTitle: t.dataExport,
         });
       }
-      
+
       Alert.alert(t.success, t.dataExported, [{ text: t.ok }]);
     } catch (error) {
       console.error('Export error:', error);
@@ -88,7 +88,7 @@ export default function SettingsScreen() {
       // Pick a file
       const result = await DocumentPicker.getDocumentAsync({
         type: 'application/json',
-        copyToCacheDirectory: true
+        copyToCacheDirectory: true,
       });
 
       if (result.canceled) return;
@@ -103,18 +103,14 @@ export default function SettingsScreen() {
       }
 
       // Show confirmation dialog
-      Alert.alert(
-        t.dataImport,
-        t.importWarning,
-        [
-          { text: t.cancel, style: 'cancel' },
-          {
-            text: t.import,
-            style: 'destructive',
-            onPress: () => performImport(importData.data)
-          }
-        ]
-      );
+      Alert.alert(t.dataImport, t.importWarning, [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: t.import,
+          style: 'destructive',
+          onPress: () => performImport(importData.data),
+        },
+      ]);
     } catch (error) {
       console.error('Import error:', error);
       Alert.alert(t.error, t.importFailed, [{ text: t.ok }]);
@@ -158,27 +154,36 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['bottom', 'left', 'right']}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, backgroundColor: colors.bg }}>
-        
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      edges={['bottom', 'left', 'right']}
+    >
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, backgroundColor: colors.bg }}
+      >
         {/* Language Settings */}
         <SurfaceCard style={{ marginBottom: 16 }}>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            marginBottom: 16 
-          }}>
-            <Ionicons 
-              name="language-outline" 
-              size={24} 
-              color={colors.primary} 
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons
+              name="language-outline"
+              size={24}
+              color={colors.primary}
               style={{ marginRight: 12 }}
             />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text 
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+              }}
+            >
               {t.language}
             </Text>
           </View>
@@ -199,11 +204,13 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ fontSize: 20, marginRight: 12 }}>{lang.flag}</Text>
-                <Text style={{ 
-                  fontSize: 16, 
-                  color: colors.text,
-                  fontWeight: language === lang.code ? '600' : '400'
-                }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.text,
+                    fontWeight: language === lang.code ? '600' : '400',
+                  }}
+                >
                   {lang.name}
                 </Text>
               </View>
@@ -216,22 +223,26 @@ export default function SettingsScreen() {
 
         {/* Currency Settings */}
         <SurfaceCard style={{ marginBottom: 16 }}>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            marginBottom: 16 
-          }}>
-            <Ionicons 
-              name="card-outline" 
-              size={24} 
-              color={colors.primary} 
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons
+              name="card-outline"
+              size={24}
+              color={colors.primary}
               style={{ marginRight: 12 }}
             />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text 
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+              }}
+            >
               {t.currency}
             </Text>
           </View>
@@ -251,19 +262,23 @@ export default function SettingsScreen() {
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ 
-                  fontSize: 18, 
-                  marginRight: 12,
-                  fontWeight: '600',
-                  color: colors.accent
-                }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    marginRight: 12,
+                    fontWeight: '600',
+                    color: colors.accent,
+                  }}
+                >
                   {curr.symbol}
                 </Text>
-                <Text style={{ 
-                  fontSize: 16, 
-                  color: colors.text,
-                  fontWeight: currency === curr.code ? '600' : '400'
-                }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.text,
+                    fontWeight: currency === curr.code ? '600' : '400',
+                  }}
+                >
                   {curr.name}
                 </Text>
               </View>
@@ -276,26 +291,30 @@ export default function SettingsScreen() {
 
         {/* Theme Settings */}
         <SurfaceCard style={{ marginBottom: 16 }}>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            marginBottom: 16 
-          }}>
-            <Ionicons 
-              name="color-palette-outline" 
-              size={24} 
-              color={colors.primary} 
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons
+              name="color-palette-outline"
+              size={24}
+              color={colors.primary}
               style={{ marginRight: 12 }}
             />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text 
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+              }}
+            >
               {t.theme}
             </Text>
           </View>
-          
+
           <View
             style={{
               flexDirection: 'row',
@@ -308,17 +327,19 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons 
-                name={colorMode === 'light' ? 'sunny-outline' : 'moon-outline'} 
-                size={20} 
-                color={colors.text} 
+              <Ionicons
+                name={colorMode === 'light' ? 'sunny-outline' : 'moon-outline'}
+                size={20}
+                color={colors.text}
                 style={{ marginRight: 12 }}
               />
-              <Text style={{ 
-                fontSize: 16, 
-                color: colors.text,
-                fontWeight: '500'
-              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.text,
+                  fontWeight: '500',
+                }}
+              >
                 {colorMode === 'light' ? t.lightMode : t.darkMode}
               </Text>
             </View>
@@ -333,26 +354,30 @@ export default function SettingsScreen() {
 
         {/* Data Export */}
         <SurfaceCard style={{ marginBottom: 16 }}>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            marginBottom: 16 
-          }}>
-            <Ionicons 
-              name="cloud-upload-outline" 
-              size={24} 
-              color={colors.primary} 
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons
+              name="cloud-upload-outline"
+              size={24}
+              color={colors.primary}
               style={{ marginRight: 12 }}
             />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text 
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+              }}
+            >
               {t.dataManagement}
             </Text>
           </View>
-          
+
           <TouchableOpacity
             onPress={handleDataExport}
             style={{
@@ -365,25 +390,29 @@ export default function SettingsScreen() {
               marginBottom: 8,
             }}
           >
-            <Ionicons 
-              name="download-outline" 
-              size={20} 
-              color={colors.text} 
+            <Ionicons
+              name="download-outline"
+              size={20}
+              color={colors.text}
               style={{ marginRight: 12 }}
             />
             <View style={{ flex: 1 }}>
-              <Text style={{ 
-                fontSize: 16, 
-                color: colors.text,
-                fontWeight: '500'
-              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.text,
+                  fontWeight: '500',
+                }}
+              >
                 {t.dataExport}
               </Text>
-              <Text style={{ 
-                fontSize: 12, 
-                color: colors.textSubtle,
-                marginTop: 2
-              }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSubtle,
+                  marginTop: 2,
+                }}
+              >
                 {t.backupData}
               </Text>
             </View>
@@ -401,25 +430,29 @@ export default function SettingsScreen() {
               borderRadius: 8,
             }}
           >
-            <Ionicons 
-              name="cloud-upload-outline" 
-              size={20} 
-              color={colors.text} 
+            <Ionicons
+              name="cloud-upload-outline"
+              size={20}
+              color={colors.text}
               style={{ marginRight: 12 }}
             />
             <View style={{ flex: 1 }}>
-              <Text style={{ 
-                fontSize: 16, 
-                color: colors.text,
-                fontWeight: '500'
-              }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: colors.text,
+                  fontWeight: '500',
+                }}
+              >
                 {t.dataImport}
               </Text>
-              <Text style={{ 
-                fontSize: 12, 
-                color: colors.textSubtle,
-                marginTop: 2
-              }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSubtle,
+                  marginTop: 2,
+                }}
+              >
                 {t.restorePreviousData}
               </Text>
             </View>
@@ -429,26 +462,30 @@ export default function SettingsScreen() {
 
         {/* App Info */}
         <SurfaceCard>
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            marginBottom: 16 
-          }}>
-            <Ionicons 
-              name="information-circle-outline" 
-              size={24} 
-              color={colors.primary} 
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons
+              name="information-circle-outline"
+              size={24}
+              color={colors.primary}
               style={{ marginRight: 12 }}
             />
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: '600', 
-              color: colors.text 
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '600',
+                color: colors.text,
+              }}
+            >
               {t.appInfo}
             </Text>
           </View>
-          
+
           <View style={{ paddingHorizontal: 16 }}>
             <View style={{ alignItems: 'center', paddingVertical: 8 }}>
               <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary }}>

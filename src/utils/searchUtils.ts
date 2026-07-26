@@ -23,20 +23,18 @@ export function useDebounceSearch(initialValue: string = '', delay: number = 300
 // Enhanced text matching utility
 export function createTextMatcher(query: string) {
   if (!query.trim()) return () => true;
-  
+
   // Normalize search query: remove accents, convert to lowercase
   const normalizedQuery = normalizeText(query);
-  const queryWords = normalizedQuery.split(/\s+/).filter(word => word.length > 0);
-  
+  const queryWords = normalizedQuery.split(/\s+/).filter((word) => word.length > 0);
+
   return (text: string | undefined | null): boolean => {
     if (!text) return false;
-    
+
     const normalizedText = normalizeText(text);
-    
+
     // Check if all query words are found in the text
-    return queryWords.every(word => 
-      normalizedText.includes(word)
-    );
+    return queryWords.every((word) => normalizedText.includes(word));
   };
 }
 
@@ -50,19 +48,17 @@ function normalizeText(text: string): string {
 }
 
 // Enhanced search for menu items
-export function searchMenuItems<T extends { name: string; description?: string; categoryId: string }>(
-  items: T[],
-  query: string,
-  categoryId?: string
-): T[] {
+export function searchMenuItems<
+  T extends { name: string; description?: string; categoryId: string },
+>(items: T[], query: string, categoryId?: string): T[] {
   const textMatcher = createTextMatcher(query);
-  
-  return items.filter(item => {
+
+  return items.filter((item) => {
     // Filter by category if specified
     if (categoryId && item.categoryId !== categoryId) {
       return false;
     }
-    
+
     // Search in name and description
     return textMatcher(item.name) || textMatcher(item.description);
   });
@@ -71,18 +67,18 @@ export function searchMenuItems<T extends { name: string; description?: string; 
 // Search highlight utility
 export function highlightSearchMatch(text: string, query: string): string {
   if (!query.trim()) return text;
-  
+
   const normalizedQuery = normalizeText(query);
   const normalizedText = normalizeText(text);
-  
+
   // Find match position in normalized text
   const matchIndex = normalizedText.indexOf(normalizedQuery);
   if (matchIndex === -1) return text;
-  
+
   // Apply highlight to original text
   const before = text.substring(0, matchIndex);
   const match = text.substring(matchIndex, matchIndex + query.length);
   const after = text.substring(matchIndex + query.length);
-  
+
   return `${before}**${match}**${after}`;
 }

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
   Animated,
   RefreshControl,
   Alert,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -23,15 +23,15 @@ interface NotificationCenterProps {
 export default function NotificationCenter({ isVisible, onClose }: NotificationCenterProps) {
   const { colors } = useTheme();
   const { t } = useLocalization();
-  
+
   const [activeTimers, setActiveTimers] = useState<OrderTimer[]>([]);
   const [recentUpdates, setRecentUpdates] = useState<TimerUpdate[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'active' | 'completed'>('active');
-  
+
   const slideAnim = useRef(new Animated.Value(300)).current;
   const screenWidth = Dimensions.get('window').width;
-  
+
   useEffect(() => {
     if (isVisible) {
       loadTimers();
@@ -50,26 +50,26 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
       }).start();
     }
   }, [isVisible, slideAnim]);
-  
+
   const loadTimers = () => {
     setActiveTimers(orderTimerService.getAllActiveTimers());
   };
-  
+
   const onRefresh = async () => {
     setRefreshing(true);
     loadTimers();
     setRefreshing(false);
   };
-  
+
   useEffect(() => {
     const handleTimerUpdate = (update: TimerUpdate) => {
-      setRecentUpdates(prev => {
+      setRecentUpdates((prev) => {
         const newUpdates = [update, ...prev.slice(0, 9)]; // Keep last 10
         return newUpdates;
       });
       loadTimers();
     };
-    
+
     const handleTimerCompleted = (data: { orderId: string; itemId: string; itemName: string }) => {
       loadTimers();
       // Show in-app alert for completion
@@ -77,33 +77,33 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
         '🎉 ' + (t.orderReady || 'Order Ready!'),
         `${data.itemName} from order ${data.orderId} is ready to serve!`,
         [
-          { 
-            text: t.ok || 'OK', 
+          {
+            text: t.ok || 'OK',
             onPress: () => {
               // Auto-focus on the completed order
               setSelectedTab('completed');
-            }
-          }
-        ]
+            },
+          },
+        ],
       );
     };
-    
+
     const handleTimerStarted = (data: { orderId: string; itemId: string; itemName: string }) => {
       loadTimers();
     };
-    
+
     const handleTimerPaused = (data: { orderId: string; itemId: string; itemName: string }) => {
       loadTimers();
     };
-    
+
     const handleTimerResumed = (data: { orderId: string; itemId: string; itemName: string }) => {
       loadTimers();
     };
-    
+
     const handleTimerCancelled = (data: { orderId: string; itemId: string; itemName: string }) => {
       loadTimers();
     };
-    
+
     // Subscribe to all timer events
     orderTimerService.on('timerUpdate', handleTimerUpdate);
     orderTimerService.on('timerCompleted', handleTimerCompleted);
@@ -111,7 +111,7 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
     orderTimerService.on('timerPaused', handleTimerPaused);
     orderTimerService.on('timerResumed', handleTimerResumed);
     orderTimerService.on('timerCancelled', handleTimerCancelled);
-    
+
     return () => {
       orderTimerService.off('timerUpdate', handleTimerUpdate);
       orderTimerService.off('timerCompleted', handleTimerCompleted);
@@ -121,46 +121,50 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
       orderTimerService.off('timerCancelled', handleTimerCancelled);
     };
   }, [t]);
-  
+
   const renderProgressBar = (progress: number) => {
     const color = orderTimerService.getTimerColor(progress);
-    
+
     return (
-      <View style={{
-        height: 8,
-        backgroundColor: colors.surfaceAlt,
-        borderRadius: radius.sm,
-        marginTop: spacing.sm,
-        overflow: 'hidden',
-      }}>
-        <Animated.View style={{
-          height: '100%',
-          width: `${progress}%`,
-          backgroundColor: color,
+      <View
+        style={{
+          height: 8,
+          backgroundColor: colors.surfaceAlt,
           borderRadius: radius.sm,
-        }} />
+          marginTop: spacing.sm,
+          overflow: 'hidden',
+        }}
+      >
+        <Animated.View
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            backgroundColor: color,
+            borderRadius: radius.sm,
+          }}
+        />
       </View>
     );
   };
-  
+
   const formatTimeRemaining = (timeRemaining: number): string => {
     if (timeRemaining <= 0) return t.ready || 'Ready!';
-    
+
     const hours = Math.floor(timeRemaining / 60);
     const minutes = Math.floor(timeRemaining % 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
   };
-  
+
   const renderActiveTimer = (timer: OrderTimer) => {
     const elapsed = Date.now() - timer.startTime;
     const elapsedMinutes = elapsed / (1000 * 60);
     const timeRemaining = Math.max(timer.estimatedDuration - elapsedMinutes, 0);
     const isOverdue = timeRemaining <= 0 && timer.status === 'active';
-    
+
     return (
       <View
         key={`${timer.orderId}-${timer.itemId}`}
@@ -178,61 +182,75 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
           elevation: 2,
         }}
       >
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
+        >
           <View style={{ flex: 1 }}>
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '700',
-              color: colors.text,
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: '700',
+                color: colors.text,
+              }}
+            >
               {timer.itemName}
             </Text>
-            <Text style={{
-              fontSize: 14,
-              color: colors.textSubtle,
-              marginTop: spacing.xs,
-            }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: colors.textSubtle,
+                marginTop: spacing.xs,
+              }}
+            >
               Order #{timer.orderId}
             </Text>
           </View>
-          
+
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{
-              fontSize: 18,
-              fontWeight: '700',
-              color: orderTimerService.getTimerColor(timer.currentProgress),
-            }}>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: '700',
+                color: orderTimerService.getTimerColor(timer.currentProgress),
+              }}
+            >
               {Math.round(timer.currentProgress)}%
             </Text>
-            <Text style={{
-              fontSize: 12,
-              color: isOverdue ? colors.error : colors.textSubtle,
-              fontWeight: isOverdue ? '600' : 'normal',
-            }}>
+            <Text
+              style={{
+                fontSize: 12,
+                color: isOverdue ? colors.error : colors.textSubtle,
+                fontWeight: isOverdue ? '600' : 'normal',
+              }}
+            >
               {formatTimeRemaining(timeRemaining)}
             </Text>
           </View>
         </View>
-        
+
         {renderProgressBar(timer.currentProgress)}
-        
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: spacing.sm,
-        }}>
-          <Text style={{
-            fontSize: 12,
-            color: colors.textSubtle,
-          }}>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: spacing.sm,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.textSubtle,
+            }}
+          >
             {orderTimerService.getProgressLabel(timer.currentProgress)}
           </Text>
-          
+
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             {timer.status === 'active' ? (
               <TouchableOpacity
@@ -273,7 +291,7 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
                 </Text>
               </TouchableOpacity>
             )}
-            
+
             <TouchableOpacity
               onPress={() => orderTimerService.completeTimer(timer.orderId, timer.itemId)}
               style={{
@@ -292,7 +310,7 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
                 {t.complete || 'Done'}
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               onPress={() => {
                 Alert.alert(
@@ -300,12 +318,12 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
                   `${t.cancelTimerConfirm || 'Are you sure you want to cancel the timer for'} ${timer.itemName}?`,
                   [
                     { text: t.cancel || 'Cancel', style: 'cancel' },
-                    { 
-                      text: t.delete || 'Delete', 
+                    {
+                      text: t.delete || 'Delete',
                       style: 'destructive',
-                      onPress: () => orderTimerService.cancelTimer(timer.orderId, timer.itemId)
-                    }
-                  ]
+                      onPress: () => orderTimerService.cancelTimer(timer.orderId, timer.itemId),
+                    },
+                  ],
                 );
               }}
               style={{
@@ -323,16 +341,18 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
       </View>
     );
   };
-  
+
   const renderTabBar = () => (
-    <View style={{
-      flexDirection: 'row',
-      backgroundColor: colors.surfaceAlt,
-      borderRadius: radius.md,
-      padding: spacing.xs,
-      marginHorizontal: spacing.md,
-      marginBottom: spacing.md,
-    }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: colors.surfaceAlt,
+        borderRadius: radius.md,
+        padding: spacing.xs,
+        marginHorizontal: spacing.md,
+        marginBottom: spacing.md,
+      }}
+    >
       <TouchableOpacity
         onPress={() => setSelectedTab('active')}
         style={{
@@ -343,16 +363,19 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
           backgroundColor: selectedTab === 'active' ? colors.primary : 'transparent',
         }}
       >
-        <Text style={{
-          textAlign: 'center',
-          fontSize: 14,
-          fontWeight: '600',
-          color: selectedTab === 'active' ? colors.primaryContrast : colors.text,
-        }}>
-          {t.activeTimers || 'Active'} ({activeTimers.filter(t => t.status === 'active' || t.status === 'paused').length})
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: '600',
+            color: selectedTab === 'active' ? colors.primaryContrast : colors.text,
+          }}
+        >
+          {t.activeTimers || 'Active'} (
+          {activeTimers.filter((t) => t.status === 'active' || t.status === 'paused').length})
         </Text>
       </TouchableOpacity>
-      
+
       <TouchableOpacity
         onPress={() => setSelectedTab('completed')}
         style={{
@@ -363,27 +386,31 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
           backgroundColor: selectedTab === 'completed' ? colors.primary : 'transparent',
         }}
       >
-        <Text style={{
-          textAlign: 'center',
-          fontSize: 14,
-          fontWeight: '600',
-          color: selectedTab === 'completed' ? colors.primaryContrast : colors.text,
-        }}>
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: '600',
+            color: selectedTab === 'completed' ? colors.primaryContrast : colors.text,
+          }}
+        >
           {t.recentUpdates || 'Updates'} ({recentUpdates.length})
         </Text>
       </TouchableOpacity>
     </View>
   );
-  
+
   const renderRecentUpdates = () => (
     <View style={{ padding: spacing.md }}>
       {recentUpdates.length === 0 ? (
-        <Text style={{
-          fontSize: 14,
-          color: colors.textSubtle,
-          textAlign: 'center',
-          marginTop: spacing.lg,
-        }}>
+        <Text
+          style={{
+            fontSize: 14,
+            color: colors.textSubtle,
+            textAlign: 'center',
+            marginTop: spacing.lg,
+          }}
+        >
           {t.noRecentUpdates || 'No recent updates'}
         </Text>
       ) : (
@@ -402,25 +429,31 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
             }}
           >
             <View style={{ flex: 1 }}>
-              <Text style={{
-                fontSize: 14,
-                fontWeight: '600',
-                color: colors.text,
-              }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: '600',
+                  color: colors.text,
+                }}
+              >
                 {update.itemName}
               </Text>
-              <Text style={{
-                fontSize: 12,
-                color: colors.textSubtle,
-              }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSubtle,
+                }}
+              >
                 Order #{update.orderId} • {Math.round(update.progress)}%
               </Text>
             </View>
-            <Text style={{
-              fontSize: 12,
-              color: orderTimerService.getTimerColor(update.progress),
-              fontWeight: '600',
-            }}>
+            <Text
+              style={{
+                fontSize: 12,
+                color: orderTimerService.getTimerColor(update.progress),
+                fontWeight: '600',
+              }}
+            >
               {orderTimerService.getProgressLabel(update.progress)}
             </Text>
           </View>
@@ -428,53 +461,61 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
       )}
     </View>
   );
-  
+
   if (!isVisible) return null;
-  
+
   return (
-    <Animated.View style={{
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      width: Math.min(screenWidth * 0.85, 350),
-      backgroundColor: colors.bg,
-      borderLeftWidth: 1,
-      borderLeftColor: colors.border,
-      transform: [{ translateX: slideAnim }],
-      zIndex: 1000,
-      shadowColor: colors.text,
-      shadowOffset: { width: -2, height: 0 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 8,
-    }}>
+    <Animated.View
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        width: Math.min(screenWidth * 0.85, 350),
+        backgroundColor: colors.bg,
+        borderLeftWidth: 1,
+        borderLeftColor: colors.border,
+        transform: [{ translateX: slideAnim }],
+        zIndex: 1000,
+        shadowColor: colors.text,
+        shadowOffset: { width: -2, height: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+      }}
+    >
       {/* Header */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: spacing.md,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        backgroundColor: colors.surface,
-      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: spacing.md,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.surface,
+        }}
+      >
         <View>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: '700',
-            color: colors.text,
-          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '700',
+              color: colors.text,
+            }}
+          >
             {t.notifications || 'Notifications'}
           </Text>
-          <Text style={{
-            fontSize: 12,
-            color: colors.textSubtle,
-          }}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.textSubtle,
+            }}
+          >
             {orderTimerService.getTimerStats().active} {t.activeTimers || 'active timers'}
           </Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={onClose}
           style={{
             padding: spacing.sm,
@@ -485,12 +526,12 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
           <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
-      
+
       {/* Tab Bar */}
       {renderTabBar()}
-      
+
       {/* Content */}
-      <ScrollView 
+      <ScrollView
         style={{ flex: 1 }}
         refreshControl={
           <RefreshControl
@@ -503,33 +544,40 @@ export default function NotificationCenter({ isVisible, onClose }: NotificationC
       >
         {selectedTab === 'active' ? (
           <View style={{ padding: spacing.md }}>
-            {activeTimers.filter(t => t.status === 'active' || t.status === 'paused').length === 0 ? (
-              <View style={{
-                alignItems: 'center',
-                paddingVertical: spacing.xl,
-              }}>
+            {activeTimers.filter((t) => t.status === 'active' || t.status === 'paused').length ===
+            0 ? (
+              <View
+                style={{
+                  alignItems: 'center',
+                  paddingVertical: spacing.xl,
+                }}
+              >
                 <Ionicons name="timer-outline" size={48} color={colors.textSubtle} />
-                <Text style={{
-                  fontSize: 16,
-                  fontWeight: '600',
-                  color: colors.text,
-                  marginTop: spacing.md,
-                  textAlign: 'center',
-                }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: colors.text,
+                    marginTop: spacing.md,
+                    textAlign: 'center',
+                  }}
+                >
                   {t.noActiveTimers || 'No active timers'}
                 </Text>
-                <Text style={{
-                  fontSize: 14,
-                  color: colors.textSubtle,
-                  marginTop: spacing.xs,
-                  textAlign: 'center',
-                }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: colors.textSubtle,
+                    marginTop: spacing.xs,
+                    textAlign: 'center',
+                  }}
+                >
                   {t.startTimerToTrack || 'Start a timer to track cooking progress'}
                 </Text>
               </View>
             ) : (
               activeTimers
-                .filter(t => t.status === 'active' || t.status === 'paused')
+                .filter((t) => t.status === 'active' || t.status === 'paused')
                 .map(renderActiveTimer)
             )}
           </View>

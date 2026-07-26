@@ -15,18 +15,18 @@ export default function TestScreen() {
   const { colors } = useTheme();
   const { t, formatPrice } = useLocalization();
   const { menuItems, categories } = useMenuStore();
-  
+
   const [showProductSearch, setShowProductSearch] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
-  
+
   const handleTestProductSearch = () => {
     setShowProductSearch(true);
   };
-  
+
   const handleTestNotificationCenter = () => {
     setShowNotificationCenter(true);
   };
-  
+
   const handleTestTimerService = async () => {
     try {
       // Start a test timer
@@ -36,7 +36,7 @@ export default function TestScreen() {
       Alert.alert('Error', 'Failed to start timer');
     }
   };
-  
+
   const handleTestPdfExport = async () => {
     try {
       const result = await pdfExporter.testExport();
@@ -49,21 +49,21 @@ export default function TestScreen() {
       Alert.alert('Error', 'PDF test failed');
     }
   };
-  
+
   const handleTestQRService = async () => {
     try {
       const qrCodes = await qrService.generateTableQRCodes(['T-001', 'T-002'], 'REST-001');
       const analytics = qrService.getQRAnalytics(qrCodes);
-      
+
       Alert.alert(
         'QR Codes Generated',
-        `Generated ${analytics.total} QR codes\\nActive: ${analytics.active}\\nFeatures: ${Object.keys(analytics.features).join(', ')}`
+        `Generated ${analytics.total} QR codes\\nActive: ${analytics.active}\\nFeatures: ${Object.keys(analytics.features).join(', ')}`,
       );
     } catch (error) {
       Alert.alert('Error', 'QR generation failed');
     }
   };
-  
+
   const renderTestButton = (title: string, onPress: () => void, icon: string) => (
     <TouchableOpacity
       onPress={onPress}
@@ -79,115 +79,113 @@ export default function TestScreen() {
       }}
     >
       <Ionicons name={icon as any} size={24} color={colors.primary} />
-      <Text style={{
-        flex: 1,
-        marginLeft: spacing.md,
-        fontSize: 16,
-        fontWeight: '600',
-        color: colors.text,
-      }}>
+      <Text
+        style={{
+          flex: 1,
+          marginLeft: spacing.md,
+          fontSize: 16,
+          fontWeight: '600',
+          color: colors.text,
+        }}
+      >
         {title}
       </Text>
       <Ionicons name="chevron-forward" size={20} color={colors.textSubtle} />
     </TouchableOpacity>
   );
-  
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView style={{ flex: 1, padding: spacing.md }}>
-        <Text style={{
-          fontSize: 24,
-          fontWeight: '700',
-          color: colors.text,
-          marginBottom: spacing.lg,
-          textAlign: 'center',
-        }}>
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: '700',
+            color: colors.text,
+            marginBottom: spacing.lg,
+            textAlign: 'center',
+          }}
+        >
           🧪 Feature Test Screen
         </Text>
-        
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: colors.text,
-          marginBottom: spacing.md,
-        }}>
+
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: '600',
+            color: colors.text,
+            marginBottom: spacing.md,
+          }}
+        >
           🔍 Product Search System
         </Text>
-        
-        {renderTestButton(
-          'Test Product Search',
-          handleTestProductSearch,
-          'search'
-        )}
-        
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: colors.text,
-          marginTop: spacing.lg,
-          marginBottom: spacing.md,
-        }}>
+
+        {renderTestButton('Test Product Search', handleTestProductSearch, 'search')}
+
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: '600',
+            color: colors.text,
+            marginTop: spacing.lg,
+            marginBottom: spacing.md,
+          }}
+        >
           ⏱️ Timer & Notification System
         </Text>
-        
+
         {renderTestButton(
           'Test Notification Center',
           handleTestNotificationCenter,
-          'notifications'
+          'notifications',
         )}
-        
-        {renderTestButton(
-          'Start Test Timer',
-          handleTestTimerService,
-          'timer'
-        )}
-        
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: colors.text,
-          marginTop: spacing.lg,
-          marginBottom: spacing.md,
-        }}>
+
+        {renderTestButton('Start Test Timer', handleTestTimerService, 'timer')}
+
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: '600',
+            color: colors.text,
+            marginTop: spacing.lg,
+            marginBottom: spacing.md,
+          }}
+        >
           📄 PDF Export System
         </Text>
-        
-        {renderTestButton(
-          'Test PDF Generation',
-          handleTestPdfExport,
-          'document'
-        )}
-        
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: colors.text,
-          marginTop: spacing.lg,
-          marginBottom: spacing.md,
-        }}>
+
+        {renderTestButton('Test PDF Generation', handleTestPdfExport, 'document')}
+
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: '600',
+            color: colors.text,
+            marginTop: spacing.lg,
+            marginBottom: spacing.md,
+          }}
+        >
           📱 QR Code System
         </Text>
-        
-        {renderTestButton(
-          'Generate Test QR Codes',
-          handleTestQRService,
-          'qr-code'
-        )}
-        
+
+        {renderTestButton('Generate Test QR Codes', handleTestQRService, 'qr-code')}
+
         <View style={{ height: spacing.xl }} />
       </ScrollView>
-      
+
       {/* Product Search Modal */}
       {showProductSearch && (
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: colors.bg,
-          zIndex: 1000,
-        }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.bg,
+            zIndex: 1000,
+          }}
+        >
           <ProductSearch
             isVisible={showProductSearch}
             items={menuItems}
@@ -200,7 +198,7 @@ export default function TestScreen() {
           />
         </View>
       )}
-      
+
       {/* Notification Center */}
       <NotificationCenter
         isVisible={showNotificationCenter}

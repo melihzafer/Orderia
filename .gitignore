@@ -33,6 +33,12 @@ yarn-error.*
 # TypeScript
 *.tsbuildinfo
 
+# Quality tooling
+coverage/
+playwright-report/
+test-results/
+.eslintcache
+
 # IDE
 .vscode/
 .idea/
