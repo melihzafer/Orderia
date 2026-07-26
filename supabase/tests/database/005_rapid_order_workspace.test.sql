@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(34);
 
 insert into auth.users (
   instance_id,
@@ -633,6 +633,244 @@ select is(
   ),
   'İkinci garsonun notu',
   'the winning note remains unchanged after the stale edit'
+);
+
+select is(
+  (
+    public.confirm_check_payments(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000021',
+      jsonb_build_object(
+        'checkId', 'f5000000-0000-4000-8000-000000000001',
+        'expectedCheckVersion', 1,
+        'currencyCode', 'EUR',
+        'payments', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000201',
+            'method', 'cash',
+            'amountMinor', 100,
+            'tenderedMinor', 200,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000211',
+                'amountMinor', 100
+              )
+            )
+          ),
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000202',
+            'method', 'card',
+            'amountMinor', 100,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000212',
+                'amountMinor', 100
+              )
+            )
+          )
+        )
+      )
+    ) ->> 'status'
+  ),
+  'confirmed',
+  'cash and card parts confirm atomically as one mixed payment command'
+);
+select is(
+  (
+    select count(*)
+    from public.payments
+    where table_session_id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  2::bigint,
+  'a mixed command records distinct auditable cash and card payments'
+);
+select is(
+  (
+    select change_minor
+    from public.payments
+    where id = 'd5000000-0000-4000-8000-000000000201'
+  ),
+  100::bigint,
+  'cash change is derived and excluded from paid revenue'
+);
+select is(
+  (
+    select status
+    from public.checks
+    where id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'partially_paid',
+  'a partial payment leaves the check explicitly partially paid'
+);
+select is(
+  (
+    select sum(allocation.amount_minor)
+    from public.payment_allocations as allocation
+    join public.payments as payment on payment.id = allocation.payment_id
+    where allocation.check_id = 'f5000000-0000-4000-8000-000000000001'
+      and payment.status = 'confirmed'
+  ),
+  200::numeric,
+  'confirmed allocation ledger reports the exact partial paid amount'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000002","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select throws_ok(
+  $$
+    select public.confirm_check_payments(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000002',
+      'c5000000-0000-4000-8000-000000000022',
+      jsonb_build_object(
+        'checkId', 'f5000000-0000-4000-8000-000000000001',
+        'expectedCheckVersion', 1,
+        'currencyCode', 'EUR',
+        'payments', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000203',
+            'method', 'card',
+            'amountMinor', 300,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000213',
+                'amountMinor', 300
+              )
+            )
+          )
+        )
+      )
+    )
+  $$,
+  'P0001',
+  'payment_check_version_conflict',
+  'a second device cannot consume a stale remaining balance'
+);
+select is(
+  (
+    select count(*)
+    from public.payments
+    where table_session_id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  2::bigint,
+  'the rejected stale payment creates no financial rows'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select is(
+  (
+    public.confirm_check_payments(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000023',
+      jsonb_build_object(
+        'checkId', 'f5000000-0000-4000-8000-000000000001',
+        'expectedCheckVersion', 2,
+        'currencyCode', 'EUR',
+        'payments', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000204',
+            'method', 'card',
+            'amountMinor', 300,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000214',
+                'orderItemId', 'd5000000-0000-4000-8000-000000000111',
+                'amountMinor', 300
+              )
+            )
+          )
+        )
+      )
+    ) ->> 'checkStatus'
+  ),
+  'paid',
+  'the final partial payment closes the remaining balance'
+);
+select ok(
+  (
+    select closed_at is not null
+    from public.checks
+    where id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'a fully allocated check receives an immutable close timestamp'
+);
+select is(
+  (
+    select sum(allocation.amount_minor)
+    from public.payment_allocations as allocation
+    join public.payments as payment on payment.id = allocation.payment_id
+    where allocation.check_id = 'f5000000-0000-4000-8000-000000000001'
+      and payment.status = 'confirmed'
+  ),
+  500::numeric,
+  'the final confirmed allocation total equals the server-derived check total'
+);
+select is(
+  (
+    public.confirm_check_payments(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000023',
+      jsonb_build_object(
+        'checkId', 'f5000000-0000-4000-8000-000000000001',
+        'expectedCheckVersion', 2,
+        'currencyCode', 'EUR',
+        'payments', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000204',
+            'method', 'card',
+            'amountMinor', 300,
+            'allocations', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000214',
+                'orderItemId', 'd5000000-0000-4000-8000-000000000111',
+                'amountMinor', 300
+              )
+            )
+          )
+        )
+      )
+    ) ->> 'checkStatus'
+  ),
+  'paid',
+  'an exact payment replay returns its stored server result'
+);
+select is(
+  (
+    select count(*)
+    from public.payments
+    where table_session_id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  3::bigint,
+  'an idempotent replay never duplicates a payment'
+);
+select is(
+  (
+    select count(*)
+    from public.payment_allocations
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  3::bigint,
+  'an idempotent replay never duplicates allocations'
 );
 
 select * from finish();

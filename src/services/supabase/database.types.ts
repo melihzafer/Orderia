@@ -169,6 +169,16 @@ export type Database = {
         };
         Returns: Json;
       };
+      confirm_check_payments: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_payload: Json;
+        };
+        Returns: Json;
+      };
       list_active_session_participants: {
         Args: {
           requested_organization_id: string;

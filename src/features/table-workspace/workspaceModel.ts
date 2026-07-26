@@ -7,6 +7,8 @@ import {
   ModifierOption,
   OrderItem,
   OrderItemModifier,
+  Payment,
+  PaymentAllocation,
   RestaurantTable,
   RestaurantTableId,
   TableSession,
@@ -34,6 +36,8 @@ export interface TableWorkspaceSnapshot {
   readonly checks: readonly Check[];
   readonly orderItems: readonly OrderItem[];
   readonly orderItemModifiers: readonly OrderItemModifier[];
+  readonly payments: readonly Payment[];
+  readonly paymentAllocations: readonly PaymentAllocation[];
   readonly categories: readonly MenuCategory[];
   readonly products: readonly WorkspaceProduct[];
   readonly cancellationReasons: readonly CancellationReason[];
@@ -51,6 +55,8 @@ export async function loadTableWorkspace(
     checks,
     orderItems,
     orderItemModifiers,
+    payments,
+    paymentAllocations,
     categories,
     menuItems,
     modifierGroups,
@@ -63,6 +69,8 @@ export async function loadTableWorkspace(
     loadAll(database, 'checks', scope),
     loadAll(database, 'orderItems', scope),
     loadAll(database, 'orderItemModifiers', scope),
+    loadAll(database, 'payments', scope),
+    loadAll(database, 'paymentAllocations', scope),
     loadAll(database, 'menuCategories', scope),
     loadAll(database, 'menuItems', scope),
     loadAll(database, 'modifierGroups', scope),
@@ -95,6 +103,10 @@ export async function loadTableWorkspace(
     .filter((item) => checkIds.has(item.checkId) && !item.deletedAt)
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const itemIds = new Set(activeItems.map((item) => item.id));
+  const activePayments = session
+    ? payments.filter((payment) => payment.tableSessionId === session.id)
+    : [];
+  const paymentIds = new Set(activePayments.map((payment) => payment.id));
   const categoryById = new Map(
     categories
       .filter((category) => category.isActive && !category.deletedAt)
@@ -128,6 +140,10 @@ export async function loadTableWorkspace(
     checks: activeChecks,
     orderItems: activeItems,
     orderItemModifiers: orderItemModifiers.filter((modifier) => itemIds.has(modifier.orderItemId)),
+    payments: activePayments,
+    paymentAllocations: paymentAllocations.filter((allocation) =>
+      paymentIds.has(allocation.paymentId),
+    ),
     categories: [...categoryById.values()].sort(compareSortOrder),
     products,
     cancellationReasons: cancellationReasons

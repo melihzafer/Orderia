@@ -10,7 +10,12 @@ import React, {
 } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
-import { BranchId, OrganizationId, toDomainId } from '../../domain';
+import { BranchId, DeviceId, MutationId, OrganizationId, toDomainId } from '../../domain';
+import {
+  ConfirmCheckPaymentsCommand,
+  ConfirmCheckPaymentsResult,
+  SupabasePaymentGateway,
+} from '../../features/payments';
 import { ActiveSessionParticipantRow, Database, getSupabaseClient } from '../../services/supabase';
 import { LocalDatabase, RepositoryScope } from '../contracts';
 import {
@@ -42,6 +47,11 @@ export interface OrderiaDataContextValue {
   resolveActiveParticipants(
     tableSessionId: string,
   ): Promise<readonly ActiveSessionParticipantRow[]>;
+  confirmCheckPayments(
+    deviceId: DeviceId,
+    clientMutationId: MutationId,
+    command: ConfirmCheckPaymentsCommand,
+  ): Promise<ConfirmCheckPaymentsResult>;
 }
 
 interface OrderiaDataProviderProps {
@@ -223,6 +233,25 @@ export function OrderiaDataProvider({
     [client, scope],
   );
 
+  const confirmCheckPayments = useCallback(
+    async (
+      deviceId: DeviceId,
+      clientMutationId: MutationId,
+      command: ConfirmCheckPaymentsCommand,
+    ): Promise<ConfirmCheckPaymentsResult> => {
+      if (!client || !scope) throw new Error('Cloud payment service is unavailable');
+      const result = await new SupabasePaymentGateway(client).confirm({
+        ...scope,
+        deviceId,
+        clientMutationId,
+        command,
+      });
+      await refresh();
+      return result;
+    },
+    [client, refresh, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -313,9 +342,11 @@ export function OrderiaDataProvider({
       refresh,
       resolveProfileNames,
       resolveActiveParticipants,
+      confirmCheckPayments,
     }),
     [
       client,
+      confirmCheckPayments,
       database,
       errorMessage,
       lastSuccessfulSyncAt,

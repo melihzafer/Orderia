@@ -32,6 +32,7 @@ import {
   CheckId,
   DeviceId,
   ModifierOptionId,
+  MutationId,
   OrderItem,
   RestaurantTableId,
   UserId,
@@ -50,6 +51,7 @@ import {
   resolveOrderItemNoteConflict,
   updateOrderItemNote,
 } from '../features/table-workspace';
+import { ConfirmCheckPaymentsCommand, PaymentSheet } from '../features/payments';
 import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { createTextMatcher } from '../utils/searchUtils';
@@ -101,6 +103,7 @@ function CloudTableWorkspace({
   const layout = useAdaptiveLayout();
   const {
     database,
+    confirmCheckPayments,
     errorMessage: runtimeError,
     refresh,
     resolveActiveParticipants,
@@ -129,6 +132,8 @@ function CloudTableWorkspace({
   const [cancellingItem, setCancellingItem] = useState<OrderItem>();
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem>();
   const [editingNote, setEditingNote] = useState('');
+  const [payingCheck, setPayingCheck] = useState<Check>();
+  const [paymentBusy, setPaymentBusy] = useState(false);
   const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
   const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
   const [incomingMessage, setIncomingMessage] = useState<string>();
@@ -224,8 +229,9 @@ function CloudTableWorkspace({
   }, [incomingMessage]);
 
   useEffect(() => {
-    if (!snapshot || selectedCheckId || pendingCheckName) return;
-    if (snapshot.checks[0]) setSelectedCheckId(snapshot.checks[0].id);
+    if (!snapshot || pendingCheckName) return;
+    if (selectedCheckId && snapshot.checks.some((check) => check.id === selectedCheckId)) return;
+    setSelectedCheckId(snapshot.checks[0]?.id);
   }, [pendingCheckName, selectedCheckId, snapshot]);
 
   const recentProductIds = useMemo(
@@ -431,6 +437,33 @@ function CloudTableWorkspace({
     }
   };
 
+  const confirmPayment = async (command: ConfirmCheckPaymentsCommand) => {
+    if (!payingCheck) return;
+    setPaymentBusy(true);
+    try {
+      const clientMutationId = toDomainId<MutationId>(secureUuid());
+      const result = await confirmCheckPayments(deviceId, clientMutationId, command);
+      setPayingCheck(undefined);
+      Alert.alert(
+        copy.paymentConfirmed,
+        `${copy.remaining}: ${formatMoney(result.remainingMinor, command.currencyCode, language)}`,
+      );
+      await reload();
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message === 'payment_check_version_conflict'
+          ? copy.paymentChanged
+          : error instanceof Error
+            ? error.message
+            : copy.tryAgain;
+      await refresh().catch(() => undefined);
+      await reload();
+      throw new Error(message);
+    } finally {
+      setPaymentBusy(false);
+    }
+  };
+
   const toggleFavorite = (productId: string) => {
     const next = favoriteIds.includes(productId)
       ? favoriteIds.filter((id) => id !== productId)
@@ -594,6 +627,9 @@ function CloudTableWorkspace({
               setEditingNote(item.note ?? '');
               setEditingNoteItem(item);
             }}
+            onPay={() => {
+              if (selectedCheck) setPayingCheck(selectedCheck);
+            }}
             onResolveConflict={resolveNoteConflict}
             waiterNames={waiterNames}
           />
@@ -687,6 +723,23 @@ function CloudTableWorkspace({
         onClose={() => setEditingNoteItem(undefined)}
         onConfirm={() => void saveItemNote()}
       />
+      {payingCheck ? (
+        <PaymentSheet
+          allocations={snapshot.paymentAllocations}
+          busy={paymentBusy}
+          check={payingCheck}
+          language={language}
+          modifiers={snapshot.orderItemModifiers}
+          onClose={() => {
+            if (!paymentBusy) setPayingCheck(undefined);
+          }}
+          onConfirm={confirmPayment}
+          online={sync.online}
+          orderItems={snapshot.orderItems.filter((item) => item.checkId === payingCheck.id)}
+          payments={snapshot.payments}
+          visible
+        />
+      ) : null}
 
       {runtimeError ? (
         <View
@@ -919,6 +972,7 @@ function OrderPane({
   currencyCode,
   onCancel,
   onEditNote,
+  onPay,
   onResolveConflict,
 }: {
   readonly checkName: string;
@@ -932,6 +986,7 @@ function OrderPane({
   readonly currencyCode: string;
   readonly onCancel: (item: OrderItem) => void;
   readonly onEditNote: (item: OrderItem) => void;
+  readonly onPay: () => void;
   readonly onResolveConflict: (
     item: OrderItem,
     conflict: TableWorkspaceSnapshot['conflicts'][number],
@@ -959,9 +1014,14 @@ function OrderPane({
             {items.length} {copy.lines}
           </Text>
         </View>
-        <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
-          {formatMoney(checkTotal, currencyCode, language)}
-        </Text>
+        <View style={{ alignItems: 'flex-end', gap: tokens.space.xs }}>
+          <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+            {formatMoney(checkTotal, currencyCode, language)}
+          </Text>
+          {items.some((item) => item.status !== 'cancelled') ? (
+            <ServiceButton icon="card-outline" label={copy.takePayment} onPress={onPay} />
+          ) : null}
+        </View>
       </View>
       {items.length === 0 ? (
         <ServiceEmptyState body={copy.tapProduct} icon="restaurant-outline" title={copy.noOrders} />
@@ -1658,6 +1718,12 @@ function formatMoney(amountMinor: number, currencyCode: string, language: Langua
   ).format(amountMinor / 100);
 }
 
+function secureUuid(): string {
+  const value = globalThis.crypto?.randomUUID?.();
+  if (!value) throw new Error('Secure UUID generation is unavailable');
+  return value;
+}
+
 function timeOnly(timestamp: string, language: Language): string {
   return new Intl.DateTimeFormat(
     language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-GB',
@@ -1731,6 +1797,11 @@ interface WorkspaceCopy {
   readonly useCloudNote: string;
   readonly keepMyNote: string;
   readonly conflictFailed: string;
+  readonly takePayment: string;
+  readonly paymentConfirmed: string;
+  readonly paymentFailed: string;
+  readonly paymentChanged: string;
+  readonly remaining: string;
 }
 
 function workspaceCopy(language: Language): WorkspaceCopy {
@@ -1792,6 +1863,11 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       useCloudNote: 'Buluttakini kullan',
       keepMyNote: 'Benim notumu uygula',
       conflictFailed: 'Çakışma çözülemedi',
+      takePayment: 'Ödeme al',
+      paymentConfirmed: 'Ödeme kesinleşti',
+      paymentFailed: 'Ödeme kesinleştirilemedi',
+      paymentChanged: 'Hesap başka bir cihazda değişti. Güncel kalan tutarı kontrol edin.',
+      remaining: 'Kalan',
     };
   }
   if (language === 'bg') {
@@ -1852,6 +1928,11 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       useCloudNote: 'Използвай облачната',
       keepMyNote: 'Запази моята',
       conflictFailed: 'Конфликтът не е разрешен',
+      takePayment: 'Плащане',
+      paymentConfirmed: 'Плащането е потвърдено',
+      paymentFailed: 'Плащането не бе потвърдено',
+      paymentChanged: 'Сметката е променена на друго устройство. Проверете остатъка.',
+      remaining: 'Остава',
     };
   }
   return {
@@ -1911,5 +1992,10 @@ function workspaceCopy(language: Language): WorkspaceCopy {
     useCloudNote: 'Use cloud note',
     keepMyNote: 'Keep my note',
     conflictFailed: 'Conflict could not be resolved',
+    takePayment: 'Take payment',
+    paymentConfirmed: 'Payment confirmed',
+    paymentFailed: 'Payment could not be confirmed',
+    paymentChanged: 'The check changed on another device. Review the current balance.',
+    remaining: 'Remaining',
   };
 }
