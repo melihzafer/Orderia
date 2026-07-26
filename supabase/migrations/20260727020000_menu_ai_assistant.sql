@@ -130,6 +130,22 @@ to authenticated;
 grant insert, update, delete on table public.menu_item_translations
 to authenticated;
 
+create or replace function private.normalize_catalog_name(value text)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select lower(
+    regexp_replace(
+      trim(translate(coalesce(value, ''), 'ÇĞİÖŞÜ', 'çğiöşü')),
+      '[[:space:]]+',
+      ' ',
+      'g'
+    )
+  );
+$$;
+
 create or replace function private.is_valid_menu_ai_suggestion(
   suggestion jsonb,
   expected_currency text
@@ -520,8 +536,8 @@ begin
     and (item.branch_id is null or item.branch_id = requested_branch_id)
     and item.deleted_at is null
     and item.id <> coalesce(requested_item_id, '00000000-0000-0000-0000-000000000000')
-    and lower(regexp_replace(trim(item.name), '\s+', ' ', 'g'))
-      = lower(regexp_replace(payload_name, '\s+', ' ', 'g'))
+    and private.normalize_catalog_name(item.name)
+      = private.normalize_catalog_name(payload_name)
   order by item.id
   limit 1;
   if duplicate_id is not null then
@@ -870,7 +886,9 @@ end;
 $$;
 
 revoke execute on function private.is_valid_menu_ai_suggestion(jsonb, text)
-  from public, anon, authenticated;
+from public, anon, authenticated;
+revoke execute on function private.normalize_catalog_name(text)
+from public, anon, authenticated;
 revoke execute on function public.reserve_menu_ai_request(
   uuid,
   uuid,
