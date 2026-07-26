@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { useHistoryStore, useOrderStore, useMenuStore } from '../stores';
-import { DayHistory, MenuItem, TicketLine } from '../types';
+import React, { createContext, useContext } from 'react';
+import { useHistoryStore, useMenuStore } from '../stores';
+import { DayHistory, MenuItem } from '../types';
+import { calculateLinesTotal, isBillableLine } from '../utils/financeUtils';
 
 export interface SalesAnalytics {
   totalRevenue: number;
@@ -108,10 +109,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const { menuItems, categories } = useMenuStore();
 
   const calculateTicketTotal = (ticket: any): number => {
-    return ticket.lines.reduce(
-      (sum: number, line: any) => sum + line.quantity * line.priceSnapshot,
-      0,
-    );
+    return calculateLinesTotal(ticket.lines);
   };
 
   const filterDataByDateRange = (data: DayHistory[], dateRange?: DateRange): DayHistory[] => {
@@ -162,6 +160,8 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
         // Item and category analysis
         ticket.lines.forEach((line) => {
+          if (!isBillableLine(line)) return;
+
           const item = menuItems.find((m) => m.id === line.menuItemId);
           if (item) {
             const itemRevenue = line.quantity * line.priceSnapshot;

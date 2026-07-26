@@ -7,6 +7,7 @@ import { useLayoutStore } from './layoutStore';
 import { useMenuStore } from './menuStore';
 import { useHistoryStore } from './historyStore';
 import { notificationService } from '../services/notificationService';
+import { calculateLinesTotal } from '../utils/financeUtils';
 
 interface OrderState {
   openTickets: Record<string, Ticket>; // ticketId -> ticket
@@ -329,11 +330,7 @@ export const useOrderStore = create<OrderState>()(
         const ticket = get().openTickets[ticketId];
         if (!ticket) return 0;
 
-        return ticket.lines.reduce((total, line) => {
-          // Exclude cancelled items from total calculation
-          if (line.status === 'cancelled') return total;
-          return total + line.priceSnapshot * line.quantity;
-        }, 0);
+        return calculateLinesTotal(ticket.lines);
       },
 
       getAllOpenTickets: () => {

@@ -8,6 +8,7 @@ module.exports = {
     '!src/i18n/languages.ts',
   ],
   coverageDirectory: 'coverage',
+  setupFiles: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },

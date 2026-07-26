@@ -11,7 +11,7 @@
     "export:web": "expo export --platform web",
     "build:web": "expo export --platform web",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings=83",
+    "lint": "eslint . --max-warnings=80",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

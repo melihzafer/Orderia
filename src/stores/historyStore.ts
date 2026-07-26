@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DayHistory, Ticket } from '../types';
 import { generateDateKey } from '../constants/branding';
 import { useMenuStore } from './menuStore';
+import { isBillableLine } from '../utils/financeUtils';
 
 interface HistoryState {
   dailyHistory: Record<string, DayHistory>; // date -> history
@@ -162,6 +163,8 @@ function calculateDayTotals(tickets: Ticket[]): {
 
   tickets.forEach((ticket) => {
     ticket.lines.forEach((line) => {
+      if (!isBillableLine(line)) return;
+
       const lineTotal = line.priceSnapshot * line.quantity;
       gross += lineTotal;
 
