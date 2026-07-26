@@ -1008,6 +1008,8 @@ select matches(
   '^25000000-0000-4000-8000-000000000001/35000000-0000-4000-8000-000000000001/[0-9]{4}-[0-9]{2}-[0-9]{2}/[0-9a-f-]+[.]pdf$',
   'the PDF path is tenant scoped and deterministic'
 );
+
+reset role;
 select is(
   (
     select public
@@ -1017,6 +1019,13 @@ select is(
   false,
   'receipt PDFs are stored in a private bucket'
 );
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
 select is(
   (
     public.finalize_receipt_pdf(
@@ -1042,6 +1051,8 @@ select is(
   repeat('a', 64),
   'the finalized PDF hash is retained for integrity checks'
 );
+
+reset role;
 select throws_ok(
   $$
     update public.receipts
@@ -1052,6 +1063,13 @@ select throws_ok(
   'receipts_are_immutable_create_an_adjustment',
   'commercial receipt fields remain immutable after PDF finalization'
 );
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
 select is(
   (
     public.confirm_check_payments(
