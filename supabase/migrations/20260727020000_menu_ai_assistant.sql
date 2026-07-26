@@ -138,7 +138,7 @@ set search_path = ''
 as $$
   select lower(
     regexp_replace(
-      trim(translate(coalesce(value, ''), 'ÇĞİÖŞÜ', 'çğiöşü')),
+      trim(translate(coalesce(value, ''), 'ÇĞİIÖŞÜ', 'çğiıöşü')),
       '[[:space:]]+',
       ' ',
       'g'
