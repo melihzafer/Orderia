@@ -112,6 +112,106 @@ export type ReceiptArchiveRow = {
   has_adjustment: boolean;
 };
 
+export type MenuCategoryRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string | null;
+  name: string;
+  sort_order: number;
+  is_active: boolean;
+  version: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type MenuItemRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string | null;
+  category_id: string;
+  name: string;
+  description: string | null;
+  price_minor: number;
+  currency_code: string;
+  tax_rate_basis_points: number;
+  is_active: boolean;
+  is_available: boolean;
+  prep_time_minutes: number | null;
+  version: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ModifierGroupRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string | null;
+  menu_item_id: string;
+  name: string;
+  selection_type: 'single' | 'multiple';
+  minimum_choices: number;
+  maximum_choices: number | null;
+  is_required: boolean;
+  sort_order: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ModifierOptionRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string | null;
+  modifier_group_id: string;
+  name: string;
+  price_delta_minor: number;
+  is_default: boolean;
+  is_active: boolean;
+  sort_order: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type MenuItemTranslationRow = {
+  organization_id: string;
+  branch_id: string | null;
+  menu_item_id: string;
+  locale: 'tr' | 'bg' | 'en';
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MenuAiRequestRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  client_request_id: string;
+  created_by: string;
+  input_text: string;
+  status: 'processing' | 'ready' | 'published' | 'rejected' | 'failed';
+  model: string;
+  suggestion_json: Json | null;
+  reviewed_json: Json | null;
+  error_code: string | null;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  latency_ms: number | null;
+  published_item_id: string | null;
+  version: number;
+  created_at: string;
+  completed_at: string | null;
+  published_at: string | null;
+};
+
 type TableDefinition<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -128,6 +228,12 @@ export type Database = {
       memberships: TableDefinition<MembershipRow>;
       devices: TableDefinition<DeviceRow>;
       sync_events: TableDefinition<SyncEventRow>;
+      menu_categories: TableDefinition<MenuCategoryRow>;
+      menu_items: TableDefinition<MenuItemRow>;
+      modifier_groups: TableDefinition<ModifierGroupRow>;
+      modifier_options: TableDefinition<ModifierOptionRow>;
+      menu_item_translations: TableDefinition<MenuItemTranslationRow>;
+      menu_ai_requests: TableDefinition<MenuAiRequestRow>;
     };
     Views: Record<never, never>;
     Functions: {
@@ -217,6 +323,35 @@ export type Database = {
           requested_date_from: string;
           requested_date_to: string;
           requested_waiter_id?: string | null;
+        };
+        Returns: Json;
+      };
+      bulk_set_menu_item_availability: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_item_ids: string[];
+          requested_is_available: boolean;
+        };
+        Returns: number;
+      };
+      publish_menu_ai_draft: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_request_id: string;
+          requested_expected_version: number;
+          requested_reviewed_payload: Json;
+        };
+        Returns: Json;
+      };
+      save_catalog_item: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_item_id: string | null;
+          requested_expected_version: number | null;
+          requested_payload: Json;
         };
         Returns: Json;
       };

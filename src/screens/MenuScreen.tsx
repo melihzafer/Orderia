@@ -1,521 +1,623 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, ScrollView, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet from '@gorhom/bottom-sheet';
-
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useLocalization } from '../i18n';
-import { useMenuStore } from '../stores';
+import { useOrderiaData } from '../data/runtime';
 import {
-  PrimaryButton,
-  SurfaceCard,
-  ActionSheet,
-  ActionSheetAction,
-  ProductSearch,
-} from '../components';
+  ServiceButton,
+  ServiceEmptyState,
+  ServiceSkeleton,
+  ServiceStatusPill,
+  ServiceSurface,
+  ServiceTextField,
+  useAdaptiveLayout,
+} from '../design-system';
+import { CurrencyCode, MenuCategoryId, MenuItemId, toDomainId } from '../domain';
+import { CatalogItem, CatalogSnapshot } from '../features/menu-management';
+import { useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { Category, MenuItem } from '../types';
-import { useDebounceSearch, searchMenuItems } from '../utils/searchUtils';
+import { useMenuStore } from '../stores';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
 export default function MenuScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const { colors } = useTheme();
-  const { t, formatPrice } = useLocalization();
+  const navigation = useNavigation<Navigation>();
+  const auth = useAuth();
+  const { tokens } = useTheme();
+  const { language } = useLocalization();
+  const layout = useAdaptiveLayout();
+  const { loadCatalog, mode, revision, setCatalogAvailability, sync } = useOrderiaData();
+  const legacy = useMenuStore();
+  const copy = menuCopy(language);
+  const [catalog, setCatalog] = useState<CatalogSnapshot>();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<MenuCategoryId>();
+  const [selectedItemIds, setSelectedItemIds] = useState<readonly MenuItemId[]>([]);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(mode === 'cloud');
+  const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>();
+  const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
 
-  const {
-    categories,
-    menuItems,
-    addCategory,
-    updateMenuItem,
-    deleteMenuItem,
-    deleteCategory,
-    toggleMenuItemActive,
-    getCategoriesWithItems,
-  } = useMenuStore();
-
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    categories.length > 0 ? categories[0].id : null,
+  const localCatalog = useMemo(
+    () =>
+      legacySnapshot(
+        legacy.categories,
+        legacy.menuItems,
+        auth.activeBranch?.organization_id,
+        auth.activeBranch?.id,
+        (auth.activeBranch?.currency_code ?? 'EUR') as CurrencyCode,
+      ),
+    [
+      auth.activeBranch?.currency_code,
+      auth.activeBranch?.id,
+      auth.activeBranch?.organization_id,
+      legacy.categories,
+      legacy.menuItems,
+    ],
   );
+  const displayedCatalog = catalog ?? localCatalog;
 
-  // Use debounced search for better performance
-  const { searchQuery, setSearchQuery, debouncedQuery } = useDebounceSearch('', 300);
-
-  // Product search modal state
-  const [showProductSearch, setShowProductSearch] = useState(false);
-
-  // Action sheet for menu items
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
-  const [showItemActions, setShowItemActions] = useState(false);
-  const actionSheetRef = useRef<BottomSheet>(null);
-
-  // Action sheet for categories
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [showCategoryActions, setShowCategoryActions] = useState(false);
-  const categoryActionSheetRef = useRef<BottomSheet>(null);
-
-  const handleAddCategory = () => {
-    navigation.navigate('AddCategory', {});
-  };
-
-  const handleEditCategory = (categoryId: string) => {
-    navigation.navigate('AddCategory', { categoryId });
-  };
-
-  const handleDeleteCategory = (category: Category) => {
-    const itemCount = menuItems.filter((item) => item.categoryId === category.id).length;
-    const confirmMessage =
-      itemCount > 0
-        ? `${t.deleteCategoryConfirm} Bu kategoride ${itemCount} ürün var ve hepsi silinecek.`
-        : t.deleteCategoryConfirm;
-
-    Alert.alert(t.deleteCategory, confirmMessage, [
-      { text: t.cancel, style: 'cancel' },
-      {
-        text: t.delete,
-        style: 'destructive',
-        onPress: () => {
-          deleteCategory(category.id);
-          Alert.alert(t.success, t.categoryDeleted);
-          // If we just deleted the selected category, reset selection
-          if (selectedCategoryId === category.id) {
-            setSelectedCategoryId(
-              categories.length > 1
-                ? categories.find((c) => c.id !== category.id)?.id || null
-                : null,
-            );
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleAddMenuItem = () => {
-    if (!selectedCategoryId) {
-      Alert.alert(t.error, t.selectCategoryFirst);
+  const refreshCatalog = useCallback(async () => {
+    if (mode !== 'cloud') {
+      setCatalog(undefined);
+      setLoading(false);
+      setRefreshing(false);
       return;
     }
-    navigation.navigate('AddMenuItem', { categoryId: selectedCategoryId });
-  };
+    try {
+      const next = await loadCatalog();
+      setCatalog(next);
+      setError(undefined);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : copy.loadFailed);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [copy.loadFailed, loadCatalog, mode]);
 
-  const handleDeleteMenuItem = (item: MenuItem) => {
-    Alert.alert(t.deleteItem, `"${item.name}" ${t.deleteItemConfirm}`, [
-      { text: t.cancel, style: 'cancel' },
-      {
-        text: t.delete,
-        style: 'destructive',
-        onPress: () => deleteMenuItem(item.id),
-      },
-    ]);
-  };
-
-  const handleEditMenuItem = (menuItem: MenuItem) => {
-    navigation.navigate('AddMenuItem', { categoryId: menuItem.categoryId, itemId: menuItem.id });
-    setShowItemActions(false);
-  };
-
-  const handleToggleItemStatus = (menuItem: MenuItem) => {
-    updateMenuItem(menuItem.id, { isActive: !menuItem.isActive });
-    setShowItemActions(false);
-  };
-
-  const handleItemLongPress = (menuItem: MenuItem) => {
-    setSelectedMenuItem(menuItem);
-    setShowItemActions(true);
-  };
-
-  const handleCategoryLongPress = (category: Category) => {
-    setSelectedCategory(category);
-    setShowCategoryActions(true);
-  };
-
-  // Define action sheet actions for menu items
-  const getItemActions = (menuItem: MenuItem): ActionSheetAction[] => [
-    {
-      id: 'edit',
-      title: t.edit || 'Edit',
-      icon: 'pencil',
-      onPress: () => handleEditMenuItem(menuItem),
-    },
-    {
-      id: 'toggle',
-      title: menuItem.isActive ? 'Deactivate' : 'Activate',
-      icon: menuItem.isActive ? 'eye-off' : 'eye',
-      onPress: () => handleToggleItemStatus(menuItem),
-    },
-    {
-      id: 'delete',
-      title: t.delete || 'Delete',
-      icon: 'trash',
-      destructive: true,
-      onPress: () => handleDeleteMenuItem(menuItem),
-    },
-  ];
-
-  // Define action sheet actions for categories
-  const getCategoryActions = (category: Category): ActionSheetAction[] => [
-    {
-      id: 'edit',
-      title: t.edit || 'Edit',
-      icon: 'pencil',
-      onPress: () => {
-        handleEditCategory(category.id);
-        setShowCategoryActions(false);
-      },
-    },
-    {
-      id: 'delete',
-      title: t.delete || 'Delete',
-      icon: 'trash',
-      destructive: true,
-      onPress: () => {
-        handleDeleteCategory(category);
-        setShowCategoryActions(false);
-      },
-    },
-  ];
-
-  // Use improved search with debouncing
-  const filteredMenuItems = searchMenuItems(
-    menuItems,
-    debouncedQuery,
-    selectedCategoryId || undefined,
+  useFocusEffect(
+    useCallback(() => {
+      void refreshCatalog();
+    }, [refreshCatalog]),
   );
+  useEffect(() => {
+    if (revision > 0) void refreshCatalog();
+  }, [refreshCatalog, revision]);
 
-  const renderCategoryTab = (category: Category) => {
-    const isSelected = selectedCategoryId === category.id;
-    const itemCount = menuItems.filter((item) => item.categoryId === category.id).length;
+  const duplicateIds = useMemo(
+    () => findDuplicateIds(displayedCatalog.items),
+    [displayedCatalog.items],
+  );
+  const visibleItems = useMemo(() => {
+    const normalizedQuery = normalize(query);
+    return displayedCatalog.items.filter(
+      (item) =>
+        (!selectedCategoryId || item.categoryId === selectedCategoryId) &&
+        (!normalizedQuery ||
+          normalize(item.name).includes(normalizedQuery) ||
+          normalize(item.description ?? '').includes(normalizedQuery)),
+    );
+  }, [displayedCatalog.items, query, selectedCategoryId]);
 
-    return (
-      <View key={category.id} style={{ marginRight: 8, position: 'relative' }}>
-        <TouchableOpacity
-          onPress={() => {
-            setSelectedCategoryId(category.id);
-          }}
-          onLongPress={() => handleCategoryLongPress(category)}
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 20,
-            borderRadius: 20,
-            backgroundColor: isSelected ? colors.primary : colors.surfaceAlt,
-            borderWidth: 1,
-            borderColor: isSelected ? colors.primary : colors.border,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text
-              style={{
-                color: isSelected ? '#FFFFFF' : colors.text,
-                fontWeight: isSelected ? '600' : '400',
-                fontSize: 14,
-              }}
-            >
-              {category.name}
-            </Text>
-            {itemCount > 0 && (
-              <View
-                style={{
-                  backgroundColor: isSelected ? '#FFFFFF' : colors.primary,
-                  borderRadius: 10,
-                  minWidth: 18,
-                  height: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginLeft: 6,
-                }}
-              >
-                <Text
-                  style={{
-                    color: isSelected ? colors.primary : '#FFFFFF',
-                    fontSize: 10,
-                    fontWeight: '600',
-                  }}
-                >
-                  {itemCount}
-                </Text>
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-      </View>
+  const toggleSelection = (itemId: MenuItemId) => {
+    if (!isManager || mode !== 'cloud') return;
+    setSelectedItemIds((current) =>
+      current.includes(itemId)
+        ? current.filter((selectedId) => selectedId !== itemId)
+        : [...current, itemId],
     );
   };
 
-  const renderMenuItem = ({ item }: { item: MenuItem }) => {
-    return (
-      <TouchableOpacity onLongPress={() => handleItemLongPress(item)} activeOpacity={0.7}>
-        <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-            }}
-          >
-            <View style={{ flex: 1, marginRight: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '600',
-                    color: item.isActive ? colors.text : colors.textSubtle,
-                    textDecorationLine: item.isActive ? 'none' : 'line-through',
-                    flex: 1,
-                  }}
-                >
-                  {item.name}
-                </Text>
-                {!item.isActive && (
-                  <View
-                    style={{
-                      backgroundColor: colors.textSubtle + '20',
-                      paddingHorizontal: 6,
-                      paddingVertical: 2,
-                      borderRadius: 4,
-                      marginLeft: 8,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: colors.textSubtle,
-                        fontWeight: '600',
-                      }}
-                    >
-                      INACTIVE
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {item.description && (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: colors.textSubtle,
-                    marginBottom: 4,
-                  }}
-                >
-                  {item.description}
-                </Text>
-              )}
-
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '700',
-                  color: colors.primary,
-                }}
-              >
-                {formatPrice(item.price)}
-              </Text>
-            </View>
-
-            <View style={{ alignItems: 'center' }}>
-              <Ionicons name="ellipsis-vertical" size={20} color={colors.textSubtle} />
-              <Text
-                style={{
-                  fontSize: 10,
-                  color: colors.textSubtle,
-                  marginTop: 2,
-                }}
-              >
-                Hold
-              </Text>
-            </View>
-          </View>
-        </SurfaceCard>
-      </TouchableOpacity>
-    );
+  const applyAvailability = async (isAvailable: boolean) => {
+    if (!selectedItemIds.length) return;
+    setSaving(true);
+    try {
+      await setCatalogAvailability(selectedItemIds, isAvailable);
+      setSelectedItemIds([]);
+      await refreshCatalog();
+    } catch (saveError) {
+      Alert.alert(
+        copy.updateFailed,
+        saveError instanceof Error ? saveError.message : copy.tryAgain,
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      edges={['bottom', 'left', 'right']}
+      edges={['top', 'left', 'right']}
+      style={{ backgroundColor: tokens.colors.bg, flex: 1 }}
     >
-      <View style={{ flex: 1 }}>
-        {/* Search Bar */}
-        <View style={{ padding: 16, paddingBottom: 8, backgroundColor: colors.bg }}>
+      <ScrollView
+        contentContainerStyle={{
+          alignSelf: 'center',
+          gap: tokens.space.lg,
+          maxWidth: tokens.sizing.contentMaximumWidth,
+          paddingBottom: tokens.space.xxl,
+          paddingHorizontal: layout.horizontalPadding,
+          paddingTop: tokens.space.lg,
+          width: '100%',
+        }}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {
+              setRefreshing(true);
+              void refreshCatalog();
+            }}
+            refreshing={refreshing}
+            tintColor={tokens.colors.primary}
+          />
+        }
+      >
+        <View
+          style={{
+            alignItems: layout.mode === 'compact' ? 'stretch' : 'center',
+            flexDirection: layout.mode === 'compact' ? 'column' : 'row',
+            gap: tokens.space.md,
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>
+              {copy.title}
+            </Text>
+            <Text
+              style={[
+                tokens.typography.body,
+                { color: tokens.colors.textSubtle, marginTop: tokens.space.xs },
+              ]}
+            >
+              {isManager ? copy.managerSubtitle : copy.waiterSubtitle}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+            <ServiceStatusPill
+              icon={sync.online ? 'cloud-done-outline' : 'cloud-offline-outline'}
+              label={mode === 'cloud' ? copy.cloudCatalog : copy.deviceCatalog}
+              tone={mode === 'cloud' && sync.online ? 'success' : 'neutral'}
+            />
+            {isManager ? (
+              <ServiceButton
+                disabled={mode !== 'cloud' || !sync.online}
+                icon="sparkles"
+                label={copy.aiAssistant}
+                onPress={() => navigation.navigate('MenuAssistant')}
+                variant="accent"
+              />
+            ) : null}
+          </View>
+        </View>
+
+        <ServiceTextField
+          label={copy.search}
+          onChangeText={setQuery}
+          placeholder={copy.searchPlaceholder}
+          value={query}
+        />
+
+        <ScrollView
+          horizontal
+          contentContainerStyle={{ gap: tokens.space.xs }}
+          showsHorizontalScrollIndicator={false}
+        >
+          <CategoryChip
+            active={!selectedCategoryId}
+            label={`${copy.all} · ${displayedCatalog.items.length}`}
+            onPress={() => setSelectedCategoryId(undefined)}
+          />
+          {displayedCatalog.categories.map((category) => (
+            <CategoryChip
+              key={category.id}
+              active={selectedCategoryId === category.id}
+              label={`${category.name} · ${
+                displayedCatalog.items.filter((item) => item.categoryId === category.id).length
+              }`}
+              onPress={() => setSelectedCategoryId(category.id)}
+            />
+          ))}
+        </ScrollView>
+
+        {selectedItemIds.length > 0 ? (
+          <ServiceSurface
+            style={{
+              alignItems: layout.mode === 'compact' ? 'stretch' : 'center',
+              flexDirection: layout.mode === 'compact' ? 'column' : 'row',
+              gap: tokens.space.sm,
+            }}
+            variant="raised"
+          >
+            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text, flex: 1 }]}>
+              {selectedItemIds.length} {copy.selected}
+            </Text>
+            <ServiceButton
+              disabled={saving}
+              icon="eye-outline"
+              label={copy.makeAvailable}
+              onPress={() => void applyAvailability(true)}
+              variant="outline"
+            />
+            <ServiceButton
+              disabled={saving}
+              icon="eye-off-outline"
+              label={copy.markSoldOut}
+              onPress={() => void applyAvailability(false)}
+              variant="danger"
+            />
+          </ServiceSurface>
+        ) : null}
+
+        {error ? (
+          <ServiceSurface
+            style={{ borderColor: tokens.colors.warning, gap: tokens.space.xs }}
+            variant="outlined"
+          >
+            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.warning }]}>
+              {copy.cachedCatalog}
+            </Text>
+            <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+              {error}
+            </Text>
+          </ServiceSurface>
+        ) : null}
+
+        {loading && !catalog ? (
+          <View style={{ gap: tokens.space.sm }}>
+            {[0, 1, 2].map((index) => (
+              <ServiceSkeleton key={index} height={112} />
+            ))}
+          </View>
+        ) : visibleItems.length === 0 ? (
+          <ServiceEmptyState
+            action={
+              isManager
+                ? {
+                    label: copy.addManually,
+                    onPress: () => navigation.navigate('AddMenuItem', {}),
+                  }
+                : undefined
+            }
+            body={query ? copy.noSearchResult : copy.emptyBody}
+            icon="restaurant-outline"
+            title={query ? copy.noResult : copy.emptyTitle}
+          />
+        ) : (
           <View
             style={{
               flexDirection: 'row',
-              backgroundColor: colors.surfaceAlt,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: tokens.space.sm,
             }}
           >
-            <Ionicons name="search" size={20} color={colors.textSubtle} />
-            <TextInput
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                paddingHorizontal: 8,
-                fontSize: 16,
-                color: colors.text,
-              }}
-              placeholder={t.searchItems}
-              placeholderTextColor={colors.textSubtle}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                style={{
-                  padding: 4,
-                  marginLeft: 4,
-                  borderRadius: 12,
-                  backgroundColor: colors.textSubtle + '20',
-                }}
-              >
-                <Ionicons name="close" size={16} color={colors.textSubtle} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Category Tabs */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 16 }}
-          >
-            {categories.map(renderCategoryTab)}
-            <TouchableOpacity
-              onPress={handleAddCategory}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 20,
-                backgroundColor: colors.surfaceAlt,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderStyle: 'dashed',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <Ionicons name="add" size={16} color={colors.textSubtle} />
-              <Text
-                style={{
-                  color: colors.textSubtle,
-                  fontSize: 14,
-                  marginLeft: 4,
-                }}
-              >
-                {t.addCategory}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-
-        {/* Menu Items */}
-        <View style={{ flex: 1, paddingHorizontal: 16 }}>
-          {categories.length === 0 ? (
-            <SurfaceCard style={{ padding: 32 }}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  color: colors.textSubtle,
-                  fontSize: 16,
-                  marginBottom: 16,
-                }}
-              >
-                {t.noCategoriesYet}
-              </Text>
-              <PrimaryButton title={t.addFirstCategory} onPress={handleAddCategory} fullWidth />
-            </SurfaceCard>
-          ) : filteredMenuItems.length === 0 ? (
-            <SurfaceCard style={{ padding: 32 }}>
-              <View style={{ alignItems: 'center' }}>
-                <Ionicons
-                  name={debouncedQuery ? 'search' : 'restaurant-outline'}
-                  size={48}
-                  color={colors.textSubtle}
-                  style={{ marginBottom: 16 }}
-                />
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: colors.textSubtle,
-                    fontSize: 16,
-                    marginBottom: 8,
-                  }}
-                >
-                  {debouncedQuery ? t.noItemsFound : t.noCategoryItems}
-                </Text>
-                {debouncedQuery ? (
-                  <Text
-                    style={{
-                      textAlign: 'center',
-                      color: colors.textSubtle,
-                      fontSize: 14,
-                      fontStyle: 'italic',
-                    }}
-                  >
-                    Try adjusting your search query
-                  </Text>
-                ) : (
-                  <PrimaryButton title={t.addFirstItem} onPress={handleAddMenuItem} fullWidth />
-                )}
-              </View>
-            </SurfaceCard>
-          ) : (
-            <FlatList
-              data={filteredMenuItems}
-              renderItem={renderMenuItem}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-        </View>
-
-        {/* Add Menu Item Button */}
-        {categories.length > 0 && (
-          <View style={{ padding: 16, paddingTop: 8 }}>
-            <PrimaryButton title={t.addNewItem} onPress={handleAddMenuItem} fullWidth />
+            {visibleItems.map((item) => (
+              <CatalogItemCard
+                key={item.id}
+                duplicate={duplicateIds.has(item.id)}
+                editable={isManager && !item.isOrganizationWide}
+                item={item}
+                managerSelectable={isManager && mode === 'cloud' && !item.isOrganizationWide}
+                onLongPress={() =>
+                  navigation.navigate('AddMenuItem', {
+                    categoryId: item.categoryId,
+                    itemId: item.id,
+                  })
+                }
+                onPress={() => toggleSelection(item.id)}
+                selected={selectedItemIds.includes(item.id)}
+                width={
+                  layout.mode === 'expanded' ? '32%' : layout.mode === 'medium' ? '48%' : '100%'
+                }
+              />
+            ))}
           </View>
         )}
-      </View>
 
-      {/* Action Sheet for Menu Items */}
-      {selectedMenuItem && (
-        <ActionSheet
-          ref={actionSheetRef}
-          title={selectedMenuItem.name}
-          subtitle={`Actions for this menu item`}
-          actions={getItemActions(selectedMenuItem)}
-          isVisible={showItemActions}
-          onClose={() => {
-            setShowItemActions(false);
-            setSelectedMenuItem(null);
-          }}
-        />
-      )}
-
-      {/* Action Sheet for Categories */}
-      {selectedCategory && (
-        <ActionSheet
-          ref={categoryActionSheetRef}
-          title={selectedCategory.name}
-          subtitle={`Actions for this category`}
-          actions={getCategoryActions(selectedCategory)}
-          isVisible={showCategoryActions}
-          onClose={() => {
-            setShowCategoryActions(false);
-            setSelectedCategory(null);
-          }}
-        />
-      )}
+        {isManager ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.sm }}>
+            <ServiceButton
+              icon="add-outline"
+              label={copy.addManually}
+              onPress={() => navigation.navigate('AddMenuItem', {})}
+              size="large"
+              variant="outline"
+            />
+            <Text
+              style={[
+                tokens.typography.caption,
+                { color: tokens.colors.textSubtle, flexBasis: 260, flexGrow: 1 },
+              ]}
+            >
+              {copy.aiBoundary}
+            </Text>
+          </View>
+        ) : null}
+      </ScrollView>
     </SafeAreaView>
   );
+}
+
+function CatalogItemCard({
+  duplicate,
+  editable,
+  item,
+  managerSelectable,
+  onLongPress,
+  onPress,
+  selected,
+  width,
+}: {
+  readonly duplicate: boolean;
+  readonly editable: boolean;
+  readonly item: CatalogItem;
+  readonly managerSelectable: boolean;
+  readonly onLongPress: () => void;
+  readonly onPress: () => void;
+  readonly selected: boolean;
+  readonly width: `${number}%`;
+}) {
+  const { tokens } = useTheme();
+  const { language } = useLocalization();
+  const copy = menuCopy(language);
+  return (
+    <Pressable
+      accessibilityRole={managerSelectable ? 'checkbox' : editable ? 'button' : 'text'}
+      accessibilityState={managerSelectable ? { checked: selected } : undefined}
+      disabled={!managerSelectable && !editable}
+      onLongPress={editable ? onLongPress : undefined}
+      onPress={managerSelectable ? onPress : undefined}
+      style={{ flexBasis: width, flexGrow: 1, minWidth: 280 }}
+    >
+      <ServiceSurface
+        style={{
+          borderColor: selected ? tokens.colors.primary : tokens.colors.border,
+          borderWidth: selected ? 2 : 1,
+          gap: tokens.space.sm,
+          minHeight: tokens.sizing.tableCardMinimumHeight,
+        }}
+        variant="outlined"
+      >
+        <View style={{ alignItems: 'flex-start', flexDirection: 'row', gap: tokens.space.sm }}>
+          <View style={{ flex: 1 }}>
+            <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+              {item.name}
+            </Text>
+            {item.description ? (
+              <Text
+                numberOfLines={2}
+                style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+              >
+                {item.description}
+              </Text>
+            ) : null}
+          </View>
+          <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+            {(item.priceMinor / 100).toFixed(2)} {item.currencyCode}
+          </Text>
+          {managerSelectable ? (
+            <Ionicons
+              name={selected ? 'checkbox' : 'square-outline'}
+              size={24}
+              color={selected ? tokens.colors.primary : tokens.colors.textMuted}
+            />
+          ) : null}
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+          <ServiceStatusPill
+            label={item.isAvailable ? copy.available : copy.soldOut}
+            tone={item.isAvailable ? 'success' : 'error'}
+          />
+          {item.modifierGroups.length > 0 ? (
+            <ServiceStatusPill
+              label={`${item.modifierGroups.length} ${copy.optionGroup}`}
+              tone="info"
+            />
+          ) : null}
+          {item.isOrganizationWide ? (
+            <ServiceStatusPill label={copy.sharedItem} tone="neutral" />
+          ) : null}
+          {duplicate ? <ServiceStatusPill label={copy.possibleDuplicate} tone="warning" /> : null}
+        </View>
+      </ServiceSurface>
+    </Pressable>
+  );
+}
+
+function CategoryChip({
+  active,
+  label,
+  onPress,
+}: {
+  readonly active: boolean;
+  readonly label: string;
+  readonly onPress: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={{
+        backgroundColor: active ? tokens.colors.primary : tokens.colors.surface,
+        borderColor: active ? tokens.colors.primary : tokens.colors.border,
+        borderRadius: tokens.radius.full,
+        borderWidth: 1,
+        justifyContent: 'center',
+        minHeight: tokens.sizing.minimumTarget,
+        paddingHorizontal: tokens.space.md,
+      }}
+    >
+      <Text
+        style={[
+          tokens.typography.label,
+          { color: active ? tokens.colors.primaryContrast : tokens.colors.text },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function legacySnapshot(
+  categories: readonly { id: string; name: string; order: number }[],
+  items: readonly {
+    id: string;
+    categoryId: string;
+    name: string;
+    description?: string;
+    price: number;
+    isActive: boolean;
+  }[],
+  organizationId?: string,
+  branchId?: string,
+  currencyCode: CurrencyCode = 'EUR' as CurrencyCode,
+): CatalogSnapshot {
+  return {
+    organizationId: toDomainId(organizationId ?? 'local-organization'),
+    branchId: toDomainId(branchId ?? 'local-branch'),
+    categories: categories.map((category) => ({
+      id: toDomainId<MenuCategoryId>(category.id),
+      name: category.name,
+      sortOrder: category.order,
+      isActive: true,
+    })),
+    items: items.map((item) => ({
+      id: toDomainId<MenuItemId>(item.id),
+      categoryId: toDomainId<MenuCategoryId>(item.categoryId),
+      name: item.name,
+      ...(item.description ? { description: item.description } : {}),
+      priceMinor: item.price,
+      currencyCode,
+      taxRateBasisPoints: 0,
+      isActive: item.isActive,
+      isAvailable: item.isActive,
+      isOrganizationWide: false,
+      version: 1,
+      translations: [],
+      modifierGroups: [],
+    })),
+  };
+}
+
+function findDuplicateIds(items: readonly CatalogItem[]): ReadonlySet<MenuItemId> {
+  const groups = new Map<string, MenuItemId[]>();
+  for (const item of items) {
+    const key = `${item.categoryId}:${normalize(item.name)}`;
+    groups.set(key, [...(groups.get(key) ?? []), item.id]);
+  }
+  return new Set(
+    [...groups.values()].filter((group) => group.length > 1).flatMap((group) => group),
+  );
+}
+
+function normalize(value: string): string {
+  return value
+    .trim()
+    .toLocaleLowerCase('tr')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function menuCopy(language: 'tr' | 'bg' | 'en') {
+  if (language === 'tr') {
+    return {
+      title: 'Menü merkezi',
+      managerSubtitle: 'Ürünleri, seçenekleri ve şube müsaitliğini tek yerden yönet.',
+      waiterSubtitle: 'Serviste kullanılabilen ürünleri ve seçenekleri gör.',
+      cloudCatalog: 'Bulut menü',
+      deviceCatalog: 'Cihaz menüsü',
+      aiAssistant: 'AI ile ürün ekle',
+      search: 'Menüde ara',
+      searchPlaceholder: 'Ürün veya açıklama…',
+      all: 'Tümü',
+      selected: 'ürün seçili',
+      makeAvailable: 'Satışa aç',
+      markSoldOut: 'Tükendi yap',
+      cachedCatalog: 'Son menü gösteriliyor',
+      loadFailed: 'Bulut menü yüklenemedi.',
+      updateFailed: 'Menü güncellenemedi',
+      tryAgain: 'Tekrar deneyin.',
+      addManually: 'Elle ürün ekle',
+      noSearchResult: 'Aramana uyan ürün bulunamadı.',
+      emptyBody: 'İlk ürünü elle veya AI taslağıyla ekleyebilirsin.',
+      noResult: 'Sonuç yok',
+      emptyTitle: 'Menü henüz boş',
+      available: 'Satışta',
+      soldOut: 'Tükendi',
+      optionGroup: 'seçenek grubu',
+      possibleDuplicate: 'Olası tekrar',
+      sharedItem: 'Tüm şubeler',
+      aiBoundary:
+        'AI yalnız taslak hazırlar. Yönetici kontrol edip onaylamadan hiçbir ürün yayınlanmaz.',
+    } as const;
+  }
+  if (language === 'bg') {
+    return {
+      title: 'Меню център',
+      managerSubtitle: 'Управлявайте артикули, опции и наличност на обекта.',
+      waiterSubtitle: 'Вижте наличните артикули и опции за обслужване.',
+      cloudCatalog: 'Облачно меню',
+      deviceCatalog: 'Меню на устройството',
+      aiAssistant: 'Добави с AI',
+      search: 'Търсене в менюто',
+      searchPlaceholder: 'Артикул или описание…',
+      all: 'Всички',
+      selected: 'избрани',
+      makeAvailable: 'В продажба',
+      markSoldOut: 'Изчерпано',
+      cachedCatalog: 'Показва се последното меню',
+      loadFailed: 'Облачното меню не се зареди.',
+      updateFailed: 'Менюто не се обнови',
+      tryAgain: 'Опитайте отново.',
+      addManually: 'Добави ръчно',
+      noSearchResult: 'Няма съвпадащи артикули.',
+      emptyBody: 'Добавете първия артикул ръчно или с AI чернова.',
+      noResult: 'Няма резултат',
+      emptyTitle: 'Менюто е празно',
+      available: 'Налично',
+      soldOut: 'Изчерпано',
+      optionGroup: 'групи опции',
+      possibleDuplicate: 'Възможен дубликат',
+      sharedItem: 'Всички обекти',
+      aiBoundary: 'AI създава само чернова. Нищо не се публикува без преглед от мениджър.',
+    } as const;
+  }
+  return {
+    title: 'Menu hub',
+    managerSubtitle: 'Manage items, options, and branch availability in one place.',
+    waiterSubtitle: 'See the items and options available during service.',
+    cloudCatalog: 'Cloud catalog',
+    deviceCatalog: 'Device catalog',
+    aiAssistant: 'Add with AI',
+    search: 'Search menu',
+    searchPlaceholder: 'Item or description…',
+    all: 'All',
+    selected: 'items selected',
+    makeAvailable: 'Make available',
+    markSoldOut: 'Mark sold out',
+    cachedCatalog: 'Showing the last menu',
+    loadFailed: 'The cloud catalog could not be loaded.',
+    updateFailed: 'Menu update failed',
+    tryAgain: 'Try again.',
+    addManually: 'Add manually',
+    noSearchResult: 'No items match your search.',
+    emptyBody: 'Add the first item manually or with an AI draft.',
+    noResult: 'No results',
+    emptyTitle: 'The menu is empty',
+    available: 'Available',
+    soldOut: 'Sold out',
+    optionGroup: 'option groups',
+    possibleDuplicate: 'Possible duplicate',
+    sharedItem: 'All branches',
+    aiBoundary: 'AI creates a draft only. Nothing is published without manager review.',
+  } as const;
 }

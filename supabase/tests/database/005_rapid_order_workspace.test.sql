@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(93);
+select plan(111);
 
 insert into auth.users (
   instance_id,
@@ -1753,6 +1753,395 @@ select throws_ok(
   '42501',
   'manager_role_required',
   'waiters cannot access manager reporting'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select is(
+  public.reserve_menu_ai_request(
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    'c6000000-0000-4000-8000-000000000001',
+    'Patates kızartması - 4 euro, peynirli +1 euro',
+    'gpt-5.6-luna'
+  ) ->> 'status',
+  'processing',
+  'a manager can reserve a rate-limited AI draft without publishing catalog data'
+);
+select is(
+  (
+    public.reserve_menu_ai_request(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      'c6000000-0000-4000-8000-000000000001',
+      'Patates kızartması - 4 euro, peynirli +1 euro',
+      'gpt-5.6-luna'
+    ) ->> 'id'
+  )::uuid,
+  (
+    select id
+    from public.menu_ai_requests
+    where client_request_id = 'c6000000-0000-4000-8000-000000000001'
+  ),
+  'an exact AI request replay returns the original draft reservation'
+);
+select is(
+  (
+    select count(*)
+    from public.menu_ai_requests
+    where client_request_id = 'c6000000-0000-4000-8000-000000000001'
+  ),
+  1::bigint,
+  'an AI retry cannot consume quota twice or duplicate a request'
+);
+select is(
+  public.complete_menu_ai_request(
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    (
+      select id
+      from public.menu_ai_requests
+      where client_request_id = 'c6000000-0000-4000-8000-000000000001'
+    ),
+    jsonb_build_object(
+      'schemaVersion', 1,
+      'item', jsonb_build_object(
+        'name', 'Patates kızartması',
+        'description', 'Çıtır patates',
+        'priceMinor', 400,
+        'currencyCode', 'EUR',
+        'categoryName', 'Atıştırmalık',
+        'prepTimeMinutes', 8
+      ),
+      'translations', jsonb_build_array(
+        jsonb_build_object(
+          'locale', 'tr',
+          'name', 'Patates kızartması',
+          'description', 'Çıtır patates'
+        ),
+        jsonb_build_object(
+          'locale', 'bg',
+          'name', 'Пържени картофи',
+          'description', null
+        ),
+        jsonb_build_object(
+          'locale', 'en',
+          'name', 'French fries',
+          'description', null
+        )
+      ),
+      'modifierGroups', jsonb_build_array(
+        jsonb_build_object(
+          'name', 'Peynir',
+          'selectionType', 'single',
+          'minimumChoices', 0,
+          'maximumChoices', 1,
+          'isRequired', false,
+          'sortOrder', 0,
+          'options', jsonb_build_array(
+            jsonb_build_object(
+              'name', 'Peynirsiz',
+              'priceDeltaMinor', 0,
+              'isDefault', true,
+              'sortOrder', 0
+            ),
+            jsonb_build_object(
+              'name', 'Peynirli',
+              'priceDeltaMinor', 100,
+              'isDefault', false,
+              'sortOrder', 1
+            )
+          )
+        )
+      ),
+      'allergenSuggestions', jsonb_build_array(
+        jsonb_build_object(
+          'code', 'MILK',
+          'status', 'unknown',
+          'reason', 'Peynir seçeneğini reçete veya tedarikçi belgesiyle doğrulayın.'
+        )
+      ),
+      'warnings', jsonb_build_array('Alerjenleri yayınlamadan önce doğrulayın.')
+    ),
+    'gpt-5.6-luna',
+    120,
+    240,
+    800
+  ) ->> 'status',
+  'ready',
+  'only a strict server-validated AI suggestion becomes reviewable'
+);
+select ok(
+  (
+    select bool_and(allergen ->> 'status' = 'unknown')
+    from public.menu_ai_requests as request,
+      jsonb_array_elements(request.suggestion_json -> 'allergenSuggestions') as allergen
+    where request.client_request_id = 'c6000000-0000-4000-8000-000000000001'
+  ),
+  'AI allergen suggestions remain explicitly unknown before manager review'
+);
+select is(
+  public.publish_menu_ai_draft(
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    (
+      select id
+      from public.menu_ai_requests
+      where client_request_id = 'c6000000-0000-4000-8000-000000000001'
+    ),
+    2,
+    jsonb_build_object(
+      'categoryName', 'Atıştırmalık',
+      'name', 'Trüflü patates kızartması',
+      'description', 'Çıtır patates',
+      'priceMinor', 400,
+      'currencyCode', 'EUR',
+      'taxRateBasisPoints', 0,
+      'isActive', true,
+      'isAvailable', true,
+      'prepTimeMinutes', 8,
+      'translations', jsonb_build_array(
+        jsonb_build_object(
+          'locale', 'tr',
+          'name', 'Trüflü patates kızartması',
+          'description', 'Çıtır patates'
+        ),
+        jsonb_build_object(
+          'locale', 'bg',
+          'name', 'Пържени картофи',
+          'description', null
+        ),
+        jsonb_build_object(
+          'locale', 'en',
+          'name', 'French fries',
+          'description', null
+        )
+      ),
+      'modifierGroups', jsonb_build_array(
+        jsonb_build_object(
+          'name', 'Peynir',
+          'selectionType', 'single',
+          'minimumChoices', 0,
+          'maximumChoices', 1,
+          'isRequired', false,
+          'sortOrder', 0,
+          'options', jsonb_build_array(
+            jsonb_build_object(
+              'name', 'Peynirsiz',
+              'priceDeltaMinor', 0,
+              'isDefault', true,
+              'sortOrder', 0
+            ),
+            jsonb_build_object(
+              'name', 'Peynirli',
+              'priceDeltaMinor', 100,
+              'isDefault', false,
+              'sortOrder', 1
+            )
+          )
+        )
+      ),
+      'confirmedAllergens', '[]'::jsonb
+    )
+  ) ->> 'status',
+  'published',
+  'only an explicit manager-reviewed payload publishes the AI draft'
+);
+select is(
+  (
+    select concat_ws('|', item.name, item.price_minor, category.name)
+    from public.menu_items as item
+    join public.menu_categories as category on category.id = item.category_id
+    where item.organization_id = '25000000-0000-4000-8000-000000000001'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+      and item.name = 'Trüflü patates kızartması'
+  ),
+  'Trüflü patates kızartması|400|Atıştırmalık',
+  'publishing creates the reviewed item and category in the active branch'
+);
+select is(
+  (
+    select count(*)
+    from public.modifier_groups as modifier
+    join public.menu_items as item on item.id = modifier.menu_item_id
+    where item.name = 'Trüflü patates kızartması'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+      and modifier.deleted_at is null
+  ),
+  1::bigint,
+  'the reviewed modifier group is published transactionally'
+);
+select is(
+  (
+    select count(*)
+    from public.modifier_options as option
+    join public.modifier_groups as modifier on modifier.id = option.modifier_group_id
+    join public.menu_items as item on item.id = modifier.menu_item_id
+    where item.name = 'Trüflü patates kızartması'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+      and option.deleted_at is null
+  ),
+  2::bigint,
+  'all reviewed modifier options are published transactionally'
+);
+select is(
+  (
+    select count(*)
+    from public.menu_item_translations as translation
+    join public.menu_items as item on item.id = translation.menu_item_id
+    where item.name = 'Trüflü patates kızartması'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+  ),
+  3::bigint,
+  'the reviewed Turkish, Bulgarian, and English translations are stored'
+);
+select is(
+  (
+    select count(*)
+    from public.menu_item_allergens as item_allergen
+    join public.menu_items as item on item.id = item_allergen.menu_item_id
+    where item.name = 'Trüflü patates kızartması'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+  ),
+  0::bigint,
+  'an unconfirmed AI allergen suggestion is never published'
+);
+select is(
+  (
+    select status
+    from public.menu_ai_requests
+    where client_request_id = 'c6000000-0000-4000-8000-000000000001'
+  ),
+  'published',
+  'the AI audit row records the manager publication decision'
+);
+select throws_ok(
+  $$
+    select public.save_catalog_item(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      null,
+      null,
+      jsonb_build_object(
+        'categoryName', 'Atıştırmalık',
+        'name', '  TRÜFLÜ   PATATES KIZARTMASI ',
+        'description', null,
+        'priceMinor', 400,
+        'currencyCode', 'EUR',
+        'translations', '[]'::jsonb,
+        'modifierGroups', '[]'::jsonb,
+        'confirmedAllergens', '[]'::jsonb
+      )
+    )
+  $$,
+  '23505',
+  'catalog_item_duplicate',
+  'normalized duplicate detection prevents accidental repeated menu items'
+);
+select is(
+  (
+    public.save_catalog_item(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      (
+        select id
+        from public.menu_items
+        where name = 'Trüflü patates kızartması'
+          and branch_id = '35000000-0000-4000-8000-000000000001'
+      ),
+      1,
+      jsonb_build_object(
+        'categoryName', 'Atıştırmalık',
+        'name', 'Trüflü patates kızartması',
+        'description', 'Çıtır patates',
+        'priceMinor', 400,
+        'currencyCode', 'EUR',
+        'isActive', true,
+        'isAvailable', true,
+        'prepTimeMinutes', 8,
+        'translations', '[]'::jsonb,
+        'modifierGroups', '[]'::jsonb,
+        'confirmedAllergens', jsonb_build_array(
+          jsonb_build_object('code', 'MILK', 'presence', 'may_contain')
+        )
+      )
+    ) ->> 'version'
+  )::bigint,
+  2::bigint,
+  'manual manager review can update the versioned catalog item'
+);
+select is(
+  (
+    select concat_ws(
+      '|',
+      allergen.code,
+      item_allergen.presence,
+      item_allergen.source,
+      item_allergen.confirmed_by
+    )
+    from public.menu_item_allergens as item_allergen
+    join public.menu_items as item on item.id = item_allergen.menu_item_id
+    join public.allergens as allergen on allergen.id = item_allergen.allergen_id
+    where item.name = 'Trüflü patates kızartması'
+      and item.branch_id = '35000000-0000-4000-8000-000000000001'
+  ),
+  'MILK|may_contain|manager|15000000-0000-4000-8000-000000000001',
+  'only a manager-confirmed allergen receives a definitive presence and source'
+);
+select is(
+  public.bulk_set_menu_item_availability(
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    array[
+      (
+        select id
+        from public.menu_items
+        where name = 'Trüflü patates kızartması'
+          and branch_id = '35000000-0000-4000-8000-000000000001'
+      )
+    ],
+    false
+  ),
+  1,
+  'a manager can bulk-update branch menu availability'
+);
+select is(
+  (
+    select is_available
+    from public.menu_items
+    where name = 'Trüflü patates kızartması'
+      and branch_id = '35000000-0000-4000-8000-000000000001'
+  ),
+  false,
+  'sold-out availability is immediately stored in the shared catalog'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000002","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+select throws_ok(
+  $$
+    select public.reserve_menu_ai_request(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      'c6000000-0000-4000-8000-000000000002',
+      'Yetkisiz ürün taslağı',
+      'gpt-5.6-luna'
+    )
+  $$,
+  '42501',
+  'manager_role_required',
+  'waiters cannot generate or publish AI menu drafts'
 );
 
 select * from finish();

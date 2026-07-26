@@ -18,6 +18,7 @@ import {
   EditTableScreen,
   HistoryScreen,
   MenuScreen,
+  MenuAssistantScreen,
   QRMenuScreen,
   SettingsScreen,
   ShiftBoardScreen,
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
   AddMenuItem: { categoryId?: string; itemId?: string };
+  MenuAssistant: undefined;
   AddHall: { hallId?: string };
   EditTable: { tableId: string };
   AddCategory: { categoryId?: string };
@@ -185,6 +187,14 @@ export default function AppNavigator() {
           options={{
             presentation: 'modal',
             title: t.addMenuItem,
+          }}
+        />
+        <Stack.Screen
+          component={MenuAssistantScreen}
+          name="MenuAssistant"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
           }}
         />
         <Stack.Screen

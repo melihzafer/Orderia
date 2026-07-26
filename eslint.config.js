@@ -22,6 +22,12 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['supabase/functions/**/*.ts'],
+    languageOptions: {
+      globals: globals.deno,
+    },
+  },
+  {
     files: [
       'jest.setup.js',
       '**/*.test.{ts,tsx}',

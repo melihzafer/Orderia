@@ -12,7 +12,9 @@ import { AppState, Platform } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   BranchId,
+  CurrencyCode,
   DeviceId,
+  MenuItemId,
   MutationId,
   OrganizationId,
   Receipt,
@@ -25,6 +27,13 @@ import {
   SupabasePaymentGateway,
 } from '../../features/payments';
 import { ManagerReport, ManagerReportGateway } from '../../features/manager-reports';
+import {
+  CatalogSnapshot,
+  EditableCatalogItem,
+  MenuAiDraft,
+  MenuCatalogGateway,
+  MenuLocale,
+} from '../../features/menu-management';
 import {
   ReceiptArchiveCursor,
   ReceiptArchiveFilters,
@@ -85,6 +94,23 @@ export interface OrderiaDataContextValue {
     pageSize?: number,
   ): Promise<ReceiptArchivePage>;
   loadManagerReport(dateFrom: string, dateTo: string, waiterId?: UserId): Promise<ManagerReport>;
+  loadCatalog(): Promise<CatalogSnapshot>;
+  generateMenuAiDraft(
+    text: string,
+    currencyCode: CurrencyCode,
+    locale: MenuLocale,
+    clientRequestId?: string,
+  ): Promise<MenuAiDraft>;
+  publishMenuAiDraft(
+    draftId: string,
+    expectedVersion: number,
+    item: EditableCatalogItem,
+  ): Promise<MenuItemId>;
+  saveCatalogItem(
+    item: EditableCatalogItem,
+    existing?: { readonly id: MenuItemId; readonly version: number },
+  ): Promise<MenuItemId>;
+  setCatalogAvailability(itemIds: readonly MenuItemId[], isAvailable: boolean): Promise<number>;
 }
 
 interface OrderiaDataProviderProps {
@@ -347,6 +373,76 @@ export function OrderiaDataProvider({
     [client, scope],
   );
 
+  const loadCatalog = useCallback(async (): Promise<CatalogSnapshot> => {
+    if (!client || !scope) throw new Error('Cloud catalog is unavailable');
+    return new MenuCatalogGateway(client).load(scope);
+  }, [client, scope]);
+
+  const generateMenuAiDraft = useCallback(
+    async (
+      text: string,
+      currencyCode: CurrencyCode,
+      locale: MenuLocale,
+      clientRequestId?: string,
+    ): Promise<MenuAiDraft> => {
+      if (!client || !scope) throw new Error('Cloud menu assistant is unavailable');
+      return new MenuCatalogGateway(client).generateDraft({
+        ...scope,
+        text,
+        currencyCode,
+        locale,
+        ...(clientRequestId ? { clientRequestId } : {}),
+      });
+    },
+    [client, scope],
+  );
+
+  const publishMenuAiDraft = useCallback(
+    async (
+      draftId: string,
+      expectedVersion: number,
+      item: EditableCatalogItem,
+    ): Promise<MenuItemId> => {
+      if (!client || !scope) throw new Error('Cloud menu assistant is unavailable');
+      const result = await new MenuCatalogGateway(client).publishDraft(
+        scope,
+        draftId,
+        expectedVersion,
+        item,
+      );
+      await refresh();
+      return result.itemId;
+    },
+    [client, refresh, scope],
+  );
+
+  const saveCatalogItem = useCallback(
+    async (
+      item: EditableCatalogItem,
+      existing?: { readonly id: MenuItemId; readonly version: number },
+    ): Promise<MenuItemId> => {
+      if (!client || !scope) throw new Error('Cloud catalog is unavailable');
+      const itemId = await new MenuCatalogGateway(client).saveItem(scope, item, existing);
+      await refresh();
+      return itemId;
+    },
+    [client, refresh, scope],
+  );
+
+  const setCatalogAvailability = useCallback(
+    async (itemIds: readonly MenuItemId[], isAvailable: boolean): Promise<number> => {
+      if (!client || !scope) throw new Error('Cloud catalog is unavailable');
+      const count = await new MenuCatalogGateway(client).setAvailability(
+        scope,
+        itemIds,
+        isAvailable,
+      );
+      await refresh();
+      return count;
+    },
+    [client, refresh, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -442,21 +538,31 @@ export function OrderiaDataProvider({
       prepareReceiptPdf,
       searchReceiptArchive,
       loadManagerReport,
+      loadCatalog,
+      generateMenuAiDraft,
+      publishMenuAiDraft,
+      saveCatalogItem,
+      setCatalogAvailability,
     }),
     [
       client,
       confirmCheckPayments,
       database,
       errorMessage,
+      generateMenuAiDraft,
       lastSuccessfulSyncAt,
+      loadCatalog,
       loadManagerReport,
       prepareReceiptPdf,
+      publishMenuAiDraft,
       readiness,
       refresh,
       resolveActiveParticipants,
       resolveProfileNames,
       revision,
       searchReceiptArchive,
+      saveCatalogItem,
+      setCatalogAvailability,
       scope,
       sync,
       transferOrMergeTableSession,

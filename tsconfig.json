@@ -18,5 +18,6 @@
       "@/contexts/*": ["./src/contexts/*"],
       "@/navigation/*": ["./src/navigation/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "supabase/functions"]
 }

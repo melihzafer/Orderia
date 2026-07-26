@@ -104,3 +104,35 @@ test('opens the manager report with auditable filters and offline recovery', asy
     ),
   ).toBeVisible();
 });
+
+test('keeps manual menu editing available when the AI assistant is offline', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await page
+    .getByText(/Menü|Меню|Menu/i)
+    .last()
+    .click();
+  await expect(page.getByText(/Menü merkezi|Меню център|Menu hub/i).first()).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /AI ile ürün ekle|Добави с AI|Add with AI/i }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText(/AI yalnız taslak hazırlar|AI създава само чернова|AI creates a draft only/i),
+  ).toBeVisible();
+
+  await page
+    .getByRole('button', { name: /Elle ürün ekle|Добави ръчно|Add manually/i })
+    .first()
+    .click();
+  await expect(
+    page
+      .getByRole('heading', {
+        name: /^(Ürün ekle|Добави артикул|Add item)$/i,
+      })
+      .last(),
+  ).toBeVisible();
+  await expect(page.getByLabel(/Ürün adı|Име|Item name/i)).toBeVisible();
+  await expect(page.getByLabel(/Fiyat|Цена|Price/i)).toBeVisible();
+  await expect(page.getByText(/Seçenek grupları|Групи опции|Option groups/i)).toBeVisible();
+});
