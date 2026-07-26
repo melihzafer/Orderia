@@ -13,10 +13,17 @@ import { useLayoutStore } from '../stores/layoutStore';
 import { useMenuStore } from '../stores/menuStore';
 import { useOrderStore } from '../stores/orderStore';
 import { useHistoryStore } from '../stores/historyStore';
+import { useAuth } from '../contexts/AuthContext';
+import { accessibleBranches } from '../contexts/authTypes';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 export default function SettingsScreen() {
   const { colors, colorMode, toggleColorMode } = useTheme();
   const { t, language, currency, setLanguage, setCurrency } = useLocalization();
+  const auth = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   // Store hooks
   const layoutStore = useLayoutStore();
@@ -162,6 +169,112 @@ export default function SettingsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, backgroundColor: colors.bg }}
       >
+        {auth.status === 'ready' && auth.workspace && auth.activeBranch ? (
+          <SurfaceCard style={{ marginBottom: 16 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+            >
+              <Ionicons
+                name="business-outline"
+                size={24}
+                color={colors.primary}
+                style={{ marginRight: 12 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontSize: 18,
+                    fontWeight: '600',
+                  }}
+                >
+                  {auth.activeBranch.name}
+                </Text>
+                <Text style={{ color: colors.textSubtle, marginTop: 2 }}>
+                  {auth.activeOrganization?.name} · {auth.activeMembership?.role}
+                </Text>
+              </View>
+            </View>
+
+            {accessibleBranches(auth.workspace).length > 1 ? (
+              <View style={{ marginBottom: 8 }}>
+                {accessibleBranches(auth.workspace).map((branch) => (
+                  <TouchableOpacity
+                    key={branch.id}
+                    onPress={() => {
+                      void auth.switchBranch(branch.id);
+                    }}
+                    style={{
+                      alignItems: 'center',
+                      backgroundColor:
+                        branch.id === auth.activeBranch?.id
+                          ? colors.primary + '20'
+                          : colors.surfaceAlt,
+                      borderRadius: 8,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      marginBottom: 8,
+                      padding: 12,
+                    }}
+                  >
+                    <Text style={{ color: colors.text, fontWeight: '600' }}>{branch.name}</Text>
+                    {branch.id === auth.activeBranch?.id ? (
+                      <Ionicons name="checkmark" size={20} color={colors.primary} />
+                    ) : null}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : null}
+
+            {auth.activeMembership?.role === 'manager' ? (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Devices')}
+                style={{
+                  alignItems: 'center',
+                  borderBottomColor: colors.border,
+                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  paddingVertical: 12,
+                }}
+              >
+                <Ionicons
+                  name="phone-portrait-outline"
+                  size={21}
+                  color={colors.textSubtle}
+                  style={{ marginRight: 10 }}
+                />
+                <Text style={{ color: colors.text, flex: 1, fontSize: 15 }}>
+                  Authorized devices
+                </Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity
+              onPress={() => {
+                void auth.signOut();
+              }}
+              style={{
+                alignItems: 'center',
+                flexDirection: 'row',
+                paddingTop: 14,
+              }}
+            >
+              <Ionicons
+                name="log-out-outline"
+                size={21}
+                color={colors.error}
+                style={{ marginRight: 10 }}
+              />
+              <Text style={{ color: colors.error, fontSize: 15, fontWeight: '600' }}>Sign out</Text>
+            </TouchableOpacity>
+          </SurfaceCard>
+        ) : null}
+
         {/* Language Settings */}
         <SurfaceCard style={{ marginBottom: 16 }}>
           <View

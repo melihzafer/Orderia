@@ -28,6 +28,9 @@ yarn-error.*
 *.pem
 
 # Local env files
+.env
+.env.*
+!.env.example
 .env*.local
 
 # TypeScript

@@ -8,6 +8,8 @@ import { NotificationProvider } from './src/contexts/NotificationContext';
 import { AnalyticsProvider } from './src/contexts/AnalyticsContext';
 import { QRMenuProvider } from './src/contexts/QRMenuContext';
 import { initializeSampleData } from './src/utils/sampleData';
+import { AuthProvider } from './src/contexts/AuthContext';
+import { AuthGate } from './src/components/AuthGate';
 
 export default function App() {
   useEffect(() => {
@@ -21,14 +23,18 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <LocalizationProvider>
         <ThemeProvider>
-          <NotificationProvider>
-            <AnalyticsProvider>
-              <QRMenuProvider>
-                <AppNavigator />
-                <StatusBar style="auto" />
-              </QRMenuProvider>
-            </AnalyticsProvider>
-          </NotificationProvider>
+          <AuthProvider>
+            <AuthGate>
+              <NotificationProvider>
+                <AnalyticsProvider>
+                  <QRMenuProvider>
+                    <AppNavigator />
+                    <StatusBar style="auto" />
+                  </QRMenuProvider>
+                </AnalyticsProvider>
+              </NotificationProvider>
+            </AuthGate>
+          </AuthProvider>
         </ThemeProvider>
       </LocalizationProvider>
     </GestureHandlerRootView>

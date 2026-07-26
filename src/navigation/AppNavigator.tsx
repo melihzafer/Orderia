@@ -26,6 +26,7 @@ import {
   AddCategoryScreen,
   AnalyticsScreen,
   QRMenuScreen,
+  DeviceManagementScreen,
 } from '../screens';
 import { PrimaryButton } from '../components';
 
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   AddCategory: { categoryId?: string };
   Analytics: undefined;
   QRMenu: undefined;
+  Devices: undefined;
 };
 
 export type TabParamList = {
@@ -242,6 +244,13 @@ export default function AppNavigator() {
           options={{
             title: t.qrMenu || 'QR Menu',
             presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="Devices"
+          component={DeviceManagementScreen}
+          options={{
+            title: 'Authorized devices',
           }}
         />
       </Stack.Navigator>
