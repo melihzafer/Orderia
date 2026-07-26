@@ -98,10 +98,11 @@ export function ReceiptReadySheet({
               {receipt.snapshot.tableLabel} · {receipt.snapshot.checks[0]?.name}
             </Text>
             <Text style={[tokens.typography.money, { color: tokens.colors.primary }]}>
-              {new Intl.NumberFormat(
+              {formatMinorCurrency(
+                receipt.totalMinor,
+                receipt.currencyCode,
                 language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-US',
-                { style: 'currency', currency: receipt.currencyCode },
-              ).format(receipt.totalMinor / 100)}
+              )}
             </Text>
             <Text style={[tokens.typography.caption, { color: tokens.colors.textMuted }]}>
               {copy.privateNotice}
@@ -130,6 +131,15 @@ export function ReceiptReadySheet({
       </View>
     </Modal>
   );
+}
+
+function formatMinorCurrency(amountMinor: number, currencyCode: string, locale: string): string {
+  const formatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+  });
+  const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
+  return formatter.format(amountMinor / 10 ** fractionDigits);
 }
 
 function readyCopy(language: Language) {

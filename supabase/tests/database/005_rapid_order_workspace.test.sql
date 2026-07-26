@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(72);
+select plan(83);
 
 insert into auth.users (
   instance_id,
@@ -1412,6 +1412,189 @@ select is(
   ),
   2::bigint,
   'two paid named checks produce two distinct immutable receipts'
+);
+
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001'
+    )
+  ),
+  2::bigint,
+  'the archive returns branch-scoped receipts in a cursor page'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_query => 'Masa 4'
+    )
+  ),
+  1::bigint,
+  'archive quick search finds a historical table snapshot'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_query => 'Pencere'
+    )
+  ),
+  1::bigint,
+  'archive quick search finds a named check'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_date_from => (
+        select min(business_date)
+        from public.receipts
+        where branch_id = '35000000-0000-4000-8000-000000000001'
+      ),
+      requested_date_to => (
+        select max(business_date)
+        from public.receipts
+        where branch_id = '35000000-0000-4000-8000-000000000001'
+      )
+    )
+  ),
+  2::bigint,
+  'archive date filters use the immutable business date'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_waiter_query => 'Second Waiter'
+    )
+  ),
+  1::bigint,
+  'archive waiter search uses historical attribution names'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_payment_method => 'cash'
+    )
+  ),
+  1::bigint,
+  'archive payment filters inspect the immutable payment snapshot'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_amount_min_minor => 500,
+      requested_amount_max_minor => 500
+    )
+  ),
+  2::bigint,
+  'archive amount filters use integer minor units'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_time_from => (
+        select timezone('Europe/Sofia', issued_at)::time
+        from public.receipts
+        where check_id = 'f5000000-0000-4000-8000-000000000001'
+      ),
+      requested_time_to => (
+        select timezone('Europe/Sofia', issued_at)::time
+        from public.receipts
+        where check_id = 'f5000000-0000-4000-8000-000000000001'
+      )
+    )
+  ),
+  1::bigint,
+  'archive time filters evaluate issue time in the branch timezone'
+);
+select is(
+  (
+    select count(*)
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_page_size => 1
+    )
+  ),
+  2::bigint,
+  'a cursor page includes one lookahead row without scanning all history'
+);
+select is(
+  (
+    select receipt_number
+    from public.search_receipts(
+      requested_organization_id =>
+        '25000000-0000-4000-8000-000000000001',
+      requested_branch_id =>
+        '35000000-0000-4000-8000-000000000001',
+      requested_after_issued_at => (
+        select issued_at
+        from public.receipts
+        where check_id = 'f5000000-0000-4000-8000-000000000150'
+      ),
+      requested_after_id => (
+        select id
+        from public.receipts
+        where check_id = 'f5000000-0000-4000-8000-000000000150'
+      ),
+      requested_page_size => 1
+    )
+  ),
+  (
+    select receipt_number
+    from public.receipts
+    where check_id = 'f5000000-0000-4000-8000-000000000001'
+  ),
+  'the archive cursor continues after the exact issued-at and id key'
+);
+select throws_ok(
+  $$
+    select *
+    from public.search_receipts(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000002'
+    )
+  $$,
+  '42501',
+  'branch_access_denied',
+  'a user cannot search another branch receipt archive'
 );
 
 select * from finish();

@@ -202,10 +202,12 @@ function receiptDocument(receipt: Receipt): DocumentDefinition {
 }
 
 function money(amountMinor: number, currencyCode: string): string {
-  return new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currencyCode,
-  }).format(amountMinor / 100);
+  });
+  const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
+  return formatter.format(amountMinor / 10 ** fractionDigits);
 }
 
 function formatQuantity(quantity: number): string {

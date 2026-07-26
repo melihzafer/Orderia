@@ -90,6 +90,28 @@ export type ActiveSessionParticipantRow = {
   last_action_at: string;
 };
 
+export type ReceiptArchiveRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  branch_name: string;
+  branch_timezone: string;
+  table_session_id: string;
+  check_id: string;
+  receipt_number: string;
+  business_date: string;
+  issued_at: string;
+  issued_by: string;
+  total_minor: number;
+  currency_code: string;
+  snapshot_json: Json;
+  pdf_storage_path: string | null;
+  pdf_hash: string | null;
+  status: string;
+  adjusts_receipt_id: string | null;
+  has_adjustment: boolean;
+};
+
 type TableDefinition<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -196,6 +218,26 @@ export type Database = {
           active_since?: string;
         };
         Returns: ActiveSessionParticipantRow[];
+      };
+      search_receipts: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_query?: string | null;
+          requested_date_from?: string | null;
+          requested_date_to?: string | null;
+          requested_time_from?: string | null;
+          requested_time_to?: string | null;
+          requested_waiter_query?: string | null;
+          requested_payment_method?: string | null;
+          requested_amount_min_minor?: number | null;
+          requested_amount_max_minor?: number | null;
+          requested_has_adjustment?: boolean | null;
+          requested_after_issued_at?: string | null;
+          requested_after_id?: string | null;
+          requested_page_size?: number;
+        };
+        Returns: ReceiptArchiveRow[];
       };
       transfer_or_merge_table_session: {
         Args: {

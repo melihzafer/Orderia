@@ -111,6 +111,14 @@ function MainTabs() {
             }}
           />
           <Tab.Screen
+            component={HistoryScreen}
+            name="Receipts"
+            options={{
+              headerShown: false,
+              title: t.receiptsNav,
+            }}
+          />
+          <Tab.Screen
             component={SettingsScreen}
             name="More"
             options={{
@@ -125,7 +133,7 @@ function MainTabs() {
             component={HistoryScreen}
             name="Receipts"
             options={{
-              headerTitle: t.salesHistory,
+              headerShown: false,
               title: t.receiptsNav,
             }}
           />

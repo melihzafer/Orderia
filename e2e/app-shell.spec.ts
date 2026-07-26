@@ -64,3 +64,23 @@ test('uses the rapid table workspace at phone speed', async ({ page }) => {
 
   await expect(page.getByText(/1× Çay/i)).toBeVisible();
 });
+
+test('opens the searchable receipt archive with explicit offline recovery', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await page
+    .getByText(/Fişler|Разписки|Receipts/i)
+    .last()
+    .click();
+  await expect(
+    page.getByText(/Fiş arşivi|Архив на разписките|Receipt archive/i).first(),
+  ).toBeVisible();
+  await expect(page.getByLabel(/Hızlı arama|Бързо търсене|Quick search/i)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /^(Filtreler|Филтри|Filters) \(\d+\)$/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Arşiv şu anda kullanılamıyor|Архивът не е достъпен|Archive unavailable/i),
+  ).toBeVisible();
+});

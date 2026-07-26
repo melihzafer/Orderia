@@ -17,6 +17,12 @@ import {
   SupabasePaymentGateway,
 } from '../../features/payments';
 import {
+  ReceiptArchiveCursor,
+  ReceiptArchiveFilters,
+  ReceiptArchiveGateway,
+  ReceiptArchivePage,
+} from '../../features/receipt-archive';
+import {
   SupabaseTableOperationGateway,
   TransferTableSessionCommand,
   TransferTableSessionResult,
@@ -64,6 +70,11 @@ export interface OrderiaDataContextValue {
     command: TransferTableSessionCommand,
   ): Promise<TransferTableSessionResult>;
   prepareReceiptPdf(receipt: Receipt): Promise<PreparedReceiptPdf>;
+  searchReceiptArchive(
+    filters: ReceiptArchiveFilters,
+    cursor?: ReceiptArchiveCursor,
+    pageSize?: number,
+  ): Promise<ReceiptArchivePage>;
 }
 
 interface OrderiaDataProviderProps {
@@ -296,6 +307,23 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const searchReceiptArchive = useCallback(
+    async (
+      filters: ReceiptArchiveFilters,
+      cursor?: ReceiptArchiveCursor,
+      pageSize?: number,
+    ): Promise<ReceiptArchivePage> => {
+      if (!client || !scope) throw new Error('Cloud receipt archive is unavailable');
+      return new ReceiptArchiveGateway(client).search({
+        ...scope,
+        filters,
+        ...(cursor ? { cursor } : {}),
+        ...(pageSize ? { pageSize } : {}),
+      });
+    },
+    [client, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -389,6 +417,7 @@ export function OrderiaDataProvider({
       confirmCheckPayments,
       transferOrMergeTableSession,
       prepareReceiptPdf,
+      searchReceiptArchive,
     }),
     [
       client,
@@ -402,6 +431,7 @@ export function OrderiaDataProvider({
       resolveActiveParticipants,
       resolveProfileNames,
       revision,
+      searchReceiptArchive,
       scope,
       sync,
       transferOrMergeTableSession,
