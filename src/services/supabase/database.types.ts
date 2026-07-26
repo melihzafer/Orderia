@@ -66,6 +66,23 @@ export type DeviceRow = {
   updated_at: string;
 };
 
+export type SyncEventRow = {
+  sequence: number;
+  organization_id: string;
+  branch_id: string;
+  repository: string;
+  entity_id: string;
+  operation: 'insert' | 'update' | 'delete';
+  payload_json: Json;
+  server_version: number | null;
+  client_mutation_id: string | null;
+  committed_at: string;
+};
+
+export type PulledSyncEventRow = Omit<SyncEventRow, 'sequence'> & {
+  cursor: string;
+};
+
 type TableDefinition<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -81,6 +98,7 @@ export type Database = {
       profiles: TableDefinition<ProfileRow>;
       memberships: TableDefinition<MembershipRow>;
       devices: TableDefinition<DeviceRow>;
+      sync_events: TableDefinition<SyncEventRow>;
     };
     Views: Record<never, never>;
     Functions: {
@@ -120,6 +138,15 @@ export type Database = {
           requested_base_version: number | null;
         };
         Returns: Json;
+      };
+      pull_sync_events: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          after_sequence: string;
+          page_size?: number;
+        };
+        Returns: PulledSyncEventRow[];
       };
     };
     Enums: Record<never, never>;
