@@ -320,7 +320,6 @@ declare
   modifier_group public.modifier_groups;
   cancellation_reason public.cancellation_reasons;
   item_payload jsonb;
-  selection_payload jsonb;
   selection_count integer;
   selection_total integer;
   minimum_choices integer;
