@@ -4,6 +4,8 @@ type MembershipRole = 'waiter' | 'manager';
 type MembershipStatus = 'invited' | 'active' | 'suspended';
 type DevicePlatform = 'android' | 'ios_web' | 'web';
 
+export type Json = boolean | number | string | null | Json[] | { [key: string]: Json | undefined };
+
 export type OrganizationRow = {
   id: string;
   name: string;
@@ -105,6 +107,19 @@ export type Database = {
           device_id: string;
         };
         Returns: DeviceRow;
+      };
+      apply_client_mutation: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_mutation_type: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
       };
     };
     Enums: Record<never, never>;
