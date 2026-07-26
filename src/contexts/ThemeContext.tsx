@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
-import { brand } from '../constants/branding';
+import { ServiceColorMode, ServiceThemeTokens, serviceThemes } from '../design-system/tokens';
 
-type ColorMode = 'light' | 'dark';
+type ColorMode = ServiceColorMode;
 
 interface ThemeContextType {
   colorMode: ColorMode;
-  colors: typeof brand.color.light;
+  colors: ServiceThemeTokens['colors'];
+  tokens: ServiceThemeTokens;
   toggleColorMode: () => void;
   setColorMode: (mode: ColorMode) => void;
 }
@@ -23,7 +24,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [systemColorScheme]);
 
-  const colors = brand.color[colorMode];
+  const tokens = serviceThemes[colorMode];
+  const colors = tokens.colors;
 
   const toggleColorMode = () => {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -32,6 +34,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const value: ThemeContextType = {
     colorMode,
     colors,
+    tokens,
     toggleColorMode,
     setColorMode,
   };
