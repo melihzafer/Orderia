@@ -24,6 +24,7 @@ export type PaymentAllocationId = DomainId<'PaymentAllocation'>;
 export type ReceiptId = DomainId<'Receipt'>;
 export type AuditEventId = DomainId<'AuditEvent'>;
 export type MutationId = DomainId<'Mutation'>;
+export type SyncConflictId = DomainId<'SyncConflict'>;
 export type CorrelationId = DomainId<'Correlation'>;
 
 export function toDomainId<T extends DomainId<string>>(value: string): T {
