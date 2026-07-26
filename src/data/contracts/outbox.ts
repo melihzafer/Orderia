@@ -4,7 +4,7 @@ import { RepositoryName, RepositoryScope } from './repository';
 
 export type MutationOperation = 'create' | 'update' | 'delete' | 'command';
 export type OutboxStatus =
-  'pending' | 'processing' | 'retry_wait' | 'applied' | 'conflict' | 'rejected';
+  'pending' | 'processing' | 'retry_wait' | 'applied' | 'conflict' | 'rejected' | 'resolved';
 
 export interface OutboxMutation {
   readonly id: MutationId;
@@ -61,8 +61,9 @@ const allowedOutboxTransitions: Readonly<Record<OutboxStatus, readonly OutboxSta
   processing: ['applied', 'retry_wait', 'conflict', 'rejected'],
   retry_wait: ['processing'],
   applied: [],
-  conflict: [],
-  rejected: [],
+  conflict: ['resolved'],
+  rejected: ['resolved'],
+  resolved: [],
 };
 
 export function assertOutboxTransition(current: OutboxStatus, next: OutboxStatus): void {

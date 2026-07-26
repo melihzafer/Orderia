@@ -3,7 +3,9 @@ import {
   OutboxMutation,
   OutboxTransitionPatch,
   RepositoryScope,
+  SyncConflict,
 } from '../contracts';
+import { SyncConflictId, toDomainId } from '../../domain';
 import { MutationPushGateway } from './mutationPushGateway';
 import {
   RetryPolicy,
@@ -133,7 +135,7 @@ export class OutboxPushWorker {
       }
 
       if (disposition === 'conflict') {
-        await this.transition(mutation, 'conflict', patch);
+        await this.recordConflict(mutation, details, patch);
         return 'conflicted';
       }
 
@@ -143,6 +145,32 @@ export class OutboxPushWorker {
       });
       return 'rejected';
     }
+  }
+
+  private async recordConflict(
+    mutation: OutboxMutation,
+    details: ReturnType<typeof mutationErrorDetails>,
+    patch: OutboxTransitionPatch,
+  ): Promise<void> {
+    const conflict: SyncConflict = {
+      id: toDomainId<SyncConflictId>(`conflict-${mutation.id}`),
+      organizationId: mutation.organizationId,
+      branchId: mutation.branchId,
+      mutationId: mutation.id,
+      repository: mutation.repository,
+      entityId: mutation.entityId,
+      ...(mutation.baseVersion === undefined ? {} : { baseVersion: mutation.baseVersion }),
+      serverVersion: Math.max(1, details.serverVersion ?? mutation.baseVersion ?? 1),
+      localPayload: mutation.payload,
+      serverPayload: details.serverPayload ?? {},
+      status: 'unresolved',
+      detectedAt: this.now().toISOString(),
+    };
+
+    await this.database.transaction(async (transaction) => {
+      await transaction.outbox.transition(mutation.id, 'processing', 'conflict', patch);
+      await transaction.syncState.addConflict(conflict);
+    });
   }
 
   private async transition(

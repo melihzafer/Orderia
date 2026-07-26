@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -47,6 +47,8 @@ import {
   loadWorkspacePreferences,
   saveWorkspacePreferences,
   sendOrderBatch,
+  resolveOrderItemNoteConflict,
+  updateOrderItemNote,
 } from '../features/table-workspace';
 import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -101,6 +103,7 @@ function CloudTableWorkspace({
     database,
     errorMessage: runtimeError,
     refresh,
+    resolveActiveParticipants,
     resolveProfileNames,
     revision,
     scope,
@@ -124,13 +127,34 @@ function CloudTableWorkspace({
   const [configurationNote, setConfigurationNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cancellingItem, setCancellingItem] = useState<OrderItem>();
+  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem>();
+  const [editingNote, setEditingNote] = useState('');
   const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
+  const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
+  const [incomingMessage, setIncomingMessage] = useState<string>();
+  const snapshotRef = useRef<TableWorkspaceSnapshot | null>(null);
   const tableId = toDomainId<RestaurantTableId>(route.params.tableId);
 
   const reload = useCallback(async () => {
     if (!database || !scope) return;
     try {
       const next = await loadTableWorkspace(database, scope, tableId);
+      const previous = snapshotRef.current;
+      if (previous && next) {
+        const previousItemIds = new Set(previous.orderItems.map((item) => item.id));
+        const incoming = next.orderItems.filter(
+          (item) => !previousItemIds.has(item.id) && item.createdBy !== actorUserId,
+        );
+        if (incoming.length > 0) {
+          const actorIds = [...new Set(incoming.map((item) => item.createdBy))];
+          const names: Readonly<Record<string, string>> = await resolveProfileNames(actorIds).catch(
+            () => ({}),
+          );
+          const actorNames = actorIds.map((id) => names[id] ?? copy.unknownWaiter);
+          setIncomingMessage(`${actorNames.join(', ')} · ${incoming.length} ${copy.incomingItems}`);
+        }
+      }
+      snapshotRef.current = next;
       setSnapshot(next);
       setLoadError(next ? undefined : copy.tableNotFound);
     } catch {
@@ -138,7 +162,17 @@ function CloudTableWorkspace({
     } finally {
       setLoading(false);
     }
-  }, [copy.loadFailed, copy.tableNotFound, database, scope, tableId]);
+  }, [
+    actorUserId,
+    copy.incomingItems,
+    copy.loadFailed,
+    copy.tableNotFound,
+    copy.unknownWaiter,
+    database,
+    resolveProfileNames,
+    scope,
+    tableId,
+  ]);
 
   useEffect(() => {
     void reload();
@@ -160,6 +194,34 @@ function CloudTableWorkspace({
       .then(setWaiterNames)
       .catch(() => setWaiterNames({}));
   }, [resolveProfileNames, snapshot]);
+
+  useEffect(() => {
+    if (!snapshot?.session) {
+      setParticipantNames([]);
+      return;
+    }
+    void resolveActiveParticipants(snapshot.session.id)
+      .then((participants) =>
+        setParticipantNames(participants.map((participant) => participant.display_name)),
+      )
+      .catch(() => {
+        const cutoff = Date.now() - 15 * 60_000;
+        const userIds = [
+          ...new Set(
+            snapshot.orderItems
+              .filter((item) => Date.parse(item.updatedAt) >= cutoff)
+              .map((item) => item.createdBy),
+          ),
+        ];
+        setParticipantNames(userIds.map((id) => waiterNames[id] ?? copy.unknownWaiter));
+      });
+  }, [copy.unknownWaiter, resolveActiveParticipants, revision, snapshot, waiterNames]);
+
+  useEffect(() => {
+    if (!incomingMessage) return;
+    const timer = setTimeout(() => setIncomingMessage(undefined), 4_000);
+    return () => clearTimeout(timer);
+  }, [incomingMessage]);
 
   useEffect(() => {
     if (!snapshot || selectedCheckId || pendingCheckName) return;
@@ -327,6 +389,48 @@ function CloudTableWorkspace({
     }
   };
 
+  const saveItemNote = async () => {
+    if (!database || !scope || !editingNoteItem) return;
+    try {
+      await updateOrderItemNote({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        item: editingNoteItem,
+        note: editingNote,
+      });
+      setEditingNoteItem(undefined);
+      await reload();
+      void refresh();
+    } catch (error) {
+      Alert.alert(copy.noteSaveFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
+  const resolveNoteConflict = async (
+    item: OrderItem,
+    conflict: TableWorkspaceSnapshot['conflicts'][number],
+    resolution: 'server' | 'local',
+  ) => {
+    if (!database || !scope) return;
+    try {
+      await resolveOrderItemNoteConflict({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        item,
+        conflict,
+        resolution,
+      });
+      await reload();
+      void refresh();
+    } catch (error) {
+      Alert.alert(copy.conflictFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
   const toggleFavorite = (productId: string) => {
     const next = favoriteIds.includes(productId)
       ? favoriteIds.filter((id) => id !== productId)
@@ -385,6 +489,7 @@ function CloudTableWorkspace({
     >
       <WorkspaceHeader
         onBack={navigation.goBack}
+        participantNames={participantNames}
         syncLabel={
           sync.online
             ? sync.pendingCount > 0
@@ -395,6 +500,37 @@ function CloudTableWorkspace({
         syncTone={sync.hasError ? 'error' : sync.pendingCount > 0 ? 'warning' : 'success'}
         tableLabel={snapshot.table.label}
       />
+
+      {incomingMessage ? (
+        <View
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          style={{
+            alignItems: 'center',
+            backgroundColor: tokens.colors.accentSoft,
+            flexDirection: 'row',
+            marginBottom: tokens.space.xs,
+            marginHorizontal: tokens.space.md,
+            padding: tokens.space.sm,
+            borderRadius: tokens.radius.medium,
+          }}
+        >
+          <Ionicons color={tokens.colors.accent} name="people-outline" size={20} />
+          <Text
+            style={[
+              tokens.typography.label,
+              { color: tokens.colors.text, flex: 1, marginLeft: tokens.space.xs },
+            ]}
+          >
+            {incomingMessage}
+          </Text>
+          <ServiceIconButton
+            icon="close"
+            label={copy.close}
+            onPress={() => setIncomingMessage(undefined)}
+          />
+        </View>
+      ) : null}
 
       <CheckStrip
         checks={snapshot.checks}
@@ -452,7 +588,13 @@ function CloudTableWorkspace({
             items={visibleItems}
             language={language}
             modifiers={snapshot.orderItemModifiers}
+            conflicts={snapshot.conflicts}
             onCancel={setCancellingItem}
+            onEditNote={(item) => {
+              setEditingNote(item.note ?? '');
+              setEditingNoteItem(item);
+            }}
+            onResolveConflict={resolveNoteConflict}
             waiterNames={waiterNames}
           />
         ) : null}
@@ -537,6 +679,14 @@ function CloudTableWorkspace({
         onClose={() => setCancellingItem(undefined)}
         reasons={snapshot.cancellationReasons}
       />
+      <ItemNoteModal
+        copy={copy}
+        item={editingNoteItem}
+        note={editingNote}
+        onChange={setEditingNote}
+        onClose={() => setEditingNoteItem(undefined)}
+        onConfirm={() => void saveItemNote()}
+      />
 
       {runtimeError ? (
         <View
@@ -561,34 +711,54 @@ function WorkspaceHeader({
   tableLabel,
   syncLabel,
   syncTone,
+  participantNames,
   onBack,
 }: {
   readonly tableLabel: string;
   readonly syncLabel: string;
   readonly syncTone: 'success' | 'warning' | 'error';
+  readonly participantNames: readonly string[];
   readonly onBack: () => void;
 }) {
   const { tokens } = useTheme();
   return (
-    <View
-      style={{
-        alignItems: 'center',
-        flexDirection: 'row',
-        minHeight: 64,
-        paddingHorizontal: tokens.space.md,
-      }}
-    >
-      <ServiceIconButton icon="arrow-back" label="Back" onPress={onBack} />
-      <Text
-        style={[
-          tokens.typography.title,
-          { color: tokens.colors.text, flex: 1, marginHorizontal: tokens.space.sm },
-        ]}
-        numberOfLines={1}
+    <View style={{ paddingHorizontal: tokens.space.md, paddingBottom: tokens.space.xs }}>
+      <View
+        style={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          minHeight: 64,
+        }}
       >
-        {tableLabel}
-      </Text>
-      <ServiceStatusPill label={syncLabel} tone={syncTone} />
+        <ServiceIconButton icon="arrow-back" label="Back" onPress={onBack} />
+        <Text
+          style={[
+            tokens.typography.title,
+            { color: tokens.colors.text, flex: 1, marginHorizontal: tokens.space.sm },
+          ]}
+          numberOfLines={1}
+        >
+          {tableLabel}
+        </Text>
+        <ServiceStatusPill label={syncLabel} tone={syncTone} />
+      </View>
+      {participantNames.length > 0 ? (
+        <View
+          accessibilityLabel={participantNames.join(', ')}
+          style={{ alignItems: 'center', flexDirection: 'row', marginLeft: 48 }}
+        >
+          <Ionicons color={tokens.colors.primary} name="people" size={16} />
+          <Text
+            numberOfLines={1}
+            style={[
+              tokens.typography.caption,
+              { color: tokens.colors.textSubtle, marginLeft: tokens.space.xs },
+            ]}
+          >
+            {participantNames.join(' · ')}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -742,21 +912,31 @@ function OrderPane({
   checkTotal,
   items,
   modifiers,
+  conflicts,
   waiterNames,
   copy,
   language,
   currencyCode,
   onCancel,
+  onEditNote,
+  onResolveConflict,
 }: {
   readonly checkName: string;
   readonly checkTotal: number;
   readonly items: readonly OrderItem[];
   readonly modifiers: TableWorkspaceSnapshot['orderItemModifiers'];
+  readonly conflicts: TableWorkspaceSnapshot['conflicts'];
   readonly waiterNames: Readonly<Record<string, string>>;
   readonly copy: WorkspaceCopy;
   readonly language: Language;
   readonly currencyCode: string;
   readonly onCancel: (item: OrderItem) => void;
+  readonly onEditNote: (item: OrderItem) => void;
+  readonly onResolveConflict: (
+    item: OrderItem,
+    conflict: TableWorkspaceSnapshot['conflicts'][number],
+    resolution: 'server' | 'local',
+  ) => void;
 }) {
   const { tokens } = useTheme();
   return (
@@ -792,6 +972,12 @@ function OrderPane({
           contentContainerStyle={{ padding: tokens.space.sm }}
           renderItem={({ item }) => {
             const itemModifiers = modifiers.filter((modifier) => modifier.orderItemId === item.id);
+            const conflict = conflicts.find(
+              (candidate) =>
+                candidate.entityId === item.id &&
+                candidate.repository === 'orderItems' &&
+                candidate.status === 'unresolved',
+            );
             return (
               <View
                 style={{
@@ -838,16 +1024,69 @@ function OrderPane({
                       )}
                     </Text>
                     {item.status !== 'cancelled' ? (
-                      <ServiceIconButton
-                        icon="close-circle-outline"
-                        label={`${copy.cancelItem}: ${item.nameSnapshot}`}
-                        onPress={() => onCancel(item)}
-                      />
+                      <View style={{ flexDirection: 'row' }}>
+                        <ServiceIconButton
+                          icon="create-outline"
+                          label={`${copy.editNote}: ${item.nameSnapshot}`}
+                          onPress={() => onEditNote(item)}
+                        />
+                        <ServiceIconButton
+                          icon="close-circle-outline"
+                          label={`${copy.cancelItem}: ${item.nameSnapshot}`}
+                          onPress={() => onCancel(item)}
+                        />
+                      </View>
                     ) : (
                       <ServiceStatusPill label={copy.cancelled} tone="error" />
                     )}
                   </View>
                 </View>
+                {conflict ? (
+                  <View
+                    accessibilityRole="alert"
+                    style={{
+                      backgroundColor: tokens.colors.accentSoft,
+                      borderColor: tokens.colors.warning,
+                      borderRadius: tokens.radius.medium,
+                      borderWidth: 1,
+                      marginTop: tokens.space.sm,
+                      padding: tokens.space.sm,
+                    }}
+                  >
+                    <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+                      {copy.noteConflict}
+                    </Text>
+                    <Text
+                      style={[
+                        tokens.typography.caption,
+                        { color: tokens.colors.textSubtle, marginTop: tokens.space.xxs },
+                      ]}
+                    >
+                      {copy.yourNote}: {conflictNote(conflict.localPayload) || copy.noNote}
+                    </Text>
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                      {copy.cloudNote}: {conflictNote(conflict.serverPayload) || copy.noNote}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: tokens.space.xs,
+                        marginTop: tokens.space.sm,
+                      }}
+                    >
+                      <ServiceButton
+                        label={copy.useCloudNote}
+                        onPress={() => onResolveConflict(item, conflict, 'server')}
+                        variant="outline"
+                      />
+                      <ServiceButton
+                        label={copy.keepMyNote}
+                        onPress={() => onResolveConflict(item, conflict, 'local')}
+                      />
+                    </View>
+                  </View>
+                ) : null}
               </View>
             );
           }}
@@ -1124,6 +1363,46 @@ function NameCheckModal({
   );
 }
 
+function ItemNoteModal({
+  item,
+  note,
+  copy,
+  onChange,
+  onClose,
+  onConfirm,
+}: {
+  readonly item?: OrderItem;
+  readonly note: string;
+  readonly copy: WorkspaceCopy;
+  readonly onChange: (value: string) => void;
+  readonly onClose: () => void;
+  readonly onConfirm: () => void;
+}) {
+  return (
+    <WorkspaceModal
+      title={`${copy.editNote}: ${item?.nameSnapshot ?? ''}`}
+      visible={Boolean(item)}
+      onClose={onClose}
+    >
+      <ServiceTextField
+        autoFocus
+        label={copy.note}
+        maxLength={500}
+        multiline
+        onChangeText={onChange}
+        placeholder={copy.noteExample}
+        value={note}
+      />
+      <ModalActions
+        cancel={copy.close}
+        confirm={copy.saveNote}
+        onCancel={onClose}
+        onConfirm={onConfirm}
+      />
+    </WorkspaceModal>
+  );
+}
+
 function ProductConfigurationModal({
   product,
   selected,
@@ -1389,6 +1668,12 @@ function timeOnly(timestamp: string, language: Language): string {
   ).format(new Date(timestamp));
 }
 
+function conflictNote(value: unknown): string | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const note = (value as { readonly note?: unknown }).note;
+  return typeof note === 'string' && note.trim() ? note.trim() : undefined;
+}
+
 interface WorkspaceCopy {
   readonly loading: string;
   readonly loadFailed: string;
@@ -1435,6 +1720,17 @@ interface WorkspaceCopy {
   readonly askManagerReasons: string;
   readonly manager: string;
   readonly localSafe: string;
+  readonly incomingItems: string;
+  readonly editNote: string;
+  readonly saveNote: string;
+  readonly noteSaveFailed: string;
+  readonly noteConflict: string;
+  readonly yourNote: string;
+  readonly cloudNote: string;
+  readonly noNote: string;
+  readonly useCloudNote: string;
+  readonly keepMyNote: string;
+  readonly conflictFailed: string;
 }
 
 function workspaceCopy(language: Language): WorkspaceCopy {
@@ -1485,6 +1781,17 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       askManagerReasons: 'Yöneticiden şube için iptal nedenlerini tanımlamasını isteyin.',
       manager: 'Yönetici',
       localSafe: 'Bulut yenilenemedi. Yerel siparişler cihazda güvende.',
+      incomingItems: 'yeni ürün ekledi',
+      editNote: 'Notu düzenle',
+      saveNote: 'Notu kaydet',
+      noteSaveFailed: 'Not kaydedilemedi',
+      noteConflict: 'Not başka bir cihazda değişti',
+      yourNote: 'Senin notun',
+      cloudNote: 'Buluttaki not',
+      noNote: 'Not yok',
+      useCloudNote: 'Buluttakini kullan',
+      keepMyNote: 'Benim notumu uygula',
+      conflictFailed: 'Çakışma çözülemedi',
     };
   }
   if (language === 'bg') {
@@ -1534,6 +1841,17 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       askManagerReasons: 'Помолете управителя да добави причини за този обект.',
       manager: 'Управител',
       localSafe: 'Облакът не се обнови. Локалните поръчки са запазени.',
+      incomingItems: 'добави нови продукта',
+      editNote: 'Редактирай бележката',
+      saveNote: 'Запази бележката',
+      noteSaveFailed: 'Бележката не е запазена',
+      noteConflict: 'Бележката е променена на друго устройство',
+      yourNote: 'Вашата бележка',
+      cloudNote: 'Бележката в облака',
+      noNote: 'Няма бележка',
+      useCloudNote: 'Използвай облачната',
+      keepMyNote: 'Запази моята',
+      conflictFailed: 'Конфликтът не е разрешен',
     };
   }
   return {
@@ -1582,5 +1900,16 @@ function workspaceCopy(language: Language): WorkspaceCopy {
     askManagerReasons: 'Ask a manager to configure cancellation reasons for this branch.',
     manager: 'Manager',
     localSafe: 'Cloud refresh failed. Local orders remain safe on this device.',
+    incomingItems: 'added new items',
+    editNote: 'Edit note',
+    saveNote: 'Save note',
+    noteSaveFailed: 'Note could not be saved',
+    noteConflict: 'The note changed on another device',
+    yourNote: 'Your note',
+    cloudNote: 'Cloud note',
+    noNote: 'No note',
+    useCloudNote: 'Use cloud note',
+    keepMyNote: 'Keep my note',
+    conflictFailed: 'Conflict could not be resolved',
   };
 }

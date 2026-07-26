@@ -20,7 +20,13 @@ import {
 } from '../../../domain';
 import { RepositoryScope } from '../../../data/contracts';
 import { InMemoryLocalDatabase } from '../../../data/testing/inMemoryLocalDatabase';
-import { cancelOrderItem, sendOrderBatch } from '../orderCommands';
+import { MutationPushError, OutboxPushWorker } from '../../../data/sync';
+import {
+  cancelOrderItem,
+  resolveOrderItemNoteConflict,
+  sendOrderBatch,
+  updateOrderItemNote,
+} from '../orderCommands';
 import { loadTableWorkspace } from '../workspaceModel';
 
 const organizationId = toDomainId<OrganizationId>('organization-1');
@@ -174,6 +180,101 @@ describe('rapid table workspace commands', () => {
       repository: 'orderItems',
     });
   });
+
+  it('retains both note versions and lets the waiter explicitly keep the local note', async () => {
+    const database = new InMemoryLocalDatabase();
+    await seedWorkspace(database);
+    const workspace = await loadTableWorkspace(database, scope, tableId);
+    const sent = await sendOrderBatch({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      tableId,
+      checkName: 'Hesap 1',
+      lines: [
+        {
+          id: 'draft-1',
+          product: workspace!.products[0],
+          quantity: 1,
+          selectedOptionIds: [optionId],
+        },
+      ],
+      now: new Date(timestamp),
+      createUuid: sequentialIds(),
+    });
+    await markPendingApplied(database);
+    const localEdit = await updateOrderItemNote({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: { ...sent.items[0], syncStatus: 'synced', serverVersion: 1 },
+      note: 'Benim notum',
+      now: new Date('2026-07-26T18:02:00.000Z'),
+      createUuid: () => 'note-mutation',
+    });
+    const worker = new OutboxPushWorker(
+      database,
+      {
+        push: jest.fn().mockRejectedValue(
+          new MutationPushError('version_conflict', {
+            code: 'P0001',
+            serverVersion: 2,
+            serverPayload: {
+              id: localEdit.id,
+              note: 'Diğer garsonun notu',
+              updated_at: '2026-07-26T18:01:00.000Z',
+              updated_by: 'waiter-2',
+              version: 2,
+            },
+          }),
+        ),
+      },
+      { now: () => new Date('2026-07-26T18:03:00.000Z') },
+    );
+
+    await expect(worker.runOnce(scope)).resolves.toMatchObject({ conflicted: 1 });
+    const [conflict] = await database.syncState.listConflicts(scope, ['unresolved']);
+    expect(conflict).toMatchObject({
+      entityId: localEdit.id,
+      localPayload: { note: 'Benim notum' },
+      serverPayload: { note: 'Diğer garsonun notu' },
+      serverVersion: 2,
+    });
+
+    const resolved = await resolveOrderItemNoteConflict({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: localEdit,
+      conflict,
+      resolution: 'local',
+      now: new Date('2026-07-26T18:04:00.000Z'),
+      createUuid: () => 'note-retry',
+    });
+
+    expect(resolved).toMatchObject({
+      note: 'Benim notum',
+      serverVersion: 2,
+      syncStatus: 'pending',
+      version: 3,
+    });
+    await expect(database.outbox.getById(conflict.mutationId)).resolves.toMatchObject({
+      status: 'resolved',
+    });
+    expect(await database.outbox.list(scope, ['pending'])).toEqual([
+      expect.objectContaining({
+        baseVersion: 2,
+        id: 'note-retry',
+        payload: { note: 'Benim notum' },
+      }),
+    ]);
+    await expect(database.syncState.getConflict(conflict.id)).resolves.toMatchObject({
+      status: 'resolved_local',
+    });
+  });
 });
 
 async function seedWorkspace(database: InMemoryLocalDatabase): Promise<void> {
@@ -271,4 +372,13 @@ async function seedWorkspace(database: InMemoryLocalDatabase): Promise<void> {
 function sequentialIds(): () => string {
   let index = 0;
   return () => `generated-${++index}`;
+}
+
+async function markPendingApplied(database: InMemoryLocalDatabase): Promise<void> {
+  await database.transaction(async (transaction) => {
+    const [claimed] = await transaction.outbox.claimNext(scope, 1, timestamp);
+    await transaction.outbox.transition(claimed.id, 'processing', 'applied', {
+      appliedAt: timestamp,
+    });
+  });
 }

@@ -16,6 +16,7 @@ import {
   LocalDatabase,
   RepositoryName,
   RepositoryScope,
+  SyncConflict,
 } from '../../data/contracts';
 
 export interface WorkspaceModifierGroup extends ModifierGroup {
@@ -36,6 +37,7 @@ export interface TableWorkspaceSnapshot {
   readonly categories: readonly MenuCategory[];
   readonly products: readonly WorkspaceProduct[];
   readonly cancellationReasons: readonly CancellationReason[];
+  readonly conflicts: readonly SyncConflict[];
 }
 
 export async function loadTableWorkspace(
@@ -54,6 +56,7 @@ export async function loadTableWorkspace(
     modifierGroups,
     modifierOptions,
     cancellationReasons,
+    conflicts,
   ] = await Promise.all([
     database.repository('restaurantTables').getById(scope, tableId),
     loadAll(database, 'tableSessions', scope),
@@ -65,6 +68,7 @@ export async function loadTableWorkspace(
     loadAll(database, 'modifierGroups', scope),
     loadAll(database, 'modifierOptions', scope),
     loadAll(database, 'cancellationReasons', scope),
+    database.syncState.listConflicts(scope, ['unresolved']),
   ]);
   if (!table || table.deletedAt) return null;
 
@@ -129,6 +133,7 @@ export async function loadTableWorkspace(
     cancellationReasons: cancellationReasons
       .filter((reason) => reason.isActive && !reason.deletedAt)
       .sort((left, right) => left.name.localeCompare(right.name)),
+    conflicts: conflicts.filter((conflict) => itemIds.has(conflict.entityId as OrderItem['id'])),
   };
 }
 

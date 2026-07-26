@@ -11,7 +11,7 @@ import React, {
 import { AppState, Platform } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { BranchId, OrganizationId, toDomainId } from '../../domain';
-import { Database, getSupabaseClient } from '../../services/supabase';
+import { ActiveSessionParticipantRow, Database, getSupabaseClient } from '../../services/supabase';
 import { LocalDatabase, RepositoryScope } from '../contracts';
 import {
   OutboxPushWorker,
@@ -39,6 +39,9 @@ export interface OrderiaDataContextValue {
   readonly errorMessage?: string;
   refresh(): Promise<void>;
   resolveProfileNames(userIds: readonly string[]): Promise<Readonly<Record<string, string>>>;
+  resolveActiveParticipants(
+    tableSessionId: string,
+  ): Promise<readonly ActiveSessionParticipantRow[]>;
 }
 
 interface OrderiaDataProviderProps {
@@ -204,6 +207,22 @@ export function OrderiaDataProvider({
     [client],
   );
 
+  const resolveActiveParticipants = useCallback(
+    async (tableSessionId: string): Promise<readonly ActiveSessionParticipantRow[]> => {
+      if (!client || !scope) return [];
+      const activeSince = new Date(Date.now() - 15 * 60_000).toISOString();
+      const { data, error } = await client.rpc('list_active_session_participants', {
+        requested_organization_id: scope.organizationId,
+        requested_branch_id: scope.branchId,
+        requested_table_session_id: tableSessionId,
+        active_since: activeSince,
+      });
+      if (error) throw error;
+      return data;
+    },
+    [client, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -293,6 +312,7 @@ export function OrderiaDataProvider({
       errorMessage,
       refresh,
       resolveProfileNames,
+      resolveActiveParticipants,
     }),
     [
       client,
@@ -301,6 +321,7 @@ export function OrderiaDataProvider({
       lastSuccessfulSyncAt,
       readiness,
       refresh,
+      resolveActiveParticipants,
       resolveProfileNames,
       revision,
       scope,

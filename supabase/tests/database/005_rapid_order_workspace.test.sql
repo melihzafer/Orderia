@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(21);
 
 insert into auth.users (
   instance_id,
@@ -17,19 +17,33 @@ insert into auth.users (
   created_at,
   updated_at
 )
-values (
-  '00000000-0000-0000-0000-000000000000',
-  '15000000-0000-4000-8000-000000000001',
-  'authenticated',
-  'authenticated',
-  'workspace-waiter@example.com',
-  '',
-  now(),
-  '{"provider":"email","providers":["email"]}',
-  '{"display_name":"Workspace Waiter"}',
-  now(),
-  now()
-);
+values
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '15000000-0000-4000-8000-000000000001',
+    'authenticated',
+    'authenticated',
+    'workspace-waiter@example.com',
+    '',
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"display_name":"Workspace Waiter"}',
+    now(),
+    now()
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '15000000-0000-4000-8000-000000000002',
+    'authenticated',
+    'authenticated',
+    'second-waiter@example.com',
+    '',
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"display_name":"Second Waiter"}',
+    now(),
+    now()
+  );
 
 insert into public.organizations (id, name, slug, plan, status)
 values (
@@ -76,13 +90,21 @@ insert into public.memberships (
   role,
   status
 )
-values (
-  '25000000-0000-4000-8000-000000000001',
-  '35000000-0000-4000-8000-000000000001',
-  '15000000-0000-4000-8000-000000000001',
-  'waiter',
-  'active'
-);
+values
+  (
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '15000000-0000-4000-8000-000000000001',
+    'waiter',
+    'active'
+  ),
+  (
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '15000000-0000-4000-8000-000000000002',
+    'waiter',
+    'active'
+  );
 
 insert into public.devices (
   id,
@@ -92,14 +114,23 @@ insert into public.devices (
   platform,
   app_version
 )
-values (
-  '45000000-0000-4000-8000-000000000001',
-  '25000000-0000-4000-8000-000000000001',
-  '35000000-0000-4000-8000-000000000001',
-  '15000000-0000-4000-8000-000000000001',
-  'android',
-  '2.0.0'
-);
+values
+  (
+    '45000000-0000-4000-8000-000000000001',
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '15000000-0000-4000-8000-000000000001',
+    'android',
+    '2.0.0'
+  ),
+  (
+    '45000000-0000-4000-8000-000000000002',
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '15000000-0000-4000-8000-000000000002',
+    'ios_web',
+    '2.0.0'
+  );
 
 insert into public.halls (
   id,
@@ -264,12 +295,11 @@ set local role authenticated;
 
 select is(
   (
-    public.apply_client_mutation(
+    public.apply_concurrent_order_batch(
       '25000000-0000-4000-8000-000000000001',
       '35000000-0000-4000-8000-000000000001',
       '45000000-0000-4000-8000-000000000001',
       'c5000000-0000-4000-8000-000000000001',
-      'orders.send_batch',
       'd5000000-0000-4000-8000-000000000001',
       jsonb_build_object(
         'tableId', '65000000-0000-4000-8000-000000000001',
@@ -301,8 +331,7 @@ select is(
             )
           )
         )
-      ),
-      null
+      )
     ) ->> 'status'
   ),
   'applied',
@@ -357,12 +386,11 @@ select is(
 
 select is(
   (
-    public.apply_client_mutation(
+    public.apply_concurrent_order_batch(
       '25000000-0000-4000-8000-000000000001',
       '35000000-0000-4000-8000-000000000001',
       '45000000-0000-4000-8000-000000000001',
       'c5000000-0000-4000-8000-000000000001',
-      'orders.send_batch',
       'd5000000-0000-4000-8000-000000000001',
       jsonb_build_object(
         'tableId', '65000000-0000-4000-8000-000000000001',
@@ -394,8 +422,7 @@ select is(
             )
           )
         )
-      ),
-      null
+      )
     ) ->> 'itemCount'
   ),
   '1',
@@ -453,6 +480,159 @@ select throws_ok(
   '22023',
   'order_item_cannot_be_cancelled',
   'a completed cancellation cannot be silently overwritten'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000002","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select is(
+  (
+    public.apply_concurrent_order_batch(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000002',
+      'c5000000-0000-4000-8000-000000000011',
+      'd5000000-0000-4000-8000-000000000101',
+      jsonb_build_object(
+        'tableId', '65000000-0000-4000-8000-000000000001',
+        'session', jsonb_build_object(
+          'id', 'e5000000-0000-4000-8000-000000000101',
+          'openedAt', now()
+        ),
+        'check', jsonb_build_object(
+          'id', 'f5000000-0000-4000-8000-000000000101',
+          'name', 'Pencere tarafı',
+          'openedAt', now()
+        ),
+        'batch', jsonb_build_object(
+          'id', 'd5000000-0000-4000-8000-000000000101',
+          'createdAt', now()
+        ),
+        'items', jsonb_build_array(
+          jsonb_build_object(
+            'id', 'd5000000-0000-4000-8000-000000000111',
+            'menuItemId', '85000000-0000-4000-8000-000000000001',
+            'menuItemVersion', 1,
+            'quantity', 1,
+            'note', 'İkinci cihaz',
+            'modifierSelections', jsonb_build_array(
+              jsonb_build_object(
+                'id', 'd5000000-0000-4000-8000-000000000121',
+                'optionId', 'a5000000-0000-4000-8000-000000000001'
+              )
+            )
+          )
+        )
+      )
+    ) ->> 'status'
+  ),
+  'applied',
+  'a second offline waiter append is preserved'
+);
+select is(
+  (
+    select count(*)
+    from public.table_sessions
+    where table_id = '65000000-0000-4000-8000-000000000001'
+      and status in ('open', 'payment_pending')
+  ),
+  1::bigint,
+  'concurrent appends converge on one active table session'
+);
+select is(
+  (
+    select status
+    from public.table_sessions
+    where id = 'e5000000-0000-4000-8000-000000000101'
+  ),
+  'voided',
+  'the second device provisional session is explicitly reconciled'
+);
+select is(
+  (
+    select status
+    from public.checks
+    where id = 'f5000000-0000-4000-8000-000000000101'
+  ),
+  'voided',
+  'the duplicate provisional named check is explicitly reconciled'
+);
+select ok(
+  (
+    select
+      table_session_id = 'e5000000-0000-4000-8000-000000000001'
+      and check_id = 'f5000000-0000-4000-8000-000000000001'
+    from public.order_items
+    where id = 'd5000000-0000-4000-8000-000000000111'
+  ),
+  'the second waiter item points at the canonical session and check'
+);
+select is(
+  (
+    select count(*)
+    from public.list_active_session_participants(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      'e5000000-0000-4000-8000-000000000001',
+      now() - interval '1 minute'
+    )
+  ),
+  2::bigint,
+  'both recent waiter participants are visible'
+);
+select is(
+  (
+    public.apply_order_item_note_command(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000002',
+      'c5000000-0000-4000-8000-000000000012',
+      'd5000000-0000-4000-8000-000000000111',
+      '{"note":"İkinci garsonun notu"}',
+      1
+    ) ->> 'serverVersion'
+  ),
+  '2',
+  'a matching note base version updates the server item'
+);
+
+reset role;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select throws_ok(
+  $$
+    select public.apply_order_item_note_command(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000013',
+      'd5000000-0000-4000-8000-000000000111',
+      '{"note":"Eski cihazın notu"}',
+      1
+    )
+  $$,
+  'P0001',
+  'version_conflict',
+  'a stale note edit is surfaced as a conflict instead of overwriting'
+);
+select is(
+  (
+    select note
+    from public.order_items
+    where id = 'd5000000-0000-4000-8000-000000000111'
+  ),
+  'İkinci garsonun notu',
+  'the winning note remains unchanged after the stale edit'
 );
 
 select * from finish();

@@ -21,25 +21,98 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async push(mutation: OutboxMutation): Promise<MutationPushResult> {
-    const { data, error } = await this.client.rpc('apply_client_mutation', {
-      requested_organization_id: mutation.organizationId,
-      requested_branch_id: mutation.branchId,
-      requested_device_id: mutation.deviceId,
-      requested_client_mutation_id: mutation.clientMutationId,
-      requested_mutation_type: remoteMutationType(mutation),
-      requested_entity_id: mutation.entityId,
-      requested_payload: remotePayload(mutation),
-      requested_base_version: mutation.baseVersion ?? null,
-    });
+    const payload = remotePayload(mutation);
+    const { data, error } =
+      mutation.repository === 'orderBatches' && mutation.operation === 'command'
+        ? await this.client.rpc('apply_concurrent_order_batch', {
+            requested_organization_id: mutation.organizationId,
+            requested_branch_id: mutation.branchId,
+            requested_device_id: mutation.deviceId,
+            requested_client_mutation_id: mutation.clientMutationId,
+            requested_entity_id: mutation.entityId,
+            requested_payload: payload,
+          })
+        : mutation.repository === 'orderItems' &&
+            mutation.operation === 'command' &&
+            isNoteMutation(payload)
+          ? await this.client.rpc('apply_order_item_note_command', {
+              requested_organization_id: mutation.organizationId,
+              requested_branch_id: mutation.branchId,
+              requested_device_id: mutation.deviceId,
+              requested_client_mutation_id: mutation.clientMutationId,
+              requested_entity_id: mutation.entityId,
+              requested_payload: payload,
+              requested_base_version: mutation.baseVersion ?? null,
+            })
+          : await this.client.rpc('apply_client_mutation', {
+              requested_organization_id: mutation.organizationId,
+              requested_branch_id: mutation.branchId,
+              requested_device_id: mutation.deviceId,
+              requested_client_mutation_id: mutation.clientMutationId,
+              requested_mutation_type: remoteMutationType(mutation),
+              requested_entity_id: mutation.entityId,
+              requested_payload: payload,
+              requested_base_version: mutation.baseVersion ?? null,
+            });
 
     if (error) {
-      throw new MutationPushError(error.message, {
-        code: error.code,
-      });
+      throw new MutationPushError(error.message, parseRemoteErrorDetails(error));
     }
 
     return parseMutationResult(data);
   }
+}
+
+function isNoteMutation(payload: Json): boolean {
+  return (
+    typeof payload === 'object' &&
+    payload !== null &&
+    !Array.isArray(payload) &&
+    Object.prototype.hasOwnProperty.call(payload, 'note')
+  );
+}
+
+function parseRemoteErrorDetails(error: { readonly code?: string; readonly details?: string }): {
+  readonly code?: string;
+  readonly serverVersion?: number;
+  readonly serverPayload?: JsonValue;
+} {
+  const base = error.code ? { code: error.code } : {};
+  if (!error.details) return base;
+
+  try {
+    const parsed = JSON.parse(error.details) as {
+      readonly serverVersion?: unknown;
+      readonly serverPayload?: unknown;
+    };
+    return {
+      ...base,
+      ...(typeof parsed.serverVersion === 'number' && Number.isSafeInteger(parsed.serverVersion)
+        ? { serverVersion: parsed.serverVersion }
+        : {}),
+      ...(isJsonValue(parsed.serverPayload)
+        ? { serverPayload: parsed.serverPayload as JsonValue }
+        : {}),
+    };
+  } catch {
+    return base;
+  }
+}
+
+function isJsonValue(value: unknown): boolean {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return true;
+  }
+  if (Array.isArray(value)) return value.every(isJsonValue);
+  if (typeof value === 'object') {
+    return Object.values(value).every(isJsonValue);
+  }
+  return false;
 }
 
 function remoteMutationType(mutation: OutboxMutation): string {

@@ -4,6 +4,7 @@ import {
   Check,
   CheckId,
   DeviceId,
+  JsonValue,
   MenuItemId,
   ModifierOptionId,
   MutationId,
@@ -20,7 +21,7 @@ import {
   assertOrderItemTransition,
   toDomainId,
 } from '../../domain';
-import { LocalDatabase, OutboxMutation, RepositoryScope } from '../../data/contracts';
+import { LocalDatabase, OutboxMutation, RepositoryScope, SyncConflict } from '../../data/contracts';
 import { WorkspaceProduct } from './workspaceModel';
 
 export interface DraftOrderLine {
@@ -240,6 +241,170 @@ export async function cancelOrderItem(input: CancelOrderItemInput): Promise<Orde
   });
 }
 
+export interface UpdateOrderItemNoteInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly item: OrderItem;
+  readonly note?: string;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+export async function updateOrderItemNote(input: UpdateOrderItemNoteInput): Promise<OrderItem> {
+  if (input.item.status === 'cancelled') {
+    throw new Error('A cancelled order item note cannot be edited');
+  }
+  const updatedAt = (input.now ?? new Date()).toISOString();
+  const mutationId = toDomainId<MutationId>((input.createUuid ?? defaultUuid)());
+  const note = input.note?.trim() || undefined;
+  const updated: OrderItem = {
+    ...input.item,
+    note,
+    updatedBy: input.actorUserId,
+    updatedAt,
+    version: input.item.version + 1,
+    syncStatus: 'pending',
+    clientMutationId: mutationId,
+  };
+  const mutation: OutboxMutation = {
+    id: mutationId,
+    ...input.scope,
+    deviceId: input.deviceId,
+    clientMutationId: mutationId,
+    idempotencyKey: `${input.deviceId}:${mutationId}`,
+    repository: 'orderItems',
+    entityId: input.item.id,
+    operation: 'command',
+    payload: { note: note ?? null },
+    baseVersion: input.item.serverVersion ?? input.item.version,
+    status: 'pending',
+    attemptCount: 0,
+    createdAt: updatedAt,
+  };
+
+  return input.database.transaction(async (transaction) => {
+    const stored = await transaction.repository('orderItems').put(input.scope, updated, {
+      expectedVersion: input.item.version,
+    });
+    await transaction.outbox.enqueue(mutation);
+    return stored;
+  });
+}
+
+export type NoteConflictResolution = 'server' | 'local';
+
+export interface ResolveOrderItemNoteConflictInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly item: OrderItem;
+  readonly conflict: SyncConflict;
+  readonly resolution: NoteConflictResolution;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+export async function resolveOrderItemNoteConflict(
+  input: ResolveOrderItemNoteConflictInput,
+): Promise<OrderItem> {
+  if (
+    input.conflict.repository !== 'orderItems' ||
+    input.conflict.entityId !== input.item.id ||
+    input.conflict.status !== 'unresolved'
+  ) {
+    throw new Error('The note conflict does not belong to this order item');
+  }
+  const occurredAt = (input.now ?? new Date()).toISOString();
+  const oldMutation = await input.database.outbox.getById(input.conflict.mutationId);
+  if (!oldMutation || oldMutation.status !== 'conflict') {
+    throw new Error('The conflicted note mutation is no longer available');
+  }
+  const serverPayload = jsonRecord(input.conflict.serverPayload);
+  const serverNote =
+    typeof serverPayload.note === 'string' && serverPayload.note.trim()
+      ? serverPayload.note.trim()
+      : undefined;
+  const serverUpdatedAt =
+    typeof serverPayload.updated_at === 'string' ? serverPayload.updated_at : occurredAt;
+  const serverUpdatedBy =
+    typeof serverPayload.updated_by === 'string'
+      ? toDomainId<UserId>(serverPayload.updated_by)
+      : input.item.updatedBy;
+  const localPayload = jsonRecord(input.conflict.localPayload);
+  const localNote =
+    typeof localPayload.note === 'string' && localPayload.note.trim()
+      ? localPayload.note.trim()
+      : undefined;
+  const resolvedEntity: OrderItem =
+    input.resolution === 'server'
+      ? {
+          ...input.item,
+          note: serverNote,
+          updatedAt: serverUpdatedAt,
+          updatedBy: serverUpdatedBy,
+          version: input.conflict.serverVersion,
+          syncStatus: 'synced',
+          serverVersion: input.conflict.serverVersion,
+          lastSyncedAt: occurredAt,
+        }
+      : {
+          ...input.item,
+          note: localNote,
+          updatedAt: occurredAt,
+          updatedBy: input.actorUserId,
+          version: input.conflict.serverVersion + 1,
+          syncStatus: 'pending',
+          serverVersion: input.conflict.serverVersion,
+        };
+  const retryMutationId =
+    input.resolution === 'local'
+      ? toDomainId<MutationId>((input.createUuid ?? defaultUuid)())
+      : undefined;
+  const retryMutation: OutboxMutation | undefined = retryMutationId
+    ? {
+        id: retryMutationId,
+        ...input.scope,
+        deviceId: input.deviceId,
+        clientMutationId: retryMutationId,
+        idempotencyKey: `${input.deviceId}:${retryMutationId}`,
+        repository: 'orderItems',
+        entityId: input.item.id,
+        operation: 'command',
+        payload: { note: localNote ?? null },
+        baseVersion: input.conflict.serverVersion,
+        status: 'pending',
+        attemptCount: 0,
+        createdAt: occurredAt,
+      }
+    : undefined;
+
+  return input.database.transaction(async (transaction) => {
+    await transaction.outbox.transition(input.conflict.mutationId, 'conflict', 'resolved', {
+      appliedAt: occurredAt,
+      errorCode: undefined,
+      errorMessage: undefined,
+    });
+    await transaction.syncState.resolveConflict(
+      input.conflict.id,
+      input.resolution === 'server' ? 'resolved_server' : 'resolved_local',
+      occurredAt,
+      {
+        note: input.resolution === 'server' ? (serverNote ?? null) : (localNote ?? null),
+      },
+    );
+    const stored = await transaction
+      .repository('orderItems')
+      .put(input.scope, resolvedEntity, { expectedVersion: input.item.version });
+    if (retryMutation) {
+      await transaction.outbox.enqueue(retryMutation);
+    }
+    return stored;
+  });
+}
+
 function validateDraft(input: SendOrderBatchInput): void {
   if (input.lines.length === 0) {
     throw new OrderDraftValidationError('At least one product is required', 'EMPTY_BATCH');
@@ -357,6 +522,13 @@ function defaultUuid(): string {
   const value = uuid.v4();
   if (typeof value !== 'string') {
     throw new Error('UUID generation failed');
+  }
+  return value;
+}
+
+function jsonRecord(value: JsonValue): Readonly<Record<string, JsonValue>> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return {};
   }
   return value;
 }

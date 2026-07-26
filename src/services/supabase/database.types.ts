@@ -83,6 +83,13 @@ export type PulledSyncEventRow = Omit<SyncEventRow, 'sequence'> & {
   cursor: string;
 };
 
+export type ActiveSessionParticipantRow = {
+  user_id: string;
+  display_name: string;
+  first_action_at: string;
+  last_action_at: string;
+};
+
 type TableDefinition<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -138,6 +145,38 @@ export type Database = {
           requested_base_version: number | null;
         };
         Returns: Json;
+      };
+      apply_concurrent_order_batch: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+        };
+        Returns: Json;
+      };
+      apply_order_item_note_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      list_active_session_participants: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_table_session_id: string;
+          active_since?: string;
+        };
+        Returns: ActiveSessionParticipantRow[];
       };
       pull_sync_events: {
         Args: {

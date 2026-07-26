@@ -1,9 +1,13 @@
+import { JsonValue } from '../../domain';
+
 export type MutationErrorDisposition = 'retryable' | 'conflict' | 'rejected';
 
 export interface MutationErrorDetails {
   readonly code?: string;
   readonly status?: number;
   readonly retryAfterMs?: number;
+  readonly serverVersion?: number;
+  readonly serverPayload?: JsonValue;
   readonly message: string;
 }
 
