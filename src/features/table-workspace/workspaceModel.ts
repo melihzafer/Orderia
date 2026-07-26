@@ -32,7 +32,10 @@ export interface WorkspaceProduct extends MenuItem {
 
 export interface TableWorkspaceSnapshot {
   readonly table: RestaurantTable;
+  readonly tables: readonly RestaurantTable[];
+  readonly activeSessions: readonly TableSession[];
   readonly session?: TableSession;
+  readonly sessionChecks: readonly Check[];
   readonly checks: readonly Check[];
   readonly orderItems: readonly OrderItem[];
   readonly orderItemModifiers: readonly OrderItemModifier[];
@@ -50,7 +53,7 @@ export async function loadTableWorkspace(
   tableId: RestaurantTableId,
 ): Promise<TableWorkspaceSnapshot | null> {
   const [
-    table,
+    restaurantTables,
     sessions,
     checks,
     orderItems,
@@ -64,7 +67,7 @@ export async function loadTableWorkspace(
     cancellationReasons,
     conflicts,
   ] = await Promise.all([
-    database.repository('restaurantTables').getById(scope, tableId),
+    loadAll(database, 'restaurantTables', scope),
     loadAll(database, 'tableSessions', scope),
     loadAll(database, 'checks', scope),
     loadAll(database, 'orderItems', scope),
@@ -78,26 +81,25 @@ export async function loadTableWorkspace(
     loadAll(database, 'cancellationReasons', scope),
     database.syncState.listConflicts(scope, ['unresolved']),
   ]);
+  const table = restaurantTables.find((candidate) => candidate.id === tableId);
   if (!table || table.deletedAt) return null;
 
-  const session = sessions
-    .filter(
-      (candidate) =>
-        candidate.tableId === table.id &&
-        (candidate.status === 'open' || candidate.status === 'payment_pending') &&
-        !candidate.deletedAt,
-    )
+  const activeSessions = sessions.filter(
+    (candidate) =>
+      (candidate.status === 'open' || candidate.status === 'payment_pending') &&
+      !candidate.deletedAt,
+  );
+  const session = activeSessions
+    .filter((candidate) => candidate.tableId === table.id)
     .sort((left, right) => right.openedAt.localeCompare(left.openedAt))[0];
-  const activeChecks = session
+  const sessionChecks = session
     ? checks
-        .filter(
-          (check) =>
-            check.tableSessionId === session.id &&
-            (check.status === 'open' || check.status === 'partially_paid') &&
-            !check.deletedAt,
-        )
+        .filter((check) => check.tableSessionId === session.id && !check.deletedAt)
         .sort((left, right) => left.openedAt.localeCompare(right.openedAt))
     : [];
+  const activeChecks = sessionChecks.filter(
+    (check) => check.status === 'open' || check.status === 'partially_paid',
+  );
   const checkIds = new Set(activeChecks.map((check) => check.id));
   const activeItems = orderItems
     .filter((item) => checkIds.has(item.checkId) && !item.deletedAt)
@@ -136,7 +138,14 @@ export async function loadTableWorkspace(
 
   return {
     table,
+    tables: restaurantTables
+      .filter((candidate) => !candidate.deletedAt)
+      .sort(
+        (left, right) => left.sortOrder - right.sortOrder || left.label.localeCompare(right.label),
+      ),
+    activeSessions,
     ...(session ? { session } : {}),
+    sessionChecks,
     checks: activeChecks,
     orderItems: activeItems,
     orderItemModifiers: orderItemModifiers.filter((modifier) => itemIds.has(modifier.orderItemId)),

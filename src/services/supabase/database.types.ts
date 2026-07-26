@@ -188,6 +188,16 @@ export type Database = {
         };
         Returns: ActiveSessionParticipantRow[];
       };
+      transfer_or_merge_table_session: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_payload: Json;
+        };
+        Returns: Json;
+      };
       pull_sync_events: {
         Args: {
           requested_organization_id: string;

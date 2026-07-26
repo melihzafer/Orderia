@@ -52,6 +52,11 @@ import {
   updateOrderItemNote,
 } from '../features/table-workspace';
 import { ConfirmCheckPaymentsCommand, PaymentSheet } from '../features/payments';
+import {
+  TableOperationSheet,
+  TableOperationTarget,
+  TransferTableSessionCommand,
+} from '../features/table-operations';
 import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { createTextMatcher } from '../utils/searchUtils';
@@ -111,6 +116,7 @@ function CloudTableWorkspace({
     revision,
     scope,
     sync,
+    transferOrMergeTableSession,
   } = useOrderiaData();
   const [snapshot, setSnapshot] = useState<TableWorkspaceSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,6 +140,8 @@ function CloudTableWorkspace({
   const [editingNote, setEditingNote] = useState('');
   const [payingCheck, setPayingCheck] = useState<Check>();
   const [paymentBusy, setPaymentBusy] = useState(false);
+  const [showTableOperation, setShowTableOperation] = useState(false);
+  const [tableOperationBusy, setTableOperationBusy] = useState(false);
   const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
   const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
   const [incomingMessage, setIncomingMessage] = useState<string>();
@@ -280,6 +288,18 @@ function CloudTableWorkspace({
         0,
       )
     : 0;
+  const tableOperationTargets: readonly TableOperationTarget[] = snapshot
+    ? snapshot.tables
+        .filter((candidate) => candidate.id !== snapshot.table.id)
+        .map((table) => ({
+          table,
+          ...(snapshot.activeSessions.find((session) => session.tableId === table.id)
+            ? {
+                session: snapshot.activeSessions.find((session) => session.tableId === table.id)!,
+              }
+            : {}),
+        }))
+    : [];
 
   const rememberDraft = (next: readonly DraftOrderLine[]) => {
     setUndoStack((history) => [...history.slice(-19), draft]);
@@ -464,6 +484,41 @@ function CloudTableWorkspace({
     }
   };
 
+  const performTableOperation = async (
+    command: TransferTableSessionCommand,
+    target: TableOperationTarget,
+  ) => {
+    setTableOperationBusy(true);
+    try {
+      const clientMutationId = toDomainId<MutationId>(secureUuid());
+      const result = await transferOrMergeTableSession(deviceId, clientMutationId, command);
+      setShowTableOperation(false);
+      Alert.alert(
+        result.mode === 'merged' ? copy.tablesMerged : copy.tableMoved,
+        `${snapshot?.table.label ?? ''} → ${target.table.label}`,
+      );
+      navigation.replace('TableDetail', { tableId: target.table.id });
+    } catch (error) {
+      const message =
+        error instanceof Error &&
+        [
+          'source_session_changed',
+          'source_session_version_conflict',
+          'target_session_changed',
+          'target_session_version_conflict',
+        ].includes(error.message)
+          ? copy.tableChanged
+          : error instanceof Error
+            ? error.message
+            : copy.tryAgain;
+      await refresh().catch(() => undefined);
+      await reload();
+      throw new Error(message);
+    } finally {
+      setTableOperationBusy(false);
+    }
+  };
+
   const toggleFavorite = (productId: string) => {
     const next = favoriteIds.includes(productId)
       ? favoriteIds.filter((id) => id !== productId)
@@ -521,7 +576,9 @@ function CloudTableWorkspace({
       style={{ flex: 1, backgroundColor: tokens.colors.bg }}
     >
       <WorkspaceHeader
+        moveLabel={copy.moveTable}
         onBack={navigation.goBack}
+        onMove={snapshot.session ? () => setShowTableOperation(true) : undefined}
         participantNames={participantNames}
         syncLabel={
           sync.online
@@ -740,6 +797,22 @@ function CloudTableWorkspace({
           visible
         />
       ) : null}
+      {showTableOperation && snapshot.session ? (
+        <TableOperationSheet
+          busy={tableOperationBusy}
+          language={language}
+          onClose={() => {
+            if (!tableOperationBusy) setShowTableOperation(false);
+          }}
+          onConfirm={performTableOperation}
+          online={sync.online}
+          sourceChecks={snapshot.sessionChecks}
+          sourceSession={snapshot.session}
+          sourceTable={snapshot.table}
+          targets={tableOperationTargets}
+          visible
+        />
+      ) : null}
 
       {runtimeError ? (
         <View
@@ -766,12 +839,16 @@ function WorkspaceHeader({
   syncTone,
   participantNames,
   onBack,
+  onMove,
+  moveLabel,
 }: {
   readonly tableLabel: string;
   readonly syncLabel: string;
   readonly syncTone: 'success' | 'warning' | 'error';
   readonly participantNames: readonly string[];
   readonly onBack: () => void;
+  readonly onMove?: () => void;
+  readonly moveLabel: string;
 }) {
   const { tokens } = useTheme();
   return (
@@ -793,6 +870,9 @@ function WorkspaceHeader({
         >
           {tableLabel}
         </Text>
+        {onMove ? (
+          <ServiceIconButton icon="swap-horizontal-outline" label={moveLabel} onPress={onMove} />
+        ) : null}
         <ServiceStatusPill label={syncLabel} tone={syncTone} />
       </View>
       {participantNames.length > 0 ? (
@@ -1802,6 +1882,10 @@ interface WorkspaceCopy {
   readonly paymentFailed: string;
   readonly paymentChanged: string;
   readonly remaining: string;
+  readonly moveTable: string;
+  readonly tableMoved: string;
+  readonly tablesMerged: string;
+  readonly tableChanged: string;
 }
 
 function workspaceCopy(language: Language): WorkspaceCopy {
@@ -1868,6 +1952,10 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       paymentFailed: 'Ödeme kesinleştirilemedi',
       paymentChanged: 'Hesap başka bir cihazda değişti. Güncel kalan tutarı kontrol edin.',
       remaining: 'Kalan',
+      moveTable: 'Masayı taşı veya birleştir',
+      tableMoved: 'Masa taşındı',
+      tablesMerged: 'Masalar birleştirildi',
+      tableChanged: 'Kaynak veya hedef masa başka bir cihazda değişti. Güncel durumu kontrol edin.',
     };
   }
   if (language === 'bg') {
@@ -1933,6 +2021,10 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       paymentFailed: 'Плащането не бе потвърдено',
       paymentChanged: 'Сметката е променена на друго устройство. Проверете остатъка.',
       remaining: 'Остава',
+      moveTable: 'Премести или обедини маса',
+      tableMoved: 'Масата е преместена',
+      tablesMerged: 'Масите са обединени',
+      tableChanged: 'Източникът или целта са променени. Проверете текущото състояние.',
     };
   }
   return {
@@ -1997,5 +2089,9 @@ function workspaceCopy(language: Language): WorkspaceCopy {
     paymentFailed: 'Payment could not be confirmed',
     paymentChanged: 'The check changed on another device. Review the current balance.',
     remaining: 'Remaining',
+    moveTable: 'Move or merge table',
+    tableMoved: 'Table moved',
+    tablesMerged: 'Tables merged',
+    tableChanged: 'The source or target changed on another device. Review the current state.',
   };
 }

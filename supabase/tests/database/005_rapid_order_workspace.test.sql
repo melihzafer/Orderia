@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(34);
+select plan(49);
 
 insert into auth.users (
   instance_id,
@@ -156,15 +156,34 @@ insert into public.restaurant_tables (
   sequence_number,
   sort_order
 )
-values (
-  '65000000-0000-4000-8000-000000000001',
-  '25000000-0000-4000-8000-000000000001',
-  '35000000-0000-4000-8000-000000000001',
-  '55000000-0000-4000-8000-000000000001',
-  'Masa 4',
-  4,
-  4
-);
+values
+  (
+    '65000000-0000-4000-8000-000000000001',
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '55000000-0000-4000-8000-000000000001',
+    'Masa 4',
+    4,
+    4
+  ),
+  (
+    '65000000-0000-4000-8000-000000000002',
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '55000000-0000-4000-8000-000000000001',
+    'Masa 5',
+    5,
+    5
+  ),
+  (
+    '65000000-0000-4000-8000-000000000003',
+    '25000000-0000-4000-8000-000000000001',
+    '35000000-0000-4000-8000-000000000001',
+    '55000000-0000-4000-8000-000000000001',
+    'Masa 6',
+    6,
+    6
+  );
 
 insert into public.menu_categories (
   id,
@@ -871,6 +890,230 @@ select is(
   ),
   3::bigint,
   'an idempotent replay never duplicates allocations'
+);
+
+select is(
+  (
+    public.transfer_or_merge_table_session(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000031',
+      jsonb_build_object(
+        'sourceSessionId', 'e5000000-0000-4000-8000-000000000001',
+        'targetTableId', '65000000-0000-4000-8000-000000000002',
+        'expectedSourceVersion', 3,
+        'expectedTargetVersion', null
+      )
+    ) ->> 'mode'
+  ),
+  'moved',
+  'an active session moves atomically to an empty table'
+);
+select is(
+  (
+    select table_id
+    from public.table_sessions
+    where id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  '65000000-0000-4000-8000-000000000002'::uuid,
+  'the moved session now belongs to the target table'
+);
+select is(
+  (
+    select transferred_from_table_id
+    from public.table_sessions
+    where id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  '65000000-0000-4000-8000-000000000001'::uuid,
+  'the moved session retains its source table attribution'
+);
+select is(
+  (
+    select original_table_id
+    from public.order_items
+    where id = 'd5000000-0000-4000-8000-000000000111'
+  ),
+  '65000000-0000-4000-8000-000000000001'::uuid,
+  'moving a table never rewrites the order item origin'
+);
+select is(
+  (
+    public.transfer_or_merge_table_session(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000031',
+      jsonb_build_object(
+        'sourceSessionId', 'e5000000-0000-4000-8000-000000000001',
+        'targetTableId', '65000000-0000-4000-8000-000000000002',
+        'expectedSourceVersion', 3,
+        'expectedTargetVersion', null
+      )
+    ) ->> 'mode'
+  ),
+  'moved',
+  'an exact empty-table transfer replay returns its stored result'
+);
+
+reset role;
+insert into public.table_sessions (
+  id,
+  organization_id,
+  branch_id,
+  table_id,
+  status,
+  opened_by,
+  opened_at,
+  version
+)
+values (
+  'e5000000-0000-4000-8000-000000000301',
+  '25000000-0000-4000-8000-000000000001',
+  '35000000-0000-4000-8000-000000000001',
+  '65000000-0000-4000-8000-000000000003',
+  'open',
+  '15000000-0000-4000-8000-000000000001',
+  now(),
+  1
+);
+insert into public.checks (
+  id,
+  organization_id,
+  branch_id,
+  table_session_id,
+  name,
+  status,
+  opened_by,
+  opened_at,
+  version
+)
+values (
+  'f5000000-0000-4000-8000-000000000301',
+  '25000000-0000-4000-8000-000000000001',
+  '35000000-0000-4000-8000-000000000001',
+  'e5000000-0000-4000-8000-000000000301',
+  'Bahçe',
+  'open',
+  '15000000-0000-4000-8000-000000000001',
+  now(),
+  1
+);
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"15000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
+
+select is(
+  (
+    public.transfer_or_merge_table_session(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000032',
+      jsonb_build_object(
+        'sourceSessionId', 'e5000000-0000-4000-8000-000000000001',
+        'targetTableId', '65000000-0000-4000-8000-000000000003',
+        'expectedSourceVersion', 4,
+        'expectedTargetVersion', 1
+      )
+    ) ->> 'mode'
+  ),
+  'merged',
+  'a transfer into an occupied table merges the sessions atomically'
+);
+select is(
+  (
+    select status
+    from public.table_sessions
+    where id = 'e5000000-0000-4000-8000-000000000001'
+  ),
+  'voided',
+  'the merged source session is retained as an explicit voided record'
+);
+select is(
+  (
+    select count(*)
+    from public.table_sessions
+    where table_id = '65000000-0000-4000-8000-000000000003'
+      and status in ('open', 'payment_pending')
+  ),
+  1::bigint,
+  'the occupied target keeps exactly one active canonical session'
+);
+select is(
+  (
+    select count(*)
+    from public.checks
+    where table_session_id = 'e5000000-0000-4000-8000-000000000301'
+  ),
+  2::bigint,
+  'all named checks are preserved separately on the merged session'
+);
+select is(
+  (
+    select string_agg(name, ',' order by name)
+    from public.checks
+    where table_session_id = 'e5000000-0000-4000-8000-000000000301'
+  ),
+  'Bahçe,Pencere tarafı',
+  'a merge preserves every check name without mixing their contents'
+);
+select is(
+  (
+    select table_session_id
+    from public.order_items
+    where id = 'd5000000-0000-4000-8000-000000000111'
+  ),
+  'e5000000-0000-4000-8000-000000000301'::uuid,
+  'order items follow their named check to the canonical target session'
+);
+select is(
+  (
+    select original_table_session_id
+    from public.order_items
+    where id = 'd5000000-0000-4000-8000-000000000111'
+  ),
+  'e5000000-0000-4000-8000-000000000001'::uuid,
+  'merged order items retain their immutable original session'
+);
+select is(
+  (
+    select count(*)
+    from public.payments
+    where table_session_id = 'e5000000-0000-4000-8000-000000000301'
+  ),
+  3::bigint,
+  'the confirmed payment ledger follows the merged checks'
+);
+select is(
+  (
+    public.transfer_or_merge_table_session(
+      '25000000-0000-4000-8000-000000000001',
+      '35000000-0000-4000-8000-000000000001',
+      '45000000-0000-4000-8000-000000000001',
+      'c5000000-0000-4000-8000-000000000032',
+      jsonb_build_object(
+        'sourceSessionId', 'e5000000-0000-4000-8000-000000000001',
+        'targetTableId', '65000000-0000-4000-8000-000000000003',
+        'expectedSourceVersion', 4,
+        'expectedTargetVersion', 1
+      )
+    ) ->> 'mode'
+  ),
+  'merged',
+  'an exact occupied-table merge replay returns its stored result'
+);
+select is(
+  (
+    select count(*)
+    from public.checks
+    where table_session_id = 'e5000000-0000-4000-8000-000000000301'
+  ),
+  2::bigint,
+  'an idempotent merge replay never duplicates named checks'
 );
 
 select * from finish();

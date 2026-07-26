@@ -16,6 +16,11 @@ import {
   ConfirmCheckPaymentsResult,
   SupabasePaymentGateway,
 } from '../../features/payments';
+import {
+  SupabaseTableOperationGateway,
+  TransferTableSessionCommand,
+  TransferTableSessionResult,
+} from '../../features/table-operations';
 import { ActiveSessionParticipantRow, Database, getSupabaseClient } from '../../services/supabase';
 import { LocalDatabase, RepositoryScope } from '../contracts';
 import {
@@ -52,6 +57,11 @@ export interface OrderiaDataContextValue {
     clientMutationId: MutationId,
     command: ConfirmCheckPaymentsCommand,
   ): Promise<ConfirmCheckPaymentsResult>;
+  transferOrMergeTableSession(
+    deviceId: DeviceId,
+    clientMutationId: MutationId,
+    command: TransferTableSessionCommand,
+  ): Promise<TransferTableSessionResult>;
 }
 
 interface OrderiaDataProviderProps {
@@ -252,6 +262,25 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const transferOrMergeTableSession = useCallback(
+    async (
+      deviceId: DeviceId,
+      clientMutationId: MutationId,
+      command: TransferTableSessionCommand,
+    ): Promise<TransferTableSessionResult> => {
+      if (!client || !scope) throw new Error('Cloud table operation service is unavailable');
+      const result = await new SupabaseTableOperationGateway(client).transferOrMerge({
+        ...scope,
+        deviceId,
+        clientMutationId,
+        command,
+      });
+      await refresh();
+      return result;
+    },
+    [client, refresh, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -343,6 +372,7 @@ export function OrderiaDataProvider({
       resolveProfileNames,
       resolveActiveParticipants,
       confirmCheckPayments,
+      transferOrMergeTableSession,
     }),
     [
       client,
@@ -357,6 +387,7 @@ export function OrderiaDataProvider({
       revision,
       scope,
       sync,
+      transferOrMergeTableSession,
     ],
   );
 
