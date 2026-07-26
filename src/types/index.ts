@@ -61,6 +61,8 @@ export interface TicketLine {
   priceSnapshot: number; // preserved even if menu item price changes
   quantity: number;
   note?: string;
+  createdByName?: string;
+  cancellationReason?: string;
   status: 'pending' | 'delivered' | 'paid' | 'cancelled';
   createdAt: number;
   updatedAt: number;
@@ -132,4 +134,5 @@ export interface AddTicketLineData {
   menuItemId: string;
   quantity: number;
   note?: string;
+  createdByName?: string;
 }

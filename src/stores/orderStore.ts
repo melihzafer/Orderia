@@ -235,6 +235,7 @@ export const useOrderStore = create<OrderState>()(
           priceSnapshot: menuItem.price,
           quantity: data.quantity,
           note: data.note,
+          createdByName: data.createdByName,
           status: 'pending',
           createdAt: Date.now(),
           updatedAt: Date.now(),

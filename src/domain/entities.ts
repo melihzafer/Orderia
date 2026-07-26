@@ -10,6 +10,8 @@ import {
   MembershipId,
   MenuCategoryId,
   MenuItemId,
+  ModifierGroupId,
+  ModifierOptionId,
   MutationId,
   OrderBatchId,
   OrderItemId,
@@ -41,6 +43,7 @@ export type OrderItemStatus = 'draft' | 'ordered' | 'served' | 'cancelled';
 export type PaymentMethod = 'cash' | 'card' | 'mixed_adjustment';
 export type PaymentStatus = 'pending' | 'confirmed' | 'failed' | 'voided';
 export type ReceiptStatus = 'issued' | 'adjusted' | 'voided';
+export type ModifierSelectionType = 'single' | 'multiple';
 
 export interface VersionedMetadata {
   readonly version: number;
@@ -126,6 +129,56 @@ export interface RestaurantTable extends TenantScope, VersionedMetadata, SyncMet
   readonly sequenceNumber: number;
   readonly capacity?: number;
   readonly sortOrder: number;
+}
+
+export interface MenuCategory extends TenantScope, VersionedMetadata, SyncMetadata {
+  readonly id: MenuCategoryId;
+  readonly name: string;
+  readonly sortOrder: number;
+  readonly isActive: boolean;
+  readonly createdBy: UserId;
+}
+
+export interface MenuItem extends TenantScope, VersionedMetadata, SyncMetadata {
+  readonly id: MenuItemId;
+  readonly categoryId: MenuCategoryId;
+  readonly name: string;
+  readonly description?: string;
+  readonly priceMinor: number;
+  readonly currencyCode: CurrencyCode;
+  readonly taxRateBasisPoints: number;
+  readonly isActive: boolean;
+  readonly isAvailable: boolean;
+  readonly prepTimeMinutes?: number;
+  readonly createdBy: UserId;
+}
+
+export interface ModifierGroup extends TenantScope, VersionedMetadata, SyncMetadata {
+  readonly id: ModifierGroupId;
+  readonly menuItemId: MenuItemId;
+  readonly name: string;
+  readonly selectionType: ModifierSelectionType;
+  readonly minimumChoices: number;
+  readonly maximumChoices?: number;
+  readonly isRequired: boolean;
+  readonly sortOrder: number;
+}
+
+export interface ModifierOption extends TenantScope, VersionedMetadata, SyncMetadata {
+  readonly id: ModifierOptionId;
+  readonly modifierGroupId: ModifierGroupId;
+  readonly name: string;
+  readonly priceDeltaMinor: number;
+  readonly isDefault: boolean;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
+}
+
+export interface CancellationReason extends TenantScope, VersionedMetadata, SyncMetadata {
+  readonly id: CancellationReasonId;
+  readonly name: string;
+  readonly requiresManager: boolean;
+  readonly isActive: boolean;
 }
 
 export interface TableSession extends TenantScope, VersionedMetadata, SyncMetadata {

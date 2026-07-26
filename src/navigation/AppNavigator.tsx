@@ -166,6 +166,7 @@ export default function AppNavigator() {
           component={TableDetailScreen}
           name="TableDetail"
           options={{
+            headerShown: false,
             presentation: 'modal',
             title: t.tableDetail,
           }}

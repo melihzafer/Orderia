@@ -52,6 +52,14 @@ function remoteMutationType(mutation: OutboxMutation): string {
     return 'halls.put';
   }
 
+  if (mutation.repository === 'orderBatches' && mutation.operation === 'command') {
+    return 'orders.send_batch';
+  }
+
+  if (mutation.repository === 'orderItems' && mutation.operation === 'command') {
+    return 'order_items.cancel';
+  }
+
   throw new MutationPushError(
     `No remote mutation handler for ${mutation.repository}.${mutation.operation}`,
     { code: 'UNSUPPORTED_LOCAL_MUTATION' },

@@ -19,6 +19,11 @@ type SyncableRecord = {
 const remoteRepositories: Readonly<Record<string, RepositoryName>> = {
   halls: 'halls',
   restaurant_tables: 'restaurantTables',
+  menu_categories: 'menuCategories',
+  menu_items: 'menuItems',
+  modifier_groups: 'modifierGroups',
+  modifier_options: 'modifierOptions',
+  cancellation_reasons: 'cancellationReasons',
   table_sessions: 'tableSessions',
   checks: 'checks',
   order_batches: 'orderBatches',

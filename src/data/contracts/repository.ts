@@ -1,10 +1,15 @@
 import {
   AuditEvent,
   Branch,
+  CancellationReason,
   Check,
   Device,
   Hall,
   Membership,
+  MenuCategory,
+  MenuItem,
+  ModifierGroup,
+  ModifierOption,
   OrderBatch,
   OrderItem,
   OrderItemModifier,
@@ -24,6 +29,11 @@ export interface DomainEntityMap {
   readonly devices: Device;
   readonly halls: Hall;
   readonly restaurantTables: RestaurantTable;
+  readonly menuCategories: MenuCategory;
+  readonly menuItems: MenuItem;
+  readonly modifierGroups: ModifierGroup;
+  readonly modifierOptions: ModifierOption;
+  readonly cancellationReasons: CancellationReason;
   readonly tableSessions: TableSession;
   readonly checks: Check;
   readonly orderBatches: OrderBatch;

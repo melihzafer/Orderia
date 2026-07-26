@@ -172,7 +172,7 @@ select is(
       and not trigger_definition.tgisinternal
       and trigger_definition.tgname like '%_capture_sync_event'
   ),
-  10::bigint,
+  15::bigint,
   'all currently supported repositories emit durable sync events'
 );
 select ok(

@@ -1,1308 +1,1586 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
+  ActivityIndicator,
   Alert,
+  FlatList,
   Modal,
-  TextInput,
+  Pressable,
   ScrollView,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import BottomSheet from '@gorhom/bottom-sheet';
-
+import LegacyTableDetailScreen from './LegacyTableDetailScreen';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useLocalization } from '../i18n';
-import { useLayoutStore, useOrderStore, useMenuStore } from '../stores';
+import { useOrderiaData } from '../data/runtime';
 import {
-  PrimaryButton,
-  SurfaceCard,
-  StatusBadge,
-  DeliveryTimePicker,
-  ActionSheet,
-  ActionSheetAction,
-  ProductSearch,
-  NotificationCenter,
-} from '../components';
+  ServiceButton,
+  ServiceEmptyState,
+  ServiceIconButton,
+  ServiceStatusPill,
+  ServiceSurface,
+  ServiceTextField,
+  useAdaptiveLayout,
+} from '../design-system';
+import {
+  CancellationReason,
+  Check,
+  CheckId,
+  DeviceId,
+  ModifierOptionId,
+  OrderItem,
+  RestaurantTableId,
+  UserId,
+  calculateOrderItemTotal,
+  toDomainId,
+} from '../domain';
+import {
+  DraftOrderLine,
+  TableWorkspaceSnapshot,
+  WorkspaceProduct,
+  cancelOrderItem,
+  loadTableWorkspace,
+  loadWorkspacePreferences,
+  saveWorkspacePreferences,
+  sendOrderBatch,
+} from '../features/table-workspace';
+import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { MenuItem, Ticket, TicketLine, OrderStatus, PaymentInfo } from '../types';
-import { generateOrderBillPDF } from '../utils/pdfGenerator';
-import { generateAndShareBill } from '../utils/exportUtils';
-import { orderTimerService } from '../services';
+import { createTextMatcher } from '../utils/searchUtils';
 
-type TableDetailRouteProp = RouteProp<RootStackParamList, 'TableDetail'>;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type TableDetailRoute = RouteProp<RootStackParamList, 'TableDetail'>;
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
+type PaletteScope = 'all' | 'favorites' | 'recent' | string;
 
 export default function TableDetailScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<TableDetailRouteProp>();
-  const { colors } = useTheme();
-  const { t, formatPrice } = useLocalization();
-  const { menuItems } = useMenuStore();
+  const data = useOrderiaData();
+  const auth = useAuth();
 
-  const { tableId } = route.params;
+  if (
+    data.mode !== 'cloud' ||
+    !data.database ||
+    !data.scope ||
+    !auth.session ||
+    !auth.currentDeviceId
+  ) {
+    return <LegacyTableDetailScreen />;
+  }
 
-  const { getTable } = useLayoutStore();
+  return (
+    <CloudTableWorkspace
+      actorUserId={toDomainId<UserId>(auth.session.user.id)}
+      deviceId={toDomainId<DeviceId>(auth.currentDeviceId)}
+      isManager={auth.activeMembership?.role === 'manager'}
+      preferencesKey={`${data.scope.organizationId}.${data.scope.branchId}.${auth.session.user.id}`}
+    />
+  );
+}
+
+function CloudTableWorkspace({
+  actorUserId,
+  deviceId,
+  isManager,
+  preferencesKey,
+}: {
+  readonly actorUserId: UserId;
+  readonly deviceId: DeviceId;
+  readonly isManager: boolean;
+  readonly preferencesKey: string;
+}) {
+  const navigation = useNavigation<Navigation>();
+  const route = useRoute<TableDetailRoute>();
+  const { language } = useLocalization();
+  const copy = workspaceCopy(language);
+  const { tokens } = useTheme();
+  const layout = useAdaptiveLayout();
   const {
-    openTable,
-    getTicketsByTable,
-    getTicketTotal,
-    addTicketLine,
-    updateLineQuantity,
-    updateLineStatus,
-    updateTicketLine,
-    markAllDelivered,
-    payTicket,
-    updateTicketName,
-    deleteTicket,
-  } = useOrderStore();
-  const { getCategoriesWithItems } = useMenuStore();
+    database,
+    errorMessage: runtimeError,
+    refresh,
+    resolveProfileNames,
+    revision,
+    scope,
+    sync,
+  } = useOrderiaData();
+  const [snapshot, setSnapshot] = useState<TableWorkspaceSnapshot | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string>();
+  const [selectedCheckId, setSelectedCheckId] = useState<CheckId>();
+  const [pendingCheckName, setPendingCheckName] = useState('');
+  const [showCheckModal, setShowCheckModal] = useState(false);
+  const [checkNameInput, setCheckNameInput] = useState('');
+  const [draft, setDraft] = useState<readonly DraftOrderLine[]>([]);
+  const [undoStack, setUndoStack] = useState<readonly (readonly DraftOrderLine[])[]>([]);
+  const [paletteScope, setPaletteScope] = useState<PaletteScope>('all');
+  const [query, setQuery] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<readonly string[]>([]);
+  const [showPaletteOnCompact, setShowPaletteOnCompact] = useState(true);
+  const [configuring, setConfiguring] = useState<WorkspaceProduct>();
+  const [configuration, setConfiguration] = useState<readonly ModifierOptionId[]>([]);
+  const [configurationNote, setConfigurationNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [cancellingItem, setCancellingItem] = useState<OrderItem>();
+  const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
+  const tableId = toDomainId<RestaurantTableId>(route.params.tableId);
 
-  const [showMenuModal, setShowMenuModal] = useState(false);
-  const [showProductSearch, setShowProductSearch] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [note, setNote] = useState('');
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
-  const [showTicketNameModal, setShowTicketNameModal] = useState(false);
-  const [newTicketName, setNewTicketName] = useState('');
-  const [editingTicketId, setEditingTicketId] = useState<string | null>(null); // Track which ticket we're editing
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showDeliveryTimer, setShowDeliveryTimer] = useState(false);
-  const [amountReceived, setAmountReceived] = useState('');
-
-  // Action sheet for ticket actions
-  const [showTicketActions, setShowTicketActions] = useState(false);
-  const [selectedTicketForActions, setSelectedTicketForActions] = useState<Ticket | null>(null);
-  const actionSheetRef = useRef<BottomSheet>(null);
-
-  // Note editing modal
-  const [showNoteModal, setShowNoteModal] = useState(false);
-  const [selectedLineForNote, setSelectedLineForNote] = useState<TicketLine | null>(null);
-  const [editingNote, setEditingNote] = useState('');
-
-  const table = getTable(tableId);
-  const tickets = getTicketsByTable(tableId) || [];
-  const selectedTicket = selectedTicketId ? tickets.find((t) => t.id === selectedTicketId) : null;
-  const categoriesWithItems = getCategoriesWithItems();
-
-  // Extract all menu items and categories for ProductSearch
-  const allMenuItems = useMemo(() => {
-    return categoriesWithItems.flatMap((cat) => cat.items.filter((item) => item.isActive));
-  }, [categoriesWithItems]);
-
-  const allCategories = useMemo(() => {
-    return categoriesWithItems.map((cat) => ({ id: cat.id, name: cat.name, order: 0 }));
-  }, [categoriesWithItems]);
+  const reload = useCallback(async () => {
+    if (!database || !scope) return;
+    try {
+      const next = await loadTableWorkspace(database, scope, tableId);
+      setSnapshot(next);
+      setLoadError(next ? undefined : copy.tableNotFound);
+    } catch {
+      setLoadError(copy.loadFailed);
+    } finally {
+      setLoading(false);
+    }
+  }, [copy.loadFailed, copy.tableNotFound, database, scope, tableId]);
 
   useEffect(() => {
-    if (categoriesWithItems.length > 0 && !selectedCategory) {
-      setSelectedCategory(categoriesWithItems[0].id);
-    }
-  }, [categoriesWithItems, selectedCategory]);
+    void reload();
+  }, [reload, revision]);
 
   useEffect(() => {
-    // Auto-select the first ticket if none is selected
-    if (tickets.length > 0 && !selectedTicketId) {
-      setSelectedTicketId(tickets[0].id);
-    }
-  }, [tickets, selectedTicketId]);
-
-  const handleOpenTable = (ticketName?: string) => {
-    const newTicket = openTable(tableId, ticketName);
-    setSelectedTicketId(newTicket.id);
-  };
-
-  const handleAddItem = (menuItem: MenuItem) => {
-    if (!selectedTicket) {
-      const newTicket = openTable(tableId);
-      setSelectedTicketId(newTicket.id);
-      const ticketLine = addTicketLine(newTicket.id, {
-        menuItemId: menuItem.id,
-        quantity: 1,
-        note: note.trim() || undefined,
-      });
-
-      // Start timer for this item if it has estimated preparation time
-      if (menuItem.prepTime && menuItem.prepTime > 0) {
-        orderTimerService.startTimer(newTicket.id, ticketLine.id, menuItem.name, menuItem.prepTime);
+    void loadWorkspacePreferences(preferencesKey).then((preferences) => {
+      setFavoriteIds(preferences.favoriteProductIds);
+      if (preferences.selectedCategoryId) {
+        setPaletteScope(preferences.selectedCategoryId);
       }
-    } else {
-      const ticketLine = addTicketLine(selectedTicket.id, {
-        menuItemId: menuItem.id,
-        quantity: 1,
-        note: note.trim() || undefined,
-      });
-
-      // Start timer for this item if it has estimated preparation time
-      if (menuItem.prepTime && menuItem.prepTime > 0) {
-        orderTimerService.startTimer(
-          selectedTicket.id,
-          ticketLine.id,
-          menuItem.name,
-          menuItem.prepTime,
-        );
-      }
-    }
-    setNote('');
-    setShowMenuModal(false);
-    setShowProductSearch(false);
-  };
-
-  const handleProductSelect = (menuItem: MenuItem) => {
-    handleAddItem(menuItem);
-  };
-
-  const handleQuantityChange = (line: TicketLine, delta: number) => {
-    if (!selectedTicket) return;
-    const newQuantity = line.quantity + delta;
-    updateLineQuantity(selectedTicket.id, line.id, newQuantity);
-  };
-
-  const handleStatusChange = (line: TicketLine, status: OrderStatus) => {
-    if (!selectedTicket) return;
-    updateLineStatus(selectedTicket.id, line.id, status);
-  };
-
-  const handleMarkAllDelivered = () => {
-    if (!selectedTicket) return;
-    Alert.alert(t.deliverAllOrders, t.deliverAllConfirm, [
-      { text: t.cancel, style: 'cancel' },
-      { text: t.deliver, onPress: () => markAllDelivered(selectedTicket.id) },
-    ]);
-  };
-
-  const handleLineNoteLongPress = (line: TicketLine) => {
-    setSelectedLineForNote(line);
-    setEditingNote(line.note || '');
-    setShowNoteModal(true);
-  };
-
-  const handleSaveNote = () => {
-    if (!selectedLineForNote || !selectedTicket) return;
-
-    updateTicketLine(selectedTicket.id, selectedLineForNote.id, {
-      note: editingNote.trim(),
     });
+  }, [preferencesKey]);
 
-    setShowNoteModal(false);
-    setSelectedLineForNote(null);
-    setEditingNote('');
+  useEffect(() => {
+    if (!snapshot) return;
+    const ids = [...new Set(snapshot.orderItems.map((item) => item.createdBy))];
+    void resolveProfileNames(ids)
+      .then(setWaiterNames)
+      .catch(() => setWaiterNames({}));
+  }, [resolveProfileNames, snapshot]);
+
+  useEffect(() => {
+    if (!snapshot || selectedCheckId || pendingCheckName) return;
+    if (snapshot.checks[0]) setSelectedCheckId(snapshot.checks[0].id);
+  }, [pendingCheckName, selectedCheckId, snapshot]);
+
+  const recentProductIds = useMemo(
+    () =>
+      snapshot
+        ? [
+            ...new Set(
+              [...snapshot.orderItems]
+                .reverse()
+                .map((item) => item.menuItemId)
+                .filter((id): id is NonNullable<typeof id> => Boolean(id)),
+            ),
+          ].slice(0, 12)
+        : [],
+    [snapshot],
+  );
+  const filteredProducts = useMemo(() => {
+    if (!snapshot) return [];
+    const matcher = createTextMatcher(query);
+    return snapshot.products.filter((product) => {
+      if (paletteScope === 'favorites' && !favoriteIds.includes(product.id)) return false;
+      if (paletteScope === 'recent' && !recentProductIds.includes(product.id)) return false;
+      if (
+        paletteScope !== 'all' &&
+        paletteScope !== 'favorites' &&
+        paletteScope !== 'recent' &&
+        product.categoryId !== paletteScope
+      ) {
+        return false;
+      }
+      return matcher(`${product.name} ${product.categoryName} ${product.description ?? ''}`);
+    });
+  }, [favoriteIds, paletteScope, query, recentProductIds, snapshot]);
+  const selectedCheck = snapshot?.checks.find((check) => check.id === selectedCheckId);
+  const visibleItems =
+    snapshot?.orderItems.filter((item) => item.checkId === selectedCheckId) ?? [];
+  const draftTotal = draft.reduce((total, line) => total + draftLineTotal(line), 0);
+  const checkTotal = snapshot
+    ? visibleItems.reduce(
+        (total, item) =>
+          total +
+          calculateOrderItemTotal(
+            item,
+            snapshot.orderItemModifiers.filter((modifier) => modifier.orderItemId === item.id),
+          ),
+        0,
+      )
+    : 0;
+
+  const rememberDraft = (next: readonly DraftOrderLine[]) => {
+    setUndoStack((history) => [...history.slice(-19), draft]);
+    setDraft(next);
   };
 
-  const handleCancelNoteEdit = () => {
-    setShowNoteModal(false);
-    setSelectedLineForNote(null);
-    setEditingNote('');
-  };
-
-  const handleDeleteTicket = (ticketId: string) => {
-    const ticketToDelete = tickets.find((t) => t.id === ticketId);
-    const ticketName = ticketToDelete?.name || `Order ${tickets.indexOf(ticketToDelete!) + 1}`;
-
-    Alert.alert(
-      t.deleteOrder || 'Delete Order',
-      `${t.deleteOrderConfirm || 'Are you sure you want to delete'} "${ticketName}"? ${t.deleteOrderWarning || 'This action cannot be undone.'}`,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.delete || 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteTicket(ticketId);
-            // If we're deleting the currently selected ticket, select another one
-            if (selectedTicketId === ticketId) {
-              const remainingTickets = tickets.filter((t) => t.id !== ticketId);
-              if (remainingTickets.length > 0) {
-                setSelectedTicketId(remainingTickets[0].id);
-              } else {
-                setSelectedTicketId(null);
-              }
-            }
-          },
-        },
-      ],
+  const addProduct = (product: WorkspaceProduct, configure = false) => {
+    const defaults = product.modifierGroups.flatMap((group) =>
+      group.options.filter((option) => option.isDefault).map((option) => option.id),
     );
-  };
-
-  const handlePayPress = () => {
-    if (!selectedTicket) return;
-    setAmountReceived(''); // Reset amount for new payment
-    setShowPaymentModal(true);
-  };
-
-  const handleConfirmPayment = (paymentMethod: 'cash' | 'card') => {
-    if (!selectedTicket) return;
-
-    const total = getTicketTotal(selectedTicket.id);
-    console.log(total);
-    const received = parseFloat(amountReceived.replace(',', '.')) || 0;
-    const receivedInCents = received * 100; // Convert to cents to match total
-    const change = paymentMethod === 'cash' ? Math.max(0, receivedInCents - total) : 0;
-
-    if (paymentMethod === 'cash' && receivedInCents < total) {
-      Alert.alert(t.error, t.insufficientFunds);
+    const needsChoice = product.modifierGroups.some((group) => {
+      const selectedCount = defaults.filter((id) =>
+        group.options.some((option) => option.id === id),
+      ).length;
+      return selectedCount < Math.max(group.minimumChoices, group.isRequired ? 1 : 0);
+    });
+    if (configure || needsChoice) {
+      setConfiguring(product);
+      setConfiguration(defaults);
+      setConfigurationNote('');
       return;
     }
+    appendDraft(product, defaults, '');
+  };
 
-    const paymentInfo: PaymentInfo = {
-      total,
-      amountReceived: receivedInCents,
-      change,
-      paymentMethod,
-    };
-
-    // This object is created before the ticket is closed and moved to history
-    const ticketToPrint: Ticket = {
-      ...selectedTicket,
-      paymentInfo,
-      status: 'paid',
-      closedAt: Date.now(),
-    };
-
-    payTicket(selectedTicket.id, paymentInfo);
-    setShowPaymentModal(false);
-
-    // Ask if customer wants order bill
-    Alert.alert(t.orderBill, t.askForOrderBill, [
-      { text: t.no, style: 'cancel', onPress: () => navigation.goBack() },
-      {
-        text: t.yes,
-        onPress: async () => {
-          try {
-            await generateAndShareBill(ticketToPrint, t, (amount) => formatPrice(amount));
-            Alert.alert(t.success, t.orderBillGenerated, [
-              { text: t.ok, onPress: () => navigation.goBack() },
-            ]);
-          } catch (error) {
-            Alert.alert(t.error, t.genericError);
-            navigation.goBack();
-          }
+  const appendDraft = (
+    product: WorkspaceProduct,
+    optionIds: readonly ModifierOptionId[],
+    note: string,
+  ) => {
+    const normalizedNote = note.trim();
+    const signature = [...optionIds].sort().join(':');
+    const existingIndex = draft.findIndex(
+      (line) =>
+        line.product.id === product.id &&
+        [...line.selectedOptionIds].sort().join(':') === signature &&
+        (line.note ?? '') === normalizedNote,
+    );
+    if (existingIndex >= 0) {
+      rememberDraft(
+        draft.map((line, index) =>
+          index === existingIndex ? { ...line, quantity: line.quantity + 1 } : line,
+        ),
+      );
+    } else {
+      rememberDraft([
+        ...draft,
+        {
+          id: `${product.id}.${Date.now()}.${draft.length}`,
+          product,
+          quantity: 1,
+          ...(normalizedNote ? { note: normalizedNote } : {}),
+          selectedOptionIds: optionIds,
         },
-      },
-    ]);
-  };
-
-  const handlePayment = () => {
-    if (!selectedTicket) return;
-    const total = getTicketTotal(selectedTicket.id);
-    Alert.alert(t.makePayment, `${t.total}: ${formatPrice(total)}\n\n${t.paymentConfirm}`, [
-      { text: t.cancel, style: 'cancel' },
-      {
-        text: t.makePayment,
-        onPress: () => {
-          // Store ticket data before payment (since it will be moved to history)
-          const ticketForBill = {
-            ...selectedTicket,
-            status: 'paid' as const,
-            lines: selectedTicket.lines
-              .filter((line: TicketLine) => line.status !== 'cancelled') // Exclude cancelled items from bill
-              .map((line: TicketLine) => ({
-                ...line,
-                status: 'paid' as const,
-              })),
-          };
-
-          payTicket(selectedTicket.id);
-
-          // Ask if customer wants order bill
-          setTimeout(() => {
-            Alert.alert(t.orderBill, t.askForOrderBill, [
-              { text: t.no, style: 'cancel', onPress: () => navigation.goBack() },
-              {
-                text: t.yes,
-                onPress: async () => {
-                  try {
-                    const displayName = table?.label || `${t.table} ${table?.seq}`;
-                    await generateOrderBillPDF({
-                      ticket: ticketForBill,
-                      ticketLines: ticketForBill.lines,
-                      tableName: displayName,
-                      total,
-                      formatPrice,
-                      t,
-                    });
-                    Alert.alert(t.success, t.orderBillGenerated, [
-                      { text: t.ok, onPress: () => navigation.goBack() },
-                    ]);
-                  } catch (error) {
-                    console.error('PDF generation error:', error);
-                    Alert.alert(t.error, t.genericError, [
-                      { text: t.ok, onPress: () => navigation.goBack() },
-                    ]);
-                  }
-                },
-              },
-            ]);
-          }, 500);
-        },
-      },
-    ]);
-  };
-
-  const handleTicketLongPress = (ticket: Ticket) => {
-    setSelectedTicketForActions(ticket);
-    setShowTicketActions(true);
-  };
-
-  const handleRenameTicket = (ticket: Ticket) => {
-    setShowTicketActions(false);
-    setSelectedTicketForActions(null);
-
-    // Set the ticket for editing
-    setEditingTicketId(ticket.id);
-    setNewTicketName(ticket.name || '');
-    setShowTicketNameModal(true);
-  };
-
-  const handleDeleteTicketFromActions = (ticket: Ticket) => {
-    setShowTicketActions(false);
-    setSelectedTicketForActions(null);
-    handleDeleteTicket(ticket.id);
-  };
-
-  const handleDuplicateTicket = (ticket: Ticket) => {
-    setShowTicketActions(false);
-    setSelectedTicketForActions(null);
-
-    // Create a new ticket with the same items
-    const newTicketName = `${ticket.name || 'Order'} (Copy)`;
-    const newTicket = openTable(tableId, newTicketName);
-
-    // Add all items from the original ticket to the new one
-    ticket.lines.forEach((line) => {
-      if (line.status !== 'cancelled') {
-        addTicketLine(newTicket.id, {
-          menuItemId: line.menuItemId,
-          quantity: line.quantity,
-          note: line.note,
-        });
-      }
-    });
-
-    setSelectedTicketId(newTicket.id);
-  };
-
-  const getTicketActions = (): ActionSheetAction[] => {
-    if (!selectedTicketForActions) return [];
-
-    const actions: ActionSheetAction[] = [];
-
-    // Rename action
-    actions.push({
-      id: 'rename',
-      title: 'Rename Order',
-      icon: 'pencil',
-      onPress: () => selectedTicketForActions && handleRenameTicket(selectedTicketForActions),
-    });
-
-    // Duplicate action
-    actions.push({
-      id: 'duplicate',
-      title: 'Duplicate Order',
-      icon: 'copy',
-      onPress: () => selectedTicketForActions && handleDuplicateTicket(selectedTicketForActions),
-    });
-
-    // Delete action (only if there are multiple tickets)
-    if (tickets.length > 1) {
-      actions.push({
-        id: 'delete',
-        title: t.delete || 'Delete',
-        icon: 'trash',
-        destructive: true,
-        onPress: () =>
-          selectedTicketForActions && handleDeleteTicketFromActions(selectedTicketForActions),
-      });
+      ]);
     }
-
-    return actions;
   };
 
-  const renderTicketLine = ({ item: line }: { item: TicketLine }) => {
-    return (
-      <TouchableOpacity
-        onLongPress={() => handleLineNoteLongPress(line)}
-        delayLongPress={500}
-        activeOpacity={0.8}
-      >
-        <SurfaceCard style={{ marginBottom: 8 }} variant="outlined">
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-            }}
-          >
-            <View style={{ flex: 1, marginRight: 12 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-                {line.nameSnapshot}
-              </Text>
-
-              {line.note && (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: colors.textSubtle,
-                    marginTop: 2,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  {t.note}: {line.note}
-                </Text>
-              )}
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <StatusBadge status={line.status} size="small" />
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '700',
-                    color: colors.primary,
-                    marginLeft: 8,
-                  }}
-                >
-                  {formatPrice(line.priceSnapshot * line.quantity)}
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ alignItems: 'center' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <TouchableOpacity
-                  onPress={() => handleQuantityChange(line, -1)}
-                  disabled={line.status !== 'pending'}
-                  style={{
-                    backgroundColor: line.status === 'pending' ? colors.primary : colors.border,
-                    borderRadius: 16,
-                    width: 32,
-                    height: 32,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>-</Text>
-                </TouchableOpacity>
-
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: '600',
-                    color: colors.text,
-                    marginHorizontal: 12,
-                    minWidth: 24,
-                    textAlign: 'center',
-                  }}
-                >
-                  {line.quantity}
-                </Text>
-
-                <TouchableOpacity
-                  onPress={() => handleQuantityChange(line, 1)}
-                  disabled={line.status !== 'pending'}
-                  style={{
-                    backgroundColor: line.status === 'pending' ? colors.primary : colors.border,
-                    borderRadius: 16,
-                    width: 32,
-                    height: 32,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>+</Text>
-                </TouchableOpacity>
-              </View>
-
-              {line.status === 'pending' && (
-                <TouchableOpacity
-                  onPress={() => handleStatusChange(line, 'delivered')}
-                  style={{
-                    backgroundColor: '#10B981',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 6,
-                    marginBottom: 4,
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
-                    {t.deliver}
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {line.status === 'delivered' && (
-                <TouchableOpacity
-                  onPress={() => handleStatusChange(line, 'cancelled')}
-                  style={{
-                    backgroundColor: '#EF4444',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 6,
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
-                    {t.cancel}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </SurfaceCard>
-      </TouchableOpacity>
-    );
+  const undo = () => {
+    const previous = undoStack.at(-1);
+    if (!previous) return;
+    setDraft(previous);
+    setUndoStack((history) => history.slice(0, -1));
   };
 
-  const renderMenuItem = ({ item: menuItem }: { item: MenuItem }) => {
-    return (
-      <TouchableOpacity onPress={() => handleAddItem(menuItem)} style={{ marginBottom: 8 }}>
-        <SurfaceCard variant="outlined">
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
-                {menuItem.name}
-              </Text>
-              {menuItem.description && (
-                <Text style={{ fontSize: 14, color: colors.textSubtle, marginTop: 2 }}>
-                  {menuItem.description}
-                </Text>
-              )}
-            </View>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primary }}>
-              {formatPrice(menuItem.price)}
-            </Text>
-          </View>
-        </SurfaceCard>
-      </TouchableOpacity>
-    );
+  const submit = async () => {
+    if (!database || !scope || !snapshot || draft.length === 0) return;
+    setSubmitting(true);
+    try {
+      const result = await sendOrderBatch({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        tableId,
+        session: snapshot.session,
+        ...(selectedCheck ? { check: selectedCheck } : {}),
+        checkName:
+          selectedCheck?.name || pendingCheckName || `${copy.check} ${snapshot.checks.length + 1}`,
+        lines: draft,
+      });
+      setSelectedCheckId(result.check.id);
+      setPendingCheckName('');
+      setDraft([]);
+      setUndoStack([]);
+      setShowPaletteOnCompact(false);
+      await reload();
+      void refresh();
+    } catch (error) {
+      Alert.alert(copy.sendFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (!table) {
+  const cancelItem = async (reason: CancellationReason) => {
+    if (!database || !scope || !cancellingItem) return;
+    if (reason.requiresManager && !isManager) return;
+    try {
+      await cancelOrderItem({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        item: cancellingItem,
+        reasonId: reason.id,
+      });
+      setCancellingItem(undefined);
+      await reload();
+      void refresh();
+    } catch (error) {
+      Alert.alert(copy.cancelFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
+  const toggleFavorite = (productId: string) => {
+    const next = favoriteIds.includes(productId)
+      ? favoriteIds.filter((id) => id !== productId)
+      : [...favoriteIds, productId];
+    setFavoriteIds(next);
+    void saveWorkspacePreferences(preferencesKey, {
+      favoriteProductIds: next,
+      ...(paletteScope !== 'all' && paletteScope !== 'favorites' && paletteScope !== 'recent'
+        ? { selectedCategoryId: paletteScope }
+        : {}),
+    });
+  };
+
+  const selectPaletteScope = (next: PaletteScope) => {
+    setPaletteScope(next);
+    void saveWorkspacePreferences(preferencesKey, {
+      favoriteProductIds: favoriteIds,
+      ...(next !== 'all' && next !== 'favorites' && next !== 'recent'
+        ? { selectedCategoryId: next }
+        : {}),
+    });
+  };
+
+  if (loading) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: colors.bg,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ fontSize: 18, color: colors.textSubtle }}>
-          {t.tableNotFound || 'Table not found'}
+      <CenteredState>
+        <ActivityIndicator color={tokens.colors.primary} size="large" />
+        <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
+          {copy.loading}
         </Text>
-      </SafeAreaView>
+      </CenteredState>
     );
   }
 
-  const displayName = table.label || `Masa ${table.seq || '?'}`;
-  const total = selectedTicket ? getTicketTotal(selectedTicket.id) : 0;
+  if (!snapshot || loadError) {
+    return (
+      <CenteredState>
+        <ServiceEmptyState
+          action={{ label: copy.back, onPress: navigation.goBack }}
+          body={loadError ?? copy.tableNotFound}
+          icon="alert-circle-outline"
+          title={copy.couldNotOpen}
+        />
+      </CenteredState>
+    );
+  }
+
+  const compact = layout.mode === 'compact';
+  const showOrderPane = !compact || !showPaletteOnCompact;
+  const showPalette = !compact || showPaletteOnCompact;
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      edges={['bottom', 'left', 'right']}
+      edges={['top', 'bottom', 'left', 'right']}
+      style={{ flex: 1, backgroundColor: tokens.colors.bg }}
     >
-      {/* Header */}
-      <View
-        style={{
-          padding: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-          backgroundColor: colors.bg,
-        }}
-      >
-        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
-          {displayName}
-        </Text>
-        {selectedTicket && (
-          <View style={{ alignItems: 'center', marginTop: 4 }}>
-            <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>
-              {t.total}: {formatPrice(total)}
-            </Text>
-
-            {/* Delivery Timer Section */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 12 }}>
-              <TouchableOpacity
-                onPress={() => setShowDeliveryTimer(true)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: selectedTicket.deliveryEtaMinutes
-                    ? colors.primary + '20'
-                    : colors.surfaceAlt,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: selectedTicket.deliveryEtaMinutes ? colors.primary : colors.border,
-                }}
-              >
-                <Ionicons
-                  name="timer"
-                  size={16}
-                  color={selectedTicket.deliveryEtaMinutes ? colors.primary : colors.textSubtle}
-                />
-                <Text
-                  style={{
-                    marginLeft: 4,
-                    fontSize: 14,
-                    color: selectedTicket.deliveryEtaMinutes ? colors.primary : colors.textSubtle,
-                    fontWeight: selectedTicket.deliveryEtaMinutes ? '600' : 'normal',
-                  }}
-                >
-                  {selectedTicket.deliveryEtaMinutes
-                    ? `${selectedTicket.deliveryEtaMinutes}min`
-                    : 'Set Timer'}
-                </Text>
-              </TouchableOpacity>
-
-              {selectedTicket.deliveryStartedAt && selectedTicket.deliveryEtaMinutes && (
-                <View
-                  style={{
-                    backgroundColor: colors.accent + '20',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 12,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: colors.accent,
-                      fontWeight: '600',
-                    }}
-                  >
-                    {(() => {
-                      const elapsed = Math.floor(
-                        (Date.now() - selectedTicket.deliveryStartedAt) / 60000,
-                      );
-                      const progress = Math.min(
-                        100,
-                        Math.floor((elapsed / selectedTicket.deliveryEtaMinutes) * 100),
-                      );
-                      return `${progress}%`;
-                    })()}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-      </View>
-
-      {/* Ticket Tabs */}
-      {tickets && tickets.length > 0 && (
-        <ScrollView horizontal style={{ maxHeight: 60, backgroundColor: colors.bg }}>
-          <View style={{ flexDirection: 'row', padding: 16, paddingBottom: 8 }}>
-            {tickets.map((ticket, index) => (
-              <View
-                key={ticket.id}
-                style={{
-                  marginRight: 8,
-                  borderRadius: 8,
-                  backgroundColor: selectedTicketId === ticket.id ? colors.accent : colors.surface,
-                  borderWidth: 1,
-                  borderColor: selectedTicketId === ticket.id ? colors.accent : colors.border,
-                  overflow: 'hidden',
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => setSelectedTicketId(ticket.id)}
-                  onLongPress={() => handleTicketLongPress(ticket)}
-                  style={{
-                    padding: 8,
-                    paddingRight: 8, // Remove extra space since we're using ActionSheet now
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: selectedTicketId === ticket.id ? colors.bg : colors.text,
-                      fontWeight: selectedTicketId === ticket.id ? '600' : '400',
-                    }}
-                  >
-                    {ticket.name || `Order ${index + 1}`}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity
-              onPress={() => {
-                setEditingTicketId(null); // Clear editing state for new ticket
-                setNewTicketName(''); // Clear the name field
-                setShowTicketNameModal(true);
-              }}
-              style={{
-                padding: 8,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderStyle: 'dashed',
-              }}
-            >
-              <Text style={{ color: colors.textSubtle }}>+ New Order</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
-
-      {/* Content */}
-      {!tickets || tickets.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              color: colors.textSubtle,
-              textAlign: 'center',
-              marginBottom: 24,
-            }}
-          >
-            {t.tableNotOpened}
-          </Text>
-          <PrimaryButton title={t.openTable} onPress={() => handleOpenTable()} size="large" />
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          {/* Order Lines */}
-          <View style={{ flex: 1, padding: 16 }}>
-            {!selectedTicket || selectedTicket.lines.length === 0 ? (
-              <SurfaceCard style={{ padding: 32 }}>
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: colors.textSubtle,
-                    fontSize: 16,
-                    marginBottom: 16,
-                  }}
-                >
-                  {t.noOrdersYet}
-                </Text>
-                <PrimaryButton
-                  title={t.addFirstOrder}
-                  onPress={() => setShowProductSearch(true)}
-                  fullWidth
-                />
-              </SurfaceCard>
-            ) : (
-              <FlatList
-                data={selectedTicket.lines}
-                renderItem={renderTicketLine}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
-          </View>
-
-          {/* Actions */}
-          {selectedTicket && (
-            <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
-              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
-                <PrimaryButton
-                  title={t.addOrder}
-                  onPress={() => setShowProductSearch(true)}
-                  style={{ flex: 1 }}
-                />
-
-                {/* <TouchableOpacity
-                onPress={() => setShowMenuModal(true)}
-                style={{
-                  backgroundColor: colors.surfaceAlt,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 8,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <Ionicons name="grid-outline" size={20} color={colors.text} />
-              </TouchableOpacity> */}
-
-                {selectedTicket.lines.some((line) => line.status === 'pending') && (
-                  <PrimaryButton
-                    title={t.deliverAll}
-                    onPress={handleMarkAllDelivered}
-                    variant="secondary"
-                    style={{ flex: 1 }}
-                  />
-                )}
-              </View>
-
-              {selectedTicket.lines.length > 0 && (
-                <PrimaryButton
-                  title={`${t.makePayment} (${formatPrice(total)})`}
-                  onPress={handlePayPress}
-                  size="large"
-                  fullWidth
-                />
-              )}
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Menu Modal */}
-      <Modal visible={showMenuModal} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView
-          style={{ flex: 1, backgroundColor: colors.bg }}
-          edges={['bottom', 'left', 'right']}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-              backgroundColor: colors.bg,
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{t.menu}</Text>
-            <TouchableOpacity onPress={() => setShowMenuModal(false)}>
-              <Ionicons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Note Input */}
-          <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                fontSize: 14,
-                color: colors.text,
-                backgroundColor: colors.surface,
-              }}
-              value={note}
-              onChangeText={setNote}
-              placeholder={t.orderNote}
-              placeholderTextColor={colors.textSubtle}
-            />
-          </View>
-
-          {/* Category Tabs - Fixed height, no nested scrolling */}
-          <View
-            style={{
-              paddingVertical: 12,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-            }}
-          >
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16 }}
-              style={{ flexGrow: 0 }}
-            >
-              {categoriesWithItems.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  onPress={() => setSelectedCategory(category.id)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                    marginRight: 8,
-                    borderRadius: 20,
-                    backgroundColor:
-                      selectedCategory === category.id ? colors.primary : colors.surfaceAlt,
-                    borderWidth: 1,
-                    borderColor: selectedCategory === category.id ? colors.primary : colors.border,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: selectedCategory === category.id ? '#FFFFFF' : colors.text,
-                      fontWeight: selectedCategory === category.id ? '600' : '400',
-                      fontSize: 14,
-                    }}
-                  >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Menu Items - Single scrollable area */}
-          {selectedCategory && (
-            <FlatList
-              data={
-                categoriesWithItems
-                  .find((c) => c.id === selectedCategory)
-                  ?.items.filter((item) => item.isActive) || []
-              }
-              renderItem={renderMenuItem}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ padding: 16 }}
-              style={{ flex: 1 }}
-            />
-          )}
-        </SafeAreaView>
-      </Modal>
-
-      {/* Ticket Name Modal */}
-      <Modal
-        visible={showTicketNameModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowTicketNameModal(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            padding: 20,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 20,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: '600',
-                color: colors.text,
-                marginBottom: 16,
-                textAlign: 'center',
-              }}
-            >
-              {editingTicketId ? 'Rename Order' : 'New Order Name'}
-            </Text>
-
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 8,
-                padding: 12,
-                color: colors.text,
-                backgroundColor: colors.bg,
-                marginBottom: 16,
-              }}
-              value={newTicketName}
-              onChangeText={setNewTicketName}
-              placeholder="Order name (optional)"
-              placeholderTextColor={colors.textSubtle}
-              autoFocus
-            />
-
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowTicketNameModal(false);
-                  setNewTicketName('');
-                  setEditingTicketId(null);
-                }}
-                style={{
-                  flex: 1,
-                  padding: 12,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: colors.bg,
-                }}
-              >
-                <Text style={{ color: colors.text, textAlign: 'center' }}>{t.cancel}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  if (editingTicketId) {
-                    // Update existing ticket name
-                    const trimmedName = newTicketName.trim();
-                    updateTicketName(
-                      editingTicketId,
-                      trimmedName ||
-                        `Order ${tickets.indexOf(tickets.find((t) => t.id === editingTicketId)!) + 1}`,
-                    );
-                  } else {
-                    // Create new ticket
-                    handleOpenTable(newTicketName.trim() || undefined);
-                  }
-                  setShowTicketNameModal(false);
-                  setNewTicketName('');
-                  setEditingTicketId(null);
-                }}
-                style={{
-                  flex: 1,
-                  padding: 12,
-                  borderRadius: 8,
-                  backgroundColor: colors.primary,
-                }}
-              >
-                <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '600' }}>
-                  {editingTicketId ? 'Update' : 'Create'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Payment Modal */}
-      <Modal
-        visible={showPaymentModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPaymentModal(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-          }}
-        >
-          <View
-            style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 20, width: '90%' }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: '700',
-                color: colors.text,
-                textAlign: 'center',
-                marginBottom: 16,
-              }}
-            >
-              {t.payment || 'Payment'}
-            </Text>
-
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>
-                {t.totalAmount || 'Total Amount'}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 32,
-                  fontWeight: 'bold',
-                  color: colors.primary,
-                  textAlign: 'center',
-                }}
-              >
-                {formatPrice(selectedTicket ? getTicketTotal(selectedTicket.id) : 0)}
-              </Text>
-            </View>
-
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 8,
-                padding: 12,
-                color: colors.text,
-                backgroundColor: colors.bg,
-                marginBottom: 16,
-                fontSize: 18,
-                textAlign: 'center',
-              }}
-              value={amountReceived}
-              onChangeText={setAmountReceived}
-              placeholder={t.amountReceived || 'Amount Received'}
-              placeholderTextColor={colors.textSubtle}
-              keyboardType="numeric"
-              autoFocus
-            />
-
-            {amountReceived && (
-              <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 16, color: colors.textSubtle, textAlign: 'center' }}>
-                  {t.change || 'Change'}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 'bold',
-                    color: colors.text,
-                    textAlign: 'center',
-                  }}
-                >
-                  {formatPrice(
-                    Math.max(
-                      0,
-                      parseFloat(amountReceived.replace(',', '.')) * 100 -
-                        (selectedTicket ? getTicketTotal(selectedTicket.id) : 0),
-                    ),
-                  )}
-                </Text>
-              </View>
-            )}
-
-            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
-              <PrimaryButton
-                title={t.cash || 'Cash'}
-                onPress={() => handleConfirmPayment('cash')}
-                style={{ flex: 1 }}
-                disabled={!amountReceived}
-              />
-              <PrimaryButton
-                title={t.card || 'Card'}
-                onPress={() => handleConfirmPayment('card')}
-                variant="secondary"
-                style={{ flex: 1 }}
-              />
-            </View>
-            <TouchableOpacity onPress={() => setShowPaymentModal(false)}>
-              <Text style={{ color: colors.textSubtle, textAlign: 'center', padding: 8 }}>
-                {t.cancel}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Product Search Modal */}
-      <ProductSearch
-        items={allMenuItems}
-        categories={allCategories}
-        isVisible={showProductSearch}
-        onClose={() => setShowProductSearch(false)}
-        onSelectItem={handleProductSelect}
+      <WorkspaceHeader
+        onBack={navigation.goBack}
+        syncLabel={
+          sync.online
+            ? sync.pendingCount > 0
+              ? `${sync.pendingCount} ${copy.queued}`
+              : copy.synced
+            : copy.offline
+        }
+        syncTone={sync.hasError ? 'error' : sync.pendingCount > 0 ? 'warning' : 'success'}
+        tableLabel={snapshot.table.label}
       />
 
-      {/* Delivery Timer Modal */}
-      {showDeliveryTimer && selectedTicket && (
-        <DeliveryTimePicker
-          ticketId={selectedTicket.id}
-          currentMinutes={selectedTicket.deliveryEtaMinutes}
-          onClose={() => setShowDeliveryTimer(false)}
-        />
-      )}
+      <CheckStrip
+        checks={snapshot.checks}
+        copy={copy}
+        pendingCheckName={pendingCheckName}
+        selectedCheckId={selectedCheckId}
+        onAdd={() => {
+          setCheckNameInput('');
+          setShowCheckModal(true);
+        }}
+        onSelect={(checkId) => {
+          setPendingCheckName('');
+          setSelectedCheckId(checkId);
+        }}
+        onSelectPending={() => setSelectedCheckId(undefined)}
+      />
 
-      {/* Ticket Action Sheet */}
-      {selectedTicketForActions && (
-        <ActionSheet
-          ref={actionSheetRef}
-          title={
-            selectedTicketForActions.name ||
-            `Order ${tickets.indexOf(selectedTicketForActions) + 1}`
-          }
-          subtitle="Manage this order"
-          actions={getTicketActions()}
-          isVisible={showTicketActions}
-          onClose={() => {
-            setShowTicketActions(false);
-            setSelectedTicketForActions(null);
-          }}
-        />
-      )}
-
-      {/* Note Editing Modal */}
-      <Modal
-        visible={showNoteModal}
-        transparent
-        animationType="slide"
-        onRequestClose={handleCancelNoteEdit}
-      >
+      {compact ? (
         <View
           style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            padding: 20,
+            flexDirection: 'row',
+            paddingHorizontal: tokens.space.md,
+            paddingBottom: tokens.space.xs,
           }}
         >
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 20,
-              maxHeight: '80%',
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: '600',
-                color: colors.text,
-                marginBottom: 8,
-                textAlign: 'center',
-              }}
-            >
-              {t.addNote || 'Add Note'}
-            </Text>
-
-            {selectedLineForNote && (
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: colors.textSubtle,
-                  marginBottom: 16,
-                  textAlign: 'center',
-                }}
-              >
-                {selectedLineForNote.nameSnapshot}
-              </Text>
-            )}
-
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 8,
-                padding: 12,
-                color: colors.text,
-                backgroundColor: colors.bg,
-                marginBottom: 16,
-                minHeight: 100,
-                textAlignVertical: 'top',
-              }}
-              value={editingNote}
-              onChangeText={setEditingNote}
-              placeholder={t.addNoteHint || 'Add special instructions or notes...'}
-              placeholderTextColor={colors.textSubtle}
-              multiline
-              autoFocus
-            />
-
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <TouchableOpacity
-                onPress={handleCancelNoteEdit}
-                style={{
-                  flex: 1,
-                  padding: 12,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: colors.bg,
-                }}
-              >
-                <Text style={{ color: colors.text, textAlign: 'center' }}>{t.cancel}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleSaveNote}
-                style={{
-                  flex: 1,
-                  padding: 12,
-                  borderRadius: 8,
-                  backgroundColor: colors.primary,
-                }}
-              >
-                <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '600' }}>
-                  {t.save}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <SegmentButton
+            icon="receipt-outline"
+            label={`${copy.order} (${visibleItems.length})`}
+            selected={!showPaletteOnCompact}
+            onPress={() => setShowPaletteOnCompact(false)}
+          />
+          <SegmentButton
+            icon="fast-food-outline"
+            label={`${copy.products} (${draft.reduce((sum, line) => sum + line.quantity, 0)})`}
+            selected={showPaletteOnCompact}
+            onPress={() => setShowPaletteOnCompact(true)}
+          />
         </View>
-      </Modal>
+      ) : null}
+
+      <View
+        style={{
+          flex: 1,
+          flexDirection: compact ? 'column' : 'row',
+          gap: tokens.space.md,
+          paddingHorizontal: layout.horizontalPadding,
+        }}
+      >
+        {showOrderPane ? (
+          <OrderPane
+            checkName={selectedCheck?.name || pendingCheckName || copy.newCheck}
+            checkTotal={checkTotal}
+            copy={copy}
+            currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
+            items={visibleItems}
+            language={language}
+            modifiers={snapshot.orderItemModifiers}
+            onCancel={setCancellingItem}
+            waiterNames={waiterNames}
+          />
+        ) : null}
+        {showPalette ? (
+          <PalettePane
+            categories={snapshot.categories}
+            copy={copy}
+            currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
+            draft={draft}
+            favoriteIds={favoriteIds}
+            language={language}
+            onAdd={addProduct}
+            onQuery={setQuery}
+            onScope={selectPaletteScope}
+            onToggleFavorite={toggleFavorite}
+            products={filteredProducts}
+            query={query}
+            selectedScope={paletteScope}
+          />
+        ) : null}
+      </View>
+
+      <DraftBar
+        copy={copy}
+        currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
+        draft={draft}
+        language={language}
+        onClear={() => rememberDraft([])}
+        onSend={() => void submit()}
+        onUndo={undo}
+        submitting={submitting}
+        totalMinor={draftTotal}
+        undoAvailable={undoStack.length > 0}
+      />
+
+      <NameCheckModal
+        copy={copy}
+        name={checkNameInput}
+        onChange={setCheckNameInput}
+        onClose={() => setShowCheckModal(false)}
+        onConfirm={() => {
+          const name = checkNameInput.trim();
+          if (!name) return;
+          setPendingCheckName(name);
+          setSelectedCheckId(undefined);
+          setShowCheckModal(false);
+        }}
+        visible={showCheckModal}
+      />
+      <ProductConfigurationModal
+        copy={copy}
+        note={configurationNote}
+        onChangeNote={setConfigurationNote}
+        onClose={() => setConfiguring(undefined)}
+        onConfirm={() => {
+          if (!configuring) return;
+          appendDraft(configuring, configuration, configurationNote);
+          setConfiguring(undefined);
+        }}
+        onToggle={(groupId, optionId) => {
+          if (!configuring) return;
+          const group = configuring.modifierGroups.find((candidate) => candidate.id === groupId);
+          if (!group) return;
+          setConfiguration((selected) => {
+            const groupIds = new Set(group.options.map((option) => option.id));
+            if (selected.includes(optionId)) {
+              return selected.filter((id) => id !== optionId);
+            }
+            return group.selectionType === 'single'
+              ? [...selected.filter((id) => !groupIds.has(id)), optionId]
+              : [...selected, optionId];
+          });
+        }}
+        product={configuring}
+        selected={configuration}
+      />
+      <CancellationModal
+        copy={copy}
+        isManager={isManager}
+        item={cancellingItem}
+        onCancel={cancelItem}
+        onClose={() => setCancellingItem(undefined)}
+        reasons={snapshot.cancellationReasons}
+      />
+
+      {runtimeError ? (
+        <View
+          accessibilityRole="alert"
+          style={{ backgroundColor: tokens.colors.error, padding: tokens.space.xs }}
+        >
+          <Text
+            style={[
+              tokens.typography.caption,
+              { color: tokens.colors.onError, textAlign: 'center' },
+            ]}
+          >
+            {copy.localSafe}
+          </Text>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
+}
+
+function WorkspaceHeader({
+  tableLabel,
+  syncLabel,
+  syncTone,
+  onBack,
+}: {
+  readonly tableLabel: string;
+  readonly syncLabel: string;
+  readonly syncTone: 'success' | 'warning' | 'error';
+  readonly onBack: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <View
+      style={{
+        alignItems: 'center',
+        flexDirection: 'row',
+        minHeight: 64,
+        paddingHorizontal: tokens.space.md,
+      }}
+    >
+      <ServiceIconButton icon="arrow-back" label="Back" onPress={onBack} />
+      <Text
+        style={[
+          tokens.typography.title,
+          { color: tokens.colors.text, flex: 1, marginHorizontal: tokens.space.sm },
+        ]}
+        numberOfLines={1}
+      >
+        {tableLabel}
+      </Text>
+      <ServiceStatusPill label={syncLabel} tone={syncTone} />
+    </View>
+  );
+}
+
+function CheckStrip({
+  checks,
+  selectedCheckId,
+  pendingCheckName,
+  copy,
+  onSelect,
+  onSelectPending,
+  onAdd,
+}: {
+  readonly checks: readonly Check[];
+  readonly selectedCheckId?: CheckId;
+  readonly pendingCheckName: string;
+  readonly copy: WorkspaceCopy;
+  readonly onSelect: (id: CheckId) => void;
+  readonly onSelectPending: () => void;
+  readonly onAdd: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ flexGrow: 0 }}
+      contentContainerStyle={{
+        alignItems: 'center',
+        gap: tokens.space.xs,
+        paddingHorizontal: tokens.space.md,
+        paddingBottom: tokens.space.sm,
+      }}
+    >
+      {checks.map((check) => (
+        <Chip
+          key={check.id}
+          label={check.name}
+          selected={check.id === selectedCheckId}
+          onPress={() => onSelect(check.id)}
+        />
+      ))}
+      {pendingCheckName ? (
+        <Chip label={pendingCheckName} selected={!selectedCheckId} onPress={onSelectPending} />
+      ) : null}
+      <Chip icon="add" label={copy.newCheck} selected={false} onPress={onAdd} />
+    </ScrollView>
+  );
+}
+
+function Chip({
+  label,
+  selected,
+  onPress,
+  icon,
+}: {
+  readonly label: string;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+  readonly icon?: keyof typeof Ionicons.glyphMap;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        alignItems: 'center',
+        backgroundColor: selected ? tokens.colors.primary : tokens.colors.surface,
+        borderColor: selected ? tokens.colors.primary : tokens.colors.border,
+        borderRadius: tokens.radius.full,
+        borderWidth: 1,
+        flexDirection: 'row',
+        minHeight: tokens.sizing.minimumTarget,
+        opacity: pressed ? 0.8 : 1,
+        paddingHorizontal: tokens.space.md,
+      })}
+    >
+      {icon ? (
+        <Ionicons
+          color={selected ? tokens.colors.primaryContrast : tokens.colors.text}
+          name={icon}
+          size={18}
+        />
+      ) : null}
+      <Text
+        style={[
+          tokens.typography.label,
+          {
+            color: selected ? tokens.colors.primaryContrast : tokens.colors.text,
+            marginLeft: icon ? tokens.space.xxs : 0,
+          },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function SegmentButton({
+  icon,
+  label,
+  selected,
+  onPress,
+}: {
+  readonly icon: keyof typeof Ionicons.glyphMap;
+  readonly label: string;
+  readonly selected: boolean;
+  readonly onPress: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={{
+        alignItems: 'center',
+        borderBottomColor: selected ? tokens.colors.primary : tokens.colors.border,
+        borderBottomWidth: selected ? 3 : 1,
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        minHeight: 48,
+      }}
+    >
+      <Ionicons
+        color={selected ? tokens.colors.primary : tokens.colors.textSubtle}
+        name={icon}
+        size={19}
+      />
+      <Text
+        style={[
+          tokens.typography.label,
+          {
+            color: selected ? tokens.colors.primary : tokens.colors.textSubtle,
+            marginLeft: tokens.space.xs,
+          },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function OrderPane({
+  checkName,
+  checkTotal,
+  items,
+  modifiers,
+  waiterNames,
+  copy,
+  language,
+  currencyCode,
+  onCancel,
+}: {
+  readonly checkName: string;
+  readonly checkTotal: number;
+  readonly items: readonly OrderItem[];
+  readonly modifiers: TableWorkspaceSnapshot['orderItemModifiers'];
+  readonly waiterNames: Readonly<Record<string, string>>;
+  readonly copy: WorkspaceCopy;
+  readonly language: Language;
+  readonly currencyCode: string;
+  readonly onCancel: (item: OrderItem) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <ServiceSurface padding="none" style={{ flex: 1, minWidth: 0 }}>
+      <View
+        style={{
+          alignItems: 'center',
+          borderBottomColor: tokens.colors.borderLight,
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          padding: tokens.space.md,
+        }}
+      >
+        <View>
+          <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
+            {checkName}
+          </Text>
+          <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+            {items.length} {copy.lines}
+          </Text>
+        </View>
+        <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+          {formatMoney(checkTotal, currencyCode, language)}
+        </Text>
+      </View>
+      {items.length === 0 ? (
+        <ServiceEmptyState body={copy.tapProduct} icon="restaurant-outline" title={copy.noOrders} />
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: tokens.space.sm }}
+          renderItem={({ item }) => {
+            const itemModifiers = modifiers.filter((modifier) => modifier.orderItemId === item.id);
+            return (
+              <View
+                style={{
+                  borderBottomColor: tokens.colors.borderLight,
+                  borderBottomWidth: 1,
+                  opacity: item.status === 'cancelled' ? 0.58 : 1,
+                  paddingVertical: tokens.space.sm,
+                }}
+              >
+                <View style={{ alignItems: 'flex-start', flexDirection: 'row' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+                      {item.quantity}× {item.nameSnapshot}
+                    </Text>
+                    {itemModifiers.map((modifier) => (
+                      <Text
+                        key={modifier.id}
+                        style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+                      >
+                        + {modifier.modifierOptionNameSnapshot}
+                      </Text>
+                    ))}
+                    {item.note ? (
+                      <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
+                        {copy.note}: {item.note}
+                      </Text>
+                    ) : null}
+                    <Text
+                      style={[
+                        tokens.typography.caption,
+                        { color: tokens.colors.textMuted, marginTop: tokens.space.xxs },
+                      ]}
+                    >
+                      {waiterNames[item.createdBy] ?? copy.unknownWaiter} ·{' '}
+                      {timeOnly(item.createdAt, language)}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                      {formatMoney(
+                        calculateOrderItemTotal(item, itemModifiers),
+                        item.currencyCode,
+                        language,
+                      )}
+                    </Text>
+                    {item.status !== 'cancelled' ? (
+                      <ServiceIconButton
+                        icon="close-circle-outline"
+                        label={`${copy.cancelItem}: ${item.nameSnapshot}`}
+                        onPress={() => onCancel(item)}
+                      />
+                    ) : (
+                      <ServiceStatusPill label={copy.cancelled} tone="error" />
+                    )}
+                  </View>
+                </View>
+              </View>
+            );
+          }}
+        />
+      )}
+    </ServiceSurface>
+  );
+}
+
+function PalettePane({
+  categories,
+  products,
+  selectedScope,
+  favoriteIds,
+  query,
+  draft,
+  copy,
+  language,
+  currencyCode,
+  onScope,
+  onQuery,
+  onAdd,
+  onToggleFavorite,
+}: {
+  readonly categories: TableWorkspaceSnapshot['categories'];
+  readonly products: readonly WorkspaceProduct[];
+  readonly selectedScope: PaletteScope;
+  readonly favoriteIds: readonly string[];
+  readonly query: string;
+  readonly draft: readonly DraftOrderLine[];
+  readonly copy: WorkspaceCopy;
+  readonly language: Language;
+  readonly currencyCode: string;
+  readonly onScope: (scope: PaletteScope) => void;
+  readonly onQuery: (query: string) => void;
+  readonly onAdd: (product: WorkspaceProduct, configure?: boolean) => void;
+  readonly onToggleFavorite: (id: string) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <ServiceSurface padding="none" style={{ flex: 1.2, minWidth: 0 }}>
+      <View style={{ padding: tokens.space.sm }}>
+        <ServiceTextField
+          label={copy.search}
+          onChangeText={onQuery}
+          returnKeyType="search"
+          value={query}
+        />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: tokens.space.xs, paddingTop: tokens.space.sm }}
+        >
+          <Chip
+            label={copy.all}
+            selected={selectedScope === 'all'}
+            onPress={() => onScope('all')}
+          />
+          <Chip
+            icon="star"
+            label={copy.favorites}
+            selected={selectedScope === 'favorites'}
+            onPress={() => onScope('favorites')}
+          />
+          <Chip
+            icon="time"
+            label={copy.recents}
+            selected={selectedScope === 'recent'}
+            onPress={() => onScope('recent')}
+          />
+          {categories.map((category) => (
+            <Chip
+              key={category.id}
+              label={category.name}
+              selected={selectedScope === category.id}
+              onPress={() => onScope(category.id)}
+            />
+          ))}
+        </ScrollView>
+      </View>
+      {products.length === 0 ? (
+        <ServiceEmptyState body={copy.changeFilter} icon="search-outline" title={copy.noProducts} />
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(product) => product.id}
+          numColumns={2}
+          contentContainerStyle={{ padding: tokens.space.xs }}
+          renderItem={({ item }) => {
+            const inDraft = draft
+              .filter((line) => line.product.id === item.id)
+              .reduce((total, line) => total + line.quantity, 0);
+            return (
+              <View style={{ flex: 1, maxWidth: '50%', padding: tokens.space.xxs }}>
+                <Pressable
+                  accessibilityHint={copy.longPress}
+                  accessibilityLabel={`${item.name}, ${formatMoney(item.priceMinor, currencyCode, language)}`}
+                  accessibilityRole="button"
+                  onLongPress={() => onAdd(item, true)}
+                  onPress={() => onAdd(item)}
+                  style={({ pressed }) => ({
+                    backgroundColor: pressed ? tokens.colors.accentSoft : tokens.colors.surfaceAlt,
+                    borderColor: inDraft > 0 ? tokens.colors.accent : tokens.colors.border,
+                    borderRadius: tokens.radius.medium,
+                    borderWidth: inDraft > 0 ? 2 : 1,
+                    minHeight: 92,
+                    padding: tokens.space.sm,
+                  })}
+                >
+                  <View style={{ alignItems: 'flex-start', flexDirection: 'row' }}>
+                    <Text
+                      numberOfLines={2}
+                      style={[tokens.typography.bodyStrong, { color: tokens.colors.text, flex: 1 }]}
+                    >
+                      {item.name}
+                    </Text>
+                    <Pressable
+                      accessibilityLabel={`${copy.favorite}: ${item.name}`}
+                      accessibilityRole="button"
+                      hitSlop={8}
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        onToggleFavorite(item.id);
+                      }}
+                      style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: 40,
+                        minWidth: 40,
+                      }}
+                    >
+                      <Ionicons
+                        color={
+                          favoriteIds.includes(item.id)
+                            ? tokens.colors.warning
+                            : tokens.colors.textMuted
+                        }
+                        name={favoriteIds.includes(item.id) ? 'star' : 'star-outline'}
+                        size={21}
+                      />
+                    </Pressable>
+                  </View>
+                  <View
+                    style={{
+                      alignItems: 'flex-end',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      marginTop: 'auto',
+                    }}
+                  >
+                    <Text style={[tokens.typography.label, { color: tokens.colors.primary }]}>
+                      {formatMoney(item.priceMinor, item.currencyCode, language)}
+                    </Text>
+                    {inDraft > 0 ? (
+                      <ServiceStatusPill label={`+${inDraft}`} tone="warning" />
+                    ) : null}
+                  </View>
+                </Pressable>
+              </View>
+            );
+          }}
+        />
+      )}
+    </ServiceSurface>
+  );
+}
+
+function DraftBar({
+  draft,
+  totalMinor,
+  currencyCode,
+  language,
+  copy,
+  submitting,
+  undoAvailable,
+  onUndo,
+  onClear,
+  onSend,
+}: {
+  readonly draft: readonly DraftOrderLine[];
+  readonly totalMinor: number;
+  readonly currencyCode: string;
+  readonly language: Language;
+  readonly copy: WorkspaceCopy;
+  readonly submitting: boolean;
+  readonly undoAvailable: boolean;
+  readonly onUndo: () => void;
+  readonly onClear: () => void;
+  readonly onSend: () => void;
+}) {
+  const { tokens } = useTheme();
+  const count = draft.reduce((total, line) => total + line.quantity, 0);
+  return (
+    <View
+      style={[
+        tokens.elevation.sticky,
+        {
+          alignItems: 'center',
+          backgroundColor: tokens.colors.surface,
+          borderTopColor: tokens.colors.border,
+          borderTopWidth: 1,
+          flexDirection: 'row',
+          gap: tokens.space.xs,
+          padding: tokens.space.sm,
+        },
+      ]}
+    >
+      <ServiceIconButton
+        disabled={!undoAvailable}
+        icon="arrow-undo"
+        label={copy.undo}
+        onPress={onUndo}
+      />
+      <ServiceIconButton
+        disabled={draft.length === 0}
+        icon="trash-outline"
+        label={copy.clearDraft}
+        onPress={onClear}
+      />
+      <View style={{ flex: 1 }}>
+        <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+          {count} {copy.products}
+        </Text>
+        <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+          {formatMoney(totalMinor, currencyCode, language)}
+        </Text>
+      </View>
+      <ServiceButton
+        disabled={draft.length === 0}
+        icon="paper-plane"
+        label={copy.sendOrder}
+        loading={submitting}
+        onPress={onSend}
+        size="large"
+        variant="accent"
+      />
+    </View>
+  );
+}
+
+function NameCheckModal({
+  visible,
+  name,
+  copy,
+  onChange,
+  onClose,
+  onConfirm,
+}: {
+  readonly visible: boolean;
+  readonly name: string;
+  readonly copy: WorkspaceCopy;
+  readonly onChange: (value: string) => void;
+  readonly onClose: () => void;
+  readonly onConfirm: () => void;
+}) {
+  return (
+    <WorkspaceModal title={copy.newCheck} visible={visible} onClose={onClose}>
+      <ServiceTextField
+        autoFocus
+        label={copy.checkName}
+        maxLength={80}
+        onChangeText={onChange}
+        placeholder={copy.checkExample}
+        value={name}
+      />
+      <ModalActions
+        cancel={copy.close}
+        confirm={copy.create}
+        confirmDisabled={!name.trim()}
+        onCancel={onClose}
+        onConfirm={onConfirm}
+      />
+    </WorkspaceModal>
+  );
+}
+
+function ProductConfigurationModal({
+  product,
+  selected,
+  note,
+  copy,
+  onToggle,
+  onChangeNote,
+  onClose,
+  onConfirm,
+}: {
+  readonly product?: WorkspaceProduct;
+  readonly selected: readonly ModifierOptionId[];
+  readonly note: string;
+  readonly copy: WorkspaceCopy;
+  readonly onToggle: (groupId: string, optionId: ModifierOptionId) => void;
+  readonly onChangeNote: (note: string) => void;
+  readonly onClose: () => void;
+  readonly onConfirm: () => void;
+}) {
+  const { tokens } = useTheme();
+  const valid =
+    product?.modifierGroups.every((group) => {
+      const count = selected.filter((id) =>
+        group.options.some((option) => option.id === id),
+      ).length;
+      return (
+        count >= Math.max(group.minimumChoices, group.isRequired ? 1 : 0) &&
+        count <= (group.selectionType === 'single' ? 1 : (group.maximumChoices ?? 999))
+      );
+    }) ?? false;
+
+  return (
+    <WorkspaceModal title={product?.name ?? ''} visible={Boolean(product)} onClose={onClose}>
+      <ScrollView style={{ maxHeight: 420 }}>
+        {product?.modifierGroups.map((group) => (
+          <View key={group.id} style={{ marginBottom: tokens.space.md }}>
+            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+              {group.name} {group.isRequired ? `· ${copy.required}` : ''}
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: tokens.space.xs,
+                marginTop: tokens.space.xs,
+              }}
+            >
+              {group.options.map((option) => (
+                <Chip
+                  key={option.id}
+                  label={`${option.name}${option.priceDeltaMinor ? ` +${option.priceDeltaMinor / 100}` : ''}`}
+                  selected={selected.includes(option.id)}
+                  onPress={() => onToggle(group.id, option.id)}
+                />
+              ))}
+            </View>
+          </View>
+        ))}
+        <ServiceTextField
+          label={copy.note}
+          maxLength={500}
+          multiline
+          onChangeText={onChangeNote}
+          placeholder={copy.noteExample}
+          value={note}
+        />
+      </ScrollView>
+      <ModalActions
+        cancel={copy.close}
+        confirm={copy.addToDraft}
+        confirmDisabled={!valid}
+        onCancel={onClose}
+        onConfirm={onConfirm}
+      />
+    </WorkspaceModal>
+  );
+}
+
+function CancellationModal({
+  item,
+  reasons,
+  isManager,
+  copy,
+  onClose,
+  onCancel,
+}: {
+  readonly item?: OrderItem;
+  readonly reasons: readonly CancellationReason[];
+  readonly isManager: boolean;
+  readonly copy: WorkspaceCopy;
+  readonly onClose: () => void;
+  readonly onCancel: (reason: CancellationReason) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <WorkspaceModal
+      title={`${copy.cancelItem}: ${item?.nameSnapshot ?? ''}`}
+      visible={Boolean(item)}
+      onClose={onClose}
+    >
+      <Text
+        style={[
+          tokens.typography.body,
+          { color: tokens.colors.textSubtle, marginBottom: tokens.space.sm },
+        ]}
+      >
+        {copy.chooseReason}
+      </Text>
+      {reasons.length === 0 ? (
+        <ServiceEmptyState
+          body={copy.askManagerReasons}
+          icon="alert-circle-outline"
+          title={copy.noReasons}
+        />
+      ) : (
+        <View style={{ gap: tokens.space.xs }}>
+          {reasons.map((reason) => (
+            <ServiceButton
+              key={reason.id}
+              disabled={reason.requiresManager && !isManager}
+              fullWidth
+              icon={reason.requiresManager ? 'shield-checkmark-outline' : 'close-circle-outline'}
+              label={`${reason.name}${reason.requiresManager ? ` · ${copy.manager}` : ''}`}
+              onPress={() => onCancel(reason)}
+              variant="outline"
+            />
+          ))}
+        </View>
+      )}
+      <ModalActions cancel={copy.close} onCancel={onClose} />
+    </WorkspaceModal>
+  );
+}
+
+function WorkspaceModal({
+  visible,
+  title,
+  children,
+  onClose,
+}: {
+  readonly visible: boolean;
+  readonly title: string;
+  readonly children: React.ReactNode;
+  readonly onClose: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable
+        onPress={onClose}
+        style={{
+          alignItems: 'center',
+          backgroundColor: tokens.colors.overlay,
+          flex: 1,
+          justifyContent: 'center',
+          padding: tokens.space.md,
+        }}
+      >
+        <Pressable
+          accessibilityViewIsModal
+          onPress={(event) => event.stopPropagation()}
+          style={[
+            tokens.elevation.overlay,
+            {
+              backgroundColor: tokens.colors.surface,
+              borderRadius: tokens.radius.large,
+              maxWidth: 560,
+              padding: tokens.space.lg,
+              width: '100%',
+            },
+          ]}
+        >
+          <Text
+            style={[
+              tokens.typography.sectionTitle,
+              { color: tokens.colors.text, marginBottom: tokens.space.md },
+            ]}
+          >
+            {title}
+          </Text>
+          {children}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function ModalActions({
+  cancel,
+  confirm,
+  confirmDisabled,
+  onCancel,
+  onConfirm,
+}: {
+  readonly cancel: string;
+  readonly confirm?: string;
+  readonly confirmDisabled?: boolean;
+  readonly onCancel: () => void;
+  readonly onConfirm?: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        gap: tokens.space.xs,
+        justifyContent: 'flex-end',
+        marginTop: tokens.space.lg,
+      }}
+    >
+      <ServiceButton label={cancel} onPress={onCancel} variant="ghost" />
+      {confirm && onConfirm ? (
+        <ServiceButton disabled={confirmDisabled} label={confirm} onPress={onConfirm} />
+      ) : null}
+    </View>
+  );
+}
+
+function CenteredState({ children }: { readonly children: React.ReactNode }) {
+  const { tokens } = useTheme();
+  return (
+    <SafeAreaView
+      style={{
+        alignItems: 'center',
+        backgroundColor: tokens.colors.bg,
+        flex: 1,
+        gap: tokens.space.sm,
+        justifyContent: 'center',
+        padding: tokens.space.lg,
+      }}
+    >
+      {children}
+    </SafeAreaView>
+  );
+}
+
+function draftLineTotal(line: DraftOrderLine): number {
+  const optionIds = new Set(line.selectedOptionIds);
+  const modifierMinor = line.product.modifierGroups
+    .flatMap((group) => group.options)
+    .filter((option) => optionIds.has(option.id))
+    .reduce((total, option) => total + option.priceDeltaMinor, 0);
+  return (line.product.priceMinor + modifierMinor) * line.quantity;
+}
+
+function formatMoney(amountMinor: number, currencyCode: string, language: Language): string {
+  return new Intl.NumberFormat(
+    language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-GB',
+    {
+      style: 'currency',
+      currency: currencyCode,
+    },
+  ).format(amountMinor / 100);
+}
+
+function timeOnly(timestamp: string, language: Language): string {
+  return new Intl.DateTimeFormat(
+    language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-GB',
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  ).format(new Date(timestamp));
+}
+
+interface WorkspaceCopy {
+  readonly loading: string;
+  readonly loadFailed: string;
+  readonly tableNotFound: string;
+  readonly back: string;
+  readonly couldNotOpen: string;
+  readonly queued: string;
+  readonly synced: string;
+  readonly offline: string;
+  readonly check: string;
+  readonly newCheck: string;
+  readonly checkName: string;
+  readonly checkExample: string;
+  readonly create: string;
+  readonly close: string;
+  readonly order: string;
+  readonly products: string;
+  readonly lines: string;
+  readonly noOrders: string;
+  readonly tapProduct: string;
+  readonly unknownWaiter: string;
+  readonly note: string;
+  readonly cancelled: string;
+  readonly cancelItem: string;
+  readonly search: string;
+  readonly all: string;
+  readonly favorites: string;
+  readonly recents: string;
+  readonly favorite: string;
+  readonly longPress: string;
+  readonly noProducts: string;
+  readonly changeFilter: string;
+  readonly undo: string;
+  readonly clearDraft: string;
+  readonly sendOrder: string;
+  readonly sendFailed: string;
+  readonly cancelFailed: string;
+  readonly tryAgain: string;
+  readonly required: string;
+  readonly noteExample: string;
+  readonly addToDraft: string;
+  readonly chooseReason: string;
+  readonly noReasons: string;
+  readonly askManagerReasons: string;
+  readonly manager: string;
+  readonly localSafe: string;
+}
+
+function workspaceCopy(language: Language): WorkspaceCopy {
+  if (language === 'tr') {
+    return {
+      loading: 'Masa hazırlanıyor…',
+      loadFailed: 'Masa verileri okunamadı.',
+      tableNotFound: 'Bu masa bu şubede bulunamadı.',
+      back: 'Geri dön',
+      couldNotOpen: 'Masa açılamadı',
+      queued: 'değişiklik sırada',
+      synced: 'Senkron',
+      offline: 'Çevrimdışı',
+      check: 'Hesap',
+      newCheck: 'Yeni hesap',
+      checkName: 'Hesap adı',
+      checkExample: 'Örn. Pencere tarafı',
+      create: 'Oluştur',
+      close: 'Kapat',
+      order: 'Sipariş',
+      products: 'Ürün',
+      lines: 'satır',
+      noOrders: 'Bu hesapta sipariş yok',
+      tapProduct: 'Sağdaki paletten ürüne dokun. Ürün taslağa anında eklenir.',
+      unknownWaiter: 'Bilinmeyen garson',
+      note: 'Not',
+      cancelled: 'İptal',
+      cancelItem: 'Satırı iptal et',
+      search: 'Ürün ara',
+      all: 'Tümü',
+      favorites: 'Favoriler',
+      recents: 'Son kullanılan',
+      favorite: 'Favori',
+      longPress: 'Modifier ve not için basılı tut',
+      noProducts: 'Ürün bulunamadı',
+      changeFilter: 'Aramayı veya kategoriyi değiştir.',
+      undo: 'Son işlemi geri al',
+      clearDraft: 'Taslağı temizle',
+      sendOrder: 'Siparişi gönder',
+      sendFailed: 'Sipariş gönderilemedi',
+      cancelFailed: 'Satır iptal edilemedi',
+      tryAgain: 'Tekrar deneyin.',
+      required: 'zorunlu',
+      noteExample: 'Örn. az tuzlu, sos ayrı',
+      addToDraft: 'Taslağa ekle',
+      chooseReason: 'Gönderilmiş sipariş silinmez. Bir iptal nedeni seçin.',
+      noReasons: 'İptal nedeni tanımlı değil',
+      askManagerReasons: 'Yöneticiden şube için iptal nedenlerini tanımlamasını isteyin.',
+      manager: 'Yönetici',
+      localSafe: 'Bulut yenilenemedi. Yerel siparişler cihazda güvende.',
+    };
+  }
+  if (language === 'bg') {
+    return {
+      loading: 'Масата се зарежда…',
+      loadFailed: 'Данните за масата не могат да се прочетат.',
+      tableNotFound: 'Масата не е намерена в този обект.',
+      back: 'Назад',
+      couldNotOpen: 'Масата не може да се отвори',
+      queued: 'промени на опашка',
+      synced: 'Синхронизирано',
+      offline: 'Офлайн',
+      check: 'Сметка',
+      newCheck: 'Нова сметка',
+      checkName: 'Име на сметката',
+      checkExample: 'Напр. До прозореца',
+      create: 'Създай',
+      close: 'Затвори',
+      order: 'Поръчка',
+      products: 'продукта',
+      lines: 'реда',
+      noOrders: 'Няма поръчки в тази сметка',
+      tapProduct: 'Докоснете продукт от палитрата, за да го добавите веднага.',
+      unknownWaiter: 'Неизвестен сервитьор',
+      note: 'Бележка',
+      cancelled: 'Отказано',
+      cancelItem: 'Откажи реда',
+      search: 'Търси продукт',
+      all: 'Всички',
+      favorites: 'Любими',
+      recents: 'Последни',
+      favorite: 'Любим',
+      longPress: 'Задръжте за опции и бележка',
+      noProducts: 'Няма продукти',
+      changeFilter: 'Променете търсенето или категорията.',
+      undo: 'Отмени последното',
+      clearDraft: 'Изчисти черновата',
+      sendOrder: 'Изпрати поръчката',
+      sendFailed: 'Поръчката не е изпратена',
+      cancelFailed: 'Редът не е отказан',
+      tryAgain: 'Опитайте отново.',
+      required: 'задължително',
+      noteExample: 'Напр. по-малко сол, сос отделно',
+      addToDraft: 'Добави',
+      chooseReason: 'Изпратена поръчка не се изтрива. Изберете причина.',
+      noReasons: 'Няма причини за отказ',
+      askManagerReasons: 'Помолете управителя да добави причини за този обект.',
+      manager: 'Управител',
+      localSafe: 'Облакът не се обнови. Локалните поръчки са запазени.',
+    };
+  }
+  return {
+    loading: 'Loading table…',
+    loadFailed: 'Table data could not be read.',
+    tableNotFound: 'This table was not found in the branch.',
+    back: 'Go back',
+    couldNotOpen: 'Could not open table',
+    queued: 'changes queued',
+    synced: 'Synced',
+    offline: 'Offline',
+    check: 'Check',
+    newCheck: 'New check',
+    checkName: 'Check name',
+    checkExample: 'E.g. Window side',
+    create: 'Create',
+    close: 'Close',
+    order: 'Order',
+    products: 'items',
+    lines: 'lines',
+    noOrders: 'No orders on this check',
+    tapProduct: 'Tap a product in the palette to add it to the draft immediately.',
+    unknownWaiter: 'Unknown waiter',
+    note: 'Note',
+    cancelled: 'Cancelled',
+    cancelItem: 'Cancel line',
+    search: 'Search products',
+    all: 'All',
+    favorites: 'Favorites',
+    recents: 'Recent',
+    favorite: 'Favorite',
+    longPress: 'Long press for modifiers and notes',
+    noProducts: 'No products found',
+    changeFilter: 'Change the search or category.',
+    undo: 'Undo last action',
+    clearDraft: 'Clear draft',
+    sendOrder: 'Send order',
+    sendFailed: 'Order could not be sent',
+    cancelFailed: 'Line could not be cancelled',
+    tryAgain: 'Try again.',
+    required: 'required',
+    noteExample: 'E.g. less salt, sauce on side',
+    addToDraft: 'Add to draft',
+    chooseReason: 'A sent order is never deleted. Choose a cancellation reason.',
+    noReasons: 'No cancellation reasons',
+    askManagerReasons: 'Ask a manager to configure cancellation reasons for this branch.',
+    manager: 'Manager',
+    localSafe: 'Cloud refresh failed. Local orders remain safe on this device.',
+  };
 }
