@@ -7,6 +7,20 @@ describe('createTextMatcher', () => {
     expect(matches('Icecek')).toBe(true);
   });
 
+  it.each(['I', 'İ', 'i', 'ı'])('folds Turkish I variant %s consistently', (variant) => {
+    const matches = createTextMatcher(`${variant}ZM${variant}R`);
+
+    expect(matches('İzmir')).toBe(true);
+    expect(matches('IZMIR')).toBe(true);
+    expect(matches('ızmır')).toBe(true);
+    expect(matches('izmir')).toBe(true);
+  });
+
+  it('preserves English and Bulgarian matching behavior', () => {
+    expect(createTextMatcher('GRILL')('Mixed Grill')).toBe(true);
+    expect(createTextMatcher('шопска')('ШОПСКА САЛАТА')).toBe(true);
+  });
+
   it('requires every query word to be present', () => {
     const matches = createTextMatcher('patates peynirli');
 

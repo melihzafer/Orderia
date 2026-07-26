@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 // Debounced search hook
 export function useDebounceSearch(initialValue: string = '', delay: number = 300) {
@@ -41,9 +41,10 @@ export function createTextMatcher(query: string) {
 // Text normalization: remove accents and convert to lowercase
 function normalizeText(text: string): string {
   return text
-    .toLowerCase()
     .normalize('NFD') // Decompose accented characters
     .replace(/[\u0300-\u036f]/g, '') // Remove accent marks
+    .replace(/[Iı]/g, 'i') // Fold Turkish dotted and dotless I to one search key
+    .toLowerCase()
     .trim();
 }
 
