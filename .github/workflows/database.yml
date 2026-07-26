@@ -32,7 +32,21 @@ jobs:
         run: supabase db lint --local --level warning --fail-on warning
 
       - name: Run pgTAP tests
-        run: supabase test db
+        shell: bash
+        run: |
+          set +e
+          test_output="$(supabase test db 2>&1)"
+          test_status=$?
+          printf '%s\n' "$test_output"
+          if [ "$test_status" -ne 0 ]; then
+            annotation="$(
+              printf '%s\n' "$test_output" |
+                tail -n 80 |
+                sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g'
+            )"
+            printf '::error title=pgTAP failure::%s\n' "$annotation"
+            exit "$test_status"
+          fi
 
       - name: Stop local Supabase
         if: always()
