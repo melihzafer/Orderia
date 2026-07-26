@@ -26,6 +26,50 @@ export interface Translation {
   orders: string;
   history: string;
   settings: string;
+  serviceNav: string;
+  receiptsNav: string;
+  profileNav: string;
+  reportsNav: string;
+  moreNav: string;
+  serviceConsoleName: string;
+  managerRole: string;
+  primaryNavigation: string;
+
+  // Service console
+  shiftBoard: string;
+  searchTableOrWaiter: string;
+  mine: string;
+  alerts: string;
+  allHalls: string;
+  availableState: string;
+  openState: string;
+  paymentDueState: string;
+  syncIssueState: string;
+  needsReviewState: string;
+  checksCount: string;
+  deviceOnly: string;
+  syncedState: string;
+  syncingState: string;
+  offlineState: string;
+  queuedChanges: string;
+  syncErrorState: string;
+  noTablesConfigured: string;
+  askManagerForTables: string;
+  configureTables: string;
+  configureTablesDescription: string;
+  openTablesSummary: string;
+  attentionSummary: string;
+  moreTableActions: string;
+  seatsCount: string;
+  waitersCount: string;
+  noMatchingTables: string;
+  clearFilters: string;
+  retrySync: string;
+  boardReadFailed: string;
+  refreshFailed: string;
+  loadingTable: string;
+  unknownWaiter: string;
+  unassignedHall: string;
 
   // Navigation titles
   tablesTitle: string;
@@ -346,6 +390,50 @@ export const translations: Record<string, Translation> = {
     orders: 'Siparişler',
     history: 'Geçmiş',
     settings: 'Ayarlar',
+    serviceNav: 'Servis',
+    receiptsNav: 'Fişler',
+    profileNav: 'Profil',
+    reportsNav: 'Raporlar',
+    moreNav: 'Diğer',
+    serviceConsoleName: 'Servis Konsolu',
+    managerRole: 'Yönetici',
+    primaryNavigation: 'Ana navigasyon',
+
+    // Service console
+    shiftBoard: 'Canlı Servis',
+    searchTableOrWaiter: 'Masa veya garson ara',
+    mine: 'Benim',
+    alerts: 'Uyarılar',
+    allHalls: 'Tüm salonlar',
+    availableState: 'Müsait',
+    openState: 'Açık',
+    paymentDueState: 'Ödeme bekliyor',
+    syncIssueState: 'Senkron sorunu',
+    needsReviewState: 'Kontrol gerekli',
+    checksCount: 'hesap',
+    deviceOnly: 'Yalnız bu cihaz',
+    syncedState: 'Senkron',
+    syncingState: 'Senkronlanıyor',
+    offlineState: 'Çevrimdışı',
+    queuedChanges: 'bekleyen değişiklik',
+    syncErrorState: 'Bağlantı sorunu',
+    noTablesConfigured: 'Henüz masa tanımlanmamış',
+    askManagerForTables: 'Yöneticinizden masa düzenini oluşturmasını isteyin.',
+    configureTables: 'Masaları ayarla',
+    configureTablesDescription: 'Servise başlamak için ilk salonu ve masaları oluşturun.',
+    openTablesSummary: 'açık masa',
+    attentionSummary: 'dikkat gerekiyor',
+    moreTableActions: 'Masa işlemleri',
+    seatsCount: 'kişilik',
+    waitersCount: 'garson',
+    noMatchingTables: 'Bu filtrelere uyan masa yok',
+    clearFilters: 'Filtreleri temizle',
+    retrySync: 'Tekrar dene',
+    boardReadFailed: 'Kayıtlı masalar okunamadı. Yenilemek için aşağı çekin.',
+    refreshFailed: 'Yenileme başarısız oldu. Cihazdaki kayıtlı masalar kullanılabilir.',
+    loadingTable: 'Masa yükleniyor',
+    unknownWaiter: 'Garson',
+    unassignedHall: 'Salonsuz',
 
     // Navigation titles
     tablesTitle: 'Orderia - Masalar',
@@ -670,6 +758,50 @@ export const translations: Record<string, Translation> = {
     orders: 'Поръчки',
     history: 'История',
     settings: 'Настройки',
+    serviceNav: 'Обслужване',
+    receiptsNav: 'Касови бележки',
+    profileNav: 'Профил',
+    reportsNav: 'Отчети',
+    moreNav: 'Още',
+    serviceConsoleName: 'Конзола за обслужване',
+    managerRole: 'Управител',
+    primaryNavigation: 'Основна навигация',
+
+    // Service console
+    shiftBoard: 'Обслужване на живо',
+    searchTableOrWaiter: 'Търси маса или сервитьор',
+    mine: 'Моите',
+    alerts: 'Сигнали',
+    allHalls: 'Всички зали',
+    availableState: 'Свободна',
+    openState: 'Отворена',
+    paymentDueState: 'Очаква плащане',
+    syncIssueState: 'Проблем със синхронизацията',
+    needsReviewState: 'Нужен е преглед',
+    checksCount: 'сметки',
+    deviceOnly: 'Само на това устройство',
+    syncedState: 'Синхронизирано',
+    syncingState: 'Синхронизиране',
+    offlineState: 'Офлайн',
+    queuedChanges: 'чакащи промени',
+    syncErrorState: 'Проблем с връзката',
+    noTablesConfigured: 'Все още няма настроени маси',
+    askManagerForTables: 'Помолете управителя да настрои масите.',
+    configureTables: 'Настрой масите',
+    configureTablesDescription: 'Създайте първата зала и масите, за да започнете обслужване.',
+    openTablesSummary: 'отворени маси',
+    attentionSummary: 'изискват внимание',
+    moreTableActions: 'Действия за масата',
+    seatsCount: 'места',
+    waitersCount: 'сервитьори',
+    noMatchingTables: 'Няма маси за тези филтри',
+    clearFilters: 'Изчисти филтрите',
+    retrySync: 'Опитай отново',
+    boardReadFailed: 'Запазените маси не могат да бъдат прочетени. Издърпайте за нов опит.',
+    refreshFailed: 'Обновяването не успя. Запазените на устройството маси остават достъпни.',
+    loadingTable: 'Зареждане на маса',
+    unknownWaiter: 'Сервитьор',
+    unassignedHall: 'Без зала',
 
     // Navigation titles
     tablesTitle: 'Orderia - Маси',
@@ -995,6 +1127,50 @@ export const translations: Record<string, Translation> = {
     orders: 'Orders',
     history: 'History',
     settings: 'Settings',
+    serviceNav: 'Service',
+    receiptsNav: 'Receipts',
+    profileNav: 'Profile',
+    reportsNav: 'Reports',
+    moreNav: 'More',
+    serviceConsoleName: 'Service Console',
+    managerRole: 'Manager',
+    primaryNavigation: 'Primary navigation',
+
+    // Service console
+    shiftBoard: 'Live service',
+    searchTableOrWaiter: 'Search table or waiter',
+    mine: 'Mine',
+    alerts: 'Alerts',
+    allHalls: 'All halls',
+    availableState: 'Available',
+    openState: 'Open',
+    paymentDueState: 'Payment due',
+    syncIssueState: 'Sync issue',
+    needsReviewState: 'Needs review',
+    checksCount: 'checks',
+    deviceOnly: 'This device only',
+    syncedState: 'Synced',
+    syncingState: 'Syncing',
+    offlineState: 'Offline',
+    queuedChanges: 'queued changes',
+    syncErrorState: 'Connection issue',
+    noTablesConfigured: 'No tables configured yet',
+    askManagerForTables: 'Ask your manager to configure the table layout.',
+    configureTables: 'Configure tables',
+    configureTablesDescription: 'Create the first hall and tables to start service.',
+    openTablesSummary: 'open tables',
+    attentionSummary: 'need attention',
+    moreTableActions: 'Table actions',
+    seatsCount: 'seats',
+    waitersCount: 'waiters',
+    noMatchingTables: 'No tables match these filters',
+    clearFilters: 'Clear filters',
+    retrySync: 'Try again',
+    boardReadFailed: 'Saved tables could not be read. Pull down to try again.',
+    refreshFailed: 'Refresh failed. Saved local tables remain available.',
+    loadingTable: 'Loading table',
+    unknownWaiter: 'Waiter',
+    unassignedHall: 'Unassigned',
 
     // Navigation titles
     tablesTitle: 'Orderia - Tables',

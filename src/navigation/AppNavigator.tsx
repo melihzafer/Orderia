@@ -1,39 +1,30 @@
-import {
-  NavigationContainer,
-  NavigationProp,
-  useNavigation,
-  CompositeNavigationProp,
-} from '@react-navigation/native';
-import { createBottomTabNavigator, BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   createNativeStackNavigator,
-  NativeStackNavigationProp,
+  NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import { Text } from 'react-native';
+import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAdaptiveLayout } from '../design-system';
 import { useLocalization } from '../i18n';
-// Screen imports (we'll create these next)
 import {
-  TablesScreen,
-  MenuScreen,
-  HistoryScreen,
-  SettingsScreen,
-  TableDetailScreen,
-  AddMenuItemScreen,
-  AddHallScreen,
-  EditTableScreen,
   AddCategoryScreen,
+  AddHallScreen,
+  AddMenuItemScreen,
   AnalyticsScreen,
-  QRMenuScreen,
   DeviceManagementScreen,
+  EditTableScreen,
+  HistoryScreen,
+  MenuScreen,
+  QRMenuScreen,
+  SettingsScreen,
+  ShiftBoardScreen,
+  TableDetailScreen,
 } from '../screens';
-import { PrimaryButton } from '../components';
+import { AdaptiveTabBar } from './AdaptiveTabBar';
 
-type MainTabsNavigationProp = CompositeNavigationProp<
-  BottomTabNavigationProp<TabParamList>,
-  NativeStackNavigationProp<RootStackParamList>
->;
 export type RootStackParamList = {
   MainTabs: undefined;
   TableDetail: { tableId: string };
@@ -47,208 +38,189 @@ export type RootStackParamList = {
 };
 
 export type TabParamList = {
-  Tables: undefined;
+  Service: undefined;
+  Receipts: undefined;
+  Profile: undefined;
   Menu: undefined;
-  Analytics: undefined;
-  QRMenu: undefined;
-  Settings: undefined;
+  Reports: undefined;
+  More: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function MainTabs() {
-  const navigation = useNavigation<MainTabsNavigationProp>();
-  const { colors } = useTheme();
+  const { activeMembership, status } = useAuth();
+  const { tokens } = useTheme();
   const { t } = useLocalization();
+  const isManager = status === 'unconfigured' || activeMembership?.role === 'manager';
+  const layout = useAdaptiveLayout();
+  const expandedManager = layout.mode === 'expanded' && isManager;
 
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-
-          switch (route.name) {
-            case 'Tables':
-              iconName = focused ? 'restaurant' : 'restaurant-outline';
-              break;
-            case 'Menu':
-              iconName = focused ? 'menu' : 'menu-outline';
-              break;
-            case 'Analytics':
-              iconName = focused ? 'analytics' : 'analytics-outline';
-              break;
-            case 'QRMenu':
-              iconName = focused ? 'qr-code' : 'qr-code-outline';
-              break;
-            case 'Settings':
-              iconName = focused ? 'settings' : 'settings-outline';
-              break;
-            default:
-              iconName = 'help-outline';
-              break;
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSubtle,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-        },
+      sceneContainerStyle={
+        expandedManager ? { marginLeft: tokens.sizing.expandedRailWidth } : undefined
+      }
+      tabBar={(props) => <AdaptiveTabBar {...props} />}
+      screenOptions={{
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: tokens.colors.surface,
         },
-        headerTintColor: colors.text,
-        headerTitleStyle: {
-          fontWeight: '600',
+        headerTintColor: tokens.colors.text,
+        headerTitleStyle: tokens.typography.subtitle,
+        tabBarActiveTintColor: tokens.colors.primary,
+        tabBarHideOnKeyboard: true,
+        tabBarInactiveTintColor: tokens.colors.textSubtle,
+        tabBarItemStyle: {
+          minHeight: tokens.sizing.minimumTarget,
         },
-      })}
+        tabBarLabelStyle: tokens.typography.caption,
+        tabBarStyle: {
+          backgroundColor: tokens.colors.surface,
+          borderTopColor: tokens.colors.border,
+          borderTopWidth: 1,
+          minHeight: tokens.sizing.bottomNavigationHeight,
+        },
+      }}
     >
       <Tab.Screen
-        name="Tables"
-        component={TablesScreen}
+        component={ShiftBoardScreen}
+        name="Service"
         options={{
-          title: t.tables,
-          headerTitle: '',
-          headerLeft: () => (
-            <Text
-              style={{
-                marginLeft: 12,
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: colors.primary,
-              }}
-            >
-              Orderia
-            </Text>
-          ),
-          headerRight: () => (
-            <Ionicons
-              name="add-circle-outline"
-              size={28}
-              color={colors.primary}
-              style={{ marginRight: 16 }}
-              onPress={() => navigation.navigate('AddHall', {})}
-            />
-          ),
+          headerShown: false,
+          title: t.serviceNav,
         }}
       />
-      <Tab.Screen
-        name="Menu"
-        component={MenuScreen}
-        options={{
-          title: t.menu,
-          headerTitle: t.menuManagement,
-        }}
-      />
-      <Tab.Screen
-        name="Analytics"
-        component={AnalyticsScreen}
-        options={{
-          title: t.analytics || 'Analytics',
-          headerTitle: t.salesAnalytics || 'Sales Analytics',
-        }}
-      />
-      {/* <Tab.Screen 
-        name="QRMenu" 
-        component={QRMenuScreen}
-        options={{
-          title: t.qrMenu || 'QR Menu',
-          headerTitle: t.qrMenuManagement || 'QR Menu Management',
-        }}
-      /> */}
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: t.settings,
-          headerTitle: t.settings,
-        }}
-      />
+      {isManager ? (
+        <>
+          <Tab.Screen
+            component={MenuScreen}
+            name="Menu"
+            options={{
+              headerTitle: t.menuManagement,
+              title: t.menu,
+            }}
+          />
+          <Tab.Screen
+            component={AnalyticsScreen}
+            name="Reports"
+            options={{
+              headerTitle: t.salesAnalytics,
+              title: t.reportsNav,
+            }}
+          />
+          <Tab.Screen
+            component={SettingsScreen}
+            name="More"
+            options={{
+              headerTitle: t.settings,
+              title: t.moreNav,
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <Tab.Screen
+            component={HistoryScreen}
+            name="Receipts"
+            options={{
+              headerTitle: t.salesHistory,
+              title: t.receiptsNav,
+            }}
+          />
+          <Tab.Screen
+            component={SettingsScreen}
+            name="Profile"
+            options={{
+              headerTitle: t.profileNav,
+              title: t.profileNav,
+            }}
+          />
+        </>
+      )}
     </Tab.Navigator>
   );
 }
 
 export default function AppNavigator() {
-  const { colors } = useTheme();
+  const { tokens } = useTheme();
   const { t } = useLocalization();
+  const stackOptions: NativeStackNavigationOptions = {
+    headerStyle: {
+      backgroundColor: tokens.colors.surface,
+    },
+    headerTintColor: tokens.colors.text,
+    headerTitleStyle: tokens.typography.subtitle,
+  };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: colors.surface,
-          },
-          headerTintColor: colors.text,
-          headerTitleStyle: {
-            fontWeight: '600',
-          },
-        }}
-      >
-        <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+    <NavigationContainer
+      documentTitle={{
+        formatter: (options) => (options?.title ? `${options.title} · Orderia` : 'Orderia'),
+      }}
+    >
+      <Stack.Navigator screenOptions={stackOptions}>
+        <Stack.Screen component={MainTabs} name="MainTabs" options={{ headerShown: false }} />
         <Stack.Screen
-          name="TableDetail"
           component={TableDetailScreen}
+          name="TableDetail"
           options={{
+            presentation: 'modal',
             title: t.tableDetail,
-            presentation: 'modal',
           }}
         />
         <Stack.Screen
-          name="AddMenuItem"
           component={AddMenuItemScreen}
+          name="AddMenuItem"
           options={{
+            presentation: 'modal',
             title: t.addMenuItem,
-            presentation: 'modal',
           }}
         />
         <Stack.Screen
-          name="AddHall"
           component={AddHallScreen}
+          name="AddHall"
           options={{
+            presentation: 'modal',
             title: t.addHall,
-            presentation: 'modal',
           }}
         />
         <Stack.Screen
-          name="EditTable"
           component={EditTableScreen}
+          name="EditTable"
           options={{
+            presentation: 'modal',
             title: t.editTable,
-            presentation: 'modal',
           }}
         />
         <Stack.Screen
-          name="AddCategory"
           component={AddCategoryScreen}
+          name="AddCategory"
           options={{
+            presentation: 'modal',
             title: t.addCategory,
-            presentation: 'modal',
           }}
         />
         <Stack.Screen
-          name="Analytics"
           component={AnalyticsScreen}
+          name="Analytics"
           options={{
-            title: t.analytics || 'Analytics',
             presentation: 'modal',
+            title: t.analytics,
           }}
         />
         <Stack.Screen
-          name="QRMenu"
           component={QRMenuScreen}
+          name="QRMenu"
           options={{
-            title: t.qrMenu || 'QR Menu',
             presentation: 'modal',
+            title: t.qrMenu,
           }}
         />
         <Stack.Screen
-          name="Devices"
           component={DeviceManagementScreen}
+          name="Devices"
           options={{
             title: 'Authorized devices',
           }}

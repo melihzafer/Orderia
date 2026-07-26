@@ -10,6 +10,7 @@ import { QRMenuProvider } from './src/contexts/QRMenuContext';
 import { initializeSampleData } from './src/utils/sampleData';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { AuthGate } from './src/components/AuthGate';
+import { OrderiaDataProvider } from './src/data/runtime';
 
 export default function App() {
   useEffect(() => {
@@ -24,16 +25,18 @@ export default function App() {
       <LocalizationProvider>
         <ThemeProvider>
           <AuthProvider>
-            <AuthGate>
-              <NotificationProvider>
-                <AnalyticsProvider>
-                  <QRMenuProvider>
-                    <AppNavigator />
-                    <StatusBar style="auto" />
-                  </QRMenuProvider>
-                </AnalyticsProvider>
-              </NotificationProvider>
-            </AuthGate>
+            <OrderiaDataProvider>
+              <AuthGate>
+                <NotificationProvider>
+                  <AnalyticsProvider>
+                    <QRMenuProvider>
+                      <AppNavigator />
+                      <StatusBar style="auto" />
+                    </QRMenuProvider>
+                  </AnalyticsProvider>
+                </NotificationProvider>
+              </AuthGate>
+            </OrderiaDataProvider>
           </AuthProvider>
         </ThemeProvider>
       </LocalizationProvider>

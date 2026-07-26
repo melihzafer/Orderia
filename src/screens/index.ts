@@ -10,3 +10,4 @@ export { default as AddCategoryScreen } from './AddCategoryScreen';
 export { default as AnalyticsScreen } from './AnalyticsScreen';
 export { default as QRMenuScreen } from './QRMenuScreen';
 export { default as DeviceManagementScreen } from './DeviceManagementScreen';
+export { default as ShiftBoardScreen } from './ShiftBoardScreen';
