@@ -8,8 +8,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "web:webpack": "expo start --web --bundler webpack",
-    "export:web": "expo export --platform web",
-    "build:web": "expo export --platform web",
+    "export:web": "npm run build:web",
+    "build:web:bundle": "expo export --platform web",
+    "build:web": "npm run build:web:bundle && workbox generateSW workbox-config.cjs && node scripts/verify-pwa-build.mjs",
+    "serve:web": "expo serve",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=80",
     "lint:fix": "eslint . --fix",
@@ -19,14 +21,15 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --runInBand --coverage",
     "test:e2e": "playwright test",
+    "test:pwa": "npm run build:web && npm run test:pwa:only",
+    "test:pwa:only": "playwright test --config playwright.pwa.config.ts",
     "test:db": "npx --yes supabase@2.109.1 test db",
     "supabase:start": "npx --yes supabase@2.109.1 start",
     "supabase:stop": "npx --yes supabase@2.109.1 stop --no-backup",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build:web",
-    "verify:full": "npm run verify && npm run test:e2e"
+    "verify:full": "npm run verify && npm run test:e2e && npm run test:pwa:only"
   },
   "dependencies": {
-    "@expo/config-plugins": "^10.1.2",
     "@expo/metro-runtime": "~5.0.5",
     "@expo/vector-icons": "^14.0.4",
     "@gorhom/bottom-sheet": "^5.1.8",
@@ -37,10 +40,13 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@supabase/supabase-js": "^2.110.8",
     "expo": "~53.0.27",
+    "expo-dev-client": "~5.2.4",
     "expo-document-picker": "^13.1.6",
     "expo-file-system": "^18.1.11",
+    "expo-font": "~13.3.2",
     "expo-notifications": "~0.31.5",
     "expo-print": "~14.1.4",
+    "expo-secure-store": "~14.2.4",
     "expo-sharing": "~13.1.5",
     "expo-splash-screen": "~0.30.10",
     "expo-sqlite": "~15.2.14",
@@ -50,7 +56,6 @@
     "react": "19.0.0",
     "react-dom": "^19.0.0",
     "react-native": "0.79.6",
-    "react-native-chart-kit": "^6.12.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-qrcode-svg": "^6.3.15",
     "react-native-reanimated": "~3.17.4",
@@ -71,6 +76,7 @@
     "@types/jest": "^30.0.0",
     "@types/pdfmake": "^0.2.12",
     "@types/react": "~19.0.10",
+    "babel-plugin-dynamic-import-node": "^2.3.3",
     "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~9.2.0",
@@ -83,7 +89,24 @@
     "prettier": "^3.9.6",
     "react-native-svg-transformer": "^1.5.1",
     "tailwindcss": "3.3.2",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "workbox-cli": "^7.4.1"
+  },
+  "overrides": {
+    "react-native": "0.79.6"
+  },
+  "expo": {
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      },
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "@noble/hashes",
+          "pdfmake"
+        ]
+      }
+    }
   },
   "private": true
 }

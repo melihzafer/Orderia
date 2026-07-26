@@ -18,6 +18,7 @@ import { accessibleBranches } from '../contexts/authTypes';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import { PwaStatusCard } from '../features/pwa';
 
 export default function SettingsScreen() {
   const { colors, colorMode, toggleColorMode } = useTheme();
@@ -169,6 +170,7 @@ export default function SettingsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, backgroundColor: colors.bg }}
       >
+        <PwaStatusCard />
         {auth.status === 'ready' && auth.workspace && auth.activeBranch ? (
           <SurfaceCard style={{ marginBottom: 16 }}>
             <View

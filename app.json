@@ -3,6 +3,7 @@
     "name": "Orderia",
     "slug": "orderia",
     "version": "1.0.1",
+    "scheme": "orderia",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -27,17 +28,22 @@
       },
       "package": "com.zwolfe.orderia",
       "icon": "./assets/icon.png",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.WAKE_LOCK",
-        "com.android.vending.BILLING"
+        "android.permission.WAKE_LOCK"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single",
+      "name": "Orderia — Garson Sipariş",
+      "shortName": "Orderia",
+      "lang": "tr",
+      "themeColor": "#0F766E",
+      "backgroundColor": "#F4F7F6"
     },
     "plugins": [
       "expo-font",
@@ -50,7 +56,8 @@
           "mode": "development"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

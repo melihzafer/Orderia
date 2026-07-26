@@ -13,6 +13,7 @@ import {
   buildPayableOrderItems,
   splitMinorEqually,
 } from './paymentPlanner';
+import { beginPwaCriticalFlow } from '../pwa/pwaLifecycle';
 
 type TenderMode = 'cash' | 'card' | 'mixed';
 
@@ -75,6 +76,11 @@ export function PaymentSheet({
     setReviewing(false);
     setError(undefined);
   }, [check.id, payable.balance.remainingMinor, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    return beginPwaCriticalFlow(`payment:${check.id}`);
+  }, [check.id, visible]);
 
   const selections = useMemo<readonly PaymentSelection[]>(() => {
     if (selectionMode === 'amount') {

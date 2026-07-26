@@ -1,13 +1,12 @@
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
 import { SupabaseClient } from '@supabase/supabase-js';
-import * as pdfMake from 'pdfmake/build/pdfmake';
-import { vfs as embeddedFonts } from 'pdfmake/build/vfs_fonts';
+import type { TDocumentDefinitions, TFontDictionary } from 'pdfmake/interfaces';
 import { Receipt } from '../../domain';
 import { Database } from '../../services/supabase';
 
-type DocumentDefinition = Parameters<typeof pdfMake.createPdf>[0];
-type FontDictionary = NonNullable<Parameters<typeof pdfMake.createPdf>[2]>;
+type DocumentDefinition = TDocumentDefinitions;
+type FontDictionary = TFontDictionary;
 
 const fonts: FontDictionary = {
   Roboto: {
@@ -25,9 +24,13 @@ export interface PreparedReceiptPdf {
 }
 
 export async function generateReceiptPdf(receipt: Receipt): Promise<Uint8Array> {
+  const [pdfMake, fontAssets] = await Promise.all([
+    import('pdfmake/build/pdfmake'),
+    import('pdfmake/build/vfs_fonts'),
+  ]);
   const definition = receiptDocument(receipt);
   const base64 = await new Promise<string>((resolve) => {
-    pdfMake.createPdf(definition, undefined, fonts, embeddedFonts).getBase64(resolve);
+    pdfMake.createPdf(definition, undefined, fonts, fontAssets.vfs).getBase64(resolve);
   });
   return base64ToBytes(base64);
 }

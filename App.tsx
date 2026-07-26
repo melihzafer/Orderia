@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { ThemeProvider } from './src/contexts/ThemeContext';
 import { LocalizationProvider } from './src/i18n';
@@ -11,6 +12,7 @@ import { initializeSampleData } from './src/utils/sampleData';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { AuthGate } from './src/components/AuthGate';
 import { OrderiaDataProvider } from './src/data/runtime';
+import { PwaLifecycleBanner } from './src/features/pwa';
 
 export default function App() {
   useEffect(() => {
@@ -22,24 +24,27 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LocalizationProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <OrderiaDataProvider>
-              <AuthGate>
-                <NotificationProvider>
-                  <AnalyticsProvider>
-                    <QRMenuProvider>
-                      <AppNavigator />
-                      <StatusBar style="auto" />
-                    </QRMenuProvider>
-                  </AnalyticsProvider>
-                </NotificationProvider>
-              </AuthGate>
-            </OrderiaDataProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </LocalizationProvider>
+      <SafeAreaProvider>
+        <LocalizationProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <OrderiaDataProvider>
+                <AuthGate>
+                  <NotificationProvider>
+                    <AnalyticsProvider>
+                      <QRMenuProvider>
+                        <AppNavigator />
+                        <PwaLifecycleBanner />
+                        <StatusBar style="auto" />
+                      </QRMenuProvider>
+                    </AnalyticsProvider>
+                  </NotificationProvider>
+                </AuthGate>
+              </OrderiaDataProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </LocalizationProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
