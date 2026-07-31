@@ -52,3 +52,6 @@ Thumbs.db
 # Temporary
 *.tmp
 *.temp
+
+# Playwright MCP oturum artefaktlari
+**/.playwright-mcp/
