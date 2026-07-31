@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Switch, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../contexts/ThemeContext';
@@ -19,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { PwaStatusCard } from '../features/pwa';
+import { LegacyMigrationCard } from '../features/legacy-migration';
 
 export default function SettingsScreen() {
   const { colors, colorMode, toggleColorMode } = useTheme();
@@ -88,76 +88,6 @@ export default function SettingsScreen() {
     } catch (error) {
       console.error('Export error:', error);
       Alert.alert(t.error, t.exportFailed, [{ text: t.ok }]);
-    }
-  };
-
-  const handleDataImport = async () => {
-    try {
-      // Pick a file
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/json',
-        copyToCacheDirectory: true,
-      });
-
-      if (result.canceled) return;
-
-      // Read the file
-      const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
-      const importData = JSON.parse(fileContent);
-
-      // Validate data structure
-      if (!importData.data || !importData.version) {
-        throw new Error('Invalid backup file format');
-      }
-
-      // Show confirmation dialog
-      Alert.alert(t.dataImport, t.importWarning, [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.import,
-          style: 'destructive',
-          onPress: () => performImport(importData.data),
-        },
-      ]);
-    } catch (error) {
-      console.error('Import error:', error);
-      Alert.alert(t.error, t.importFailed, [{ text: t.ok }]);
-    }
-  };
-
-  const performImport = (data: any) => {
-    try {
-      // Clear existing data and import new data
-      if (data.halls) {
-        layoutStore.halls = data.halls;
-      }
-      if (data.tables) {
-        layoutStore.tables = data.tables;
-      }
-      if (data.categories) {
-        menuStore.categories = data.categories;
-      }
-      if (data.menuItems) {
-        menuStore.menuItems = data.menuItems;
-      }
-      if (data.openTickets) {
-        orderStore.openTickets = data.openTickets;
-      }
-      if (data.dailyHistory) {
-        historyStore.dailyHistory = data.dailyHistory;
-      }
-      if (data.settings) {
-        if (data.settings.language) setLanguage(data.settings.language);
-        if (data.settings.currency) setCurrency(data.settings.currency);
-        if (data.settings.colorMode && data.settings.colorMode !== colorMode) {
-          toggleColorMode();
-        }
-      }
-
-      Alert.alert(t.success, t.dataImported, [{ text: t.ok }]);
-    } catch (error) {
-      console.error('Import processing error:', error);
-      Alert.alert(t.error, t.importProcessingFailed, [{ text: t.ok }]);
     }
   };
 
@@ -233,27 +163,48 @@ export default function SettingsScreen() {
             ) : null}
 
             {auth.activeMembership?.role === 'manager' ? (
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Devices')}
-                style={{
-                  alignItems: 'center',
-                  borderBottomColor: colors.border,
-                  borderBottomWidth: 1,
-                  flexDirection: 'row',
-                  paddingVertical: 12,
-                }}
-              >
-                <Ionicons
-                  name="phone-portrait-outline"
-                  size={21}
-                  color={colors.textSubtle}
-                  style={{ marginRight: 10 }}
-                />
-                <Text style={{ color: colors.text, flex: 1, fontSize: 15 }}>
-                  Authorized devices
-                </Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Devices')}
+                  style={{
+                    alignItems: 'center',
+                    borderBottomColor: colors.border,
+                    borderBottomWidth: 1,
+                    flexDirection: 'row',
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Ionicons
+                    name="phone-portrait-outline"
+                    size={21}
+                    color={colors.textSubtle}
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text style={{ color: colors.text, flex: 1, fontSize: 15 }}>
+                    Authorized devices
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Approvals')}
+                  style={{
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Ionicons
+                    name="people-outline"
+                    size={21}
+                    color={colors.textSubtle}
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text style={{ color: colors.text, flex: 1, fontSize: 15 }}>
+                    {t.approvalsTitle}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+              </>
             ) : null}
 
             <TouchableOpacity
@@ -533,47 +484,9 @@ export default function SettingsScreen() {
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textSubtle} />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleDataImport}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              backgroundColor: colors.surface,
-              borderRadius: 8,
-            }}
-          >
-            <Ionicons
-              name="cloud-upload-outline"
-              size={20}
-              color={colors.text}
-              style={{ marginRight: 12 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: colors.text,
-                  fontWeight: '500',
-                }}
-              >
-                {t.dataImport}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: colors.textSubtle,
-                  marginTop: 2,
-                }}
-              >
-                {t.restorePreviousData}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSubtle} />
-          </TouchableOpacity>
         </SurfaceCard>
+
+        <LegacyMigrationCard />
 
         {/* App Info */}
         <SurfaceCard>

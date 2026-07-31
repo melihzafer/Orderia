@@ -13,6 +13,7 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import { AuthGate } from './src/components/AuthGate';
 import { OrderiaDataProvider } from './src/data/runtime';
 import { PwaLifecycleBanner } from './src/features/pwa';
+import { AppErrorBoundary, TelemetryIdentityBridge } from './src/observability';
 
 export default function App() {
   useEffect(() => {
@@ -23,28 +24,31 @@ export default function App() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <LocalizationProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <OrderiaDataProvider>
-                <AuthGate>
-                  <NotificationProvider>
-                    <AnalyticsProvider>
-                      <QRMenuProvider>
-                        <AppNavigator />
-                        <PwaLifecycleBanner />
-                        <StatusBar style="auto" />
-                      </QRMenuProvider>
-                    </AnalyticsProvider>
-                  </NotificationProvider>
-                </AuthGate>
-              </OrderiaDataProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </LocalizationProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <AppErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <LocalizationProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <TelemetryIdentityBridge />
+                <OrderiaDataProvider>
+                  <AuthGate>
+                    <NotificationProvider>
+                      <AnalyticsProvider>
+                        <QRMenuProvider>
+                          <AppNavigator />
+                          <PwaLifecycleBanner />
+                          <StatusBar style="auto" />
+                        </QRMenuProvider>
+                      </AnalyticsProvider>
+                    </NotificationProvider>
+                  </AuthGate>
+                </OrderiaDataProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </LocalizationProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </AppErrorBoundary>
   );
 }

@@ -75,10 +75,63 @@ describe('SupabaseMutationPushGateway collaboration routes', () => {
       }),
     );
   });
+
+  it('routes a check split to its own RPC instead of the generic mutation handler', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        status: 'applied',
+        repository: 'checks',
+        entityId: 'check-1',
+        serverVersion: 2,
+        committedAt: createdAt,
+      },
+      error: null,
+    });
+    const gateway = new SupabaseMutationPushGateway({ rpc } as never);
+
+    await expect(
+      gateway.push(
+        mutation('checks', 'check-1', { kind: 'split', sourceCheckId: 'check-1', moves: [] }, 1),
+      ),
+    ).resolves.toMatchObject({ entityId: 'check-1', repository: 'checks' });
+    expect(rpc).toHaveBeenCalledWith(
+      'apply_check_split_command',
+      expect.objectContaining({ requested_base_version: 1, requested_entity_id: 'check-1' }),
+    );
+  });
+
+  it('separates a partial void from a plain quantity change', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        status: 'applied',
+        repository: 'orderItems',
+        entityId: 'item-1',
+        serverVersion: 2,
+        committedAt: createdAt,
+      },
+      error: null,
+    });
+    const gateway = new SupabaseMutationPushGateway({ rpc } as never);
+
+    await gateway.push(
+      mutation('orderItems', 'item-1', { voidQuantity: 1, reasonId: 'reason-1' }, 1),
+    );
+    expect(rpc).toHaveBeenCalledWith(
+      'apply_order_item_void_command',
+      expect.objectContaining({ requested_entity_id: 'item-1' }),
+    );
+
+    rpc.mockClear();
+    await gateway.push(mutation('orderItems', 'item-1', { quantity: 4 }, 1));
+    expect(rpc).toHaveBeenCalledWith(
+      'apply_order_item_quantity_command',
+      expect.objectContaining({ requested_entity_id: 'item-1' }),
+    );
+  });
 });
 
 function mutation(
-  repository: 'orderBatches' | 'orderItems',
+  repository: 'orderBatches' | 'orderItems' | 'checks',
   entityId: string,
   payload: OutboxMutation['payload'],
   baseVersion?: number,

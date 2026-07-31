@@ -5,6 +5,7 @@ const root = path.resolve('dist');
 const requiredFiles = [
   'index.html',
   'manifest.webmanifest',
+  '_headers',
   'sw.js',
   'offline.html',
   'icons/icon-192.png',
@@ -39,6 +40,22 @@ for (const requiredMarkup of [
 }
 
 const files = await walk(root);
+const sourceMaps = files.filter((file) => file.endsWith('.map'));
+if (sourceMaps.length > 0) {
+  throw new Error(`Production web artifact exposes ${sourceMaps.length} source map files`);
+}
+
+const securityHeaders = await readFile(path.join(root, '_headers'), 'utf8');
+for (const requiredHeader of [
+  'Content-Security-Policy:',
+  'Strict-Transport-Security:',
+  'X-Content-Type-Options:',
+]) {
+  if (!securityHeaders.includes(requiredHeader)) {
+    throw new Error(`Production host header policy is missing ${requiredHeader}`);
+  }
+}
+
 const javascript = await Promise.all(
   files
     .filter((file) => file.endsWith('.js') && !file.endsWith('sw.js'))

@@ -22,38 +22,7 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
 
   async push(mutation: OutboxMutation): Promise<MutationPushResult> {
     const payload = remotePayload(mutation);
-    const { data, error } =
-      mutation.repository === 'orderBatches' && mutation.operation === 'command'
-        ? await this.client.rpc('apply_concurrent_order_batch', {
-            requested_organization_id: mutation.organizationId,
-            requested_branch_id: mutation.branchId,
-            requested_device_id: mutation.deviceId,
-            requested_client_mutation_id: mutation.clientMutationId,
-            requested_entity_id: mutation.entityId,
-            requested_payload: payload,
-          })
-        : mutation.repository === 'orderItems' &&
-            mutation.operation === 'command' &&
-            isNoteMutation(payload)
-          ? await this.client.rpc('apply_order_item_note_command', {
-              requested_organization_id: mutation.organizationId,
-              requested_branch_id: mutation.branchId,
-              requested_device_id: mutation.deviceId,
-              requested_client_mutation_id: mutation.clientMutationId,
-              requested_entity_id: mutation.entityId,
-              requested_payload: payload,
-              requested_base_version: mutation.baseVersion ?? null,
-            })
-          : await this.client.rpc('apply_client_mutation', {
-              requested_organization_id: mutation.organizationId,
-              requested_branch_id: mutation.branchId,
-              requested_device_id: mutation.deviceId,
-              requested_client_mutation_id: mutation.clientMutationId,
-              requested_mutation_type: remoteMutationType(mutation),
-              requested_entity_id: mutation.entityId,
-              requested_payload: payload,
-              requested_base_version: mutation.baseVersion ?? null,
-            });
+    const { data, error } = await this.invoke(mutation, payload);
 
     if (error) {
       throw new MutationPushError(error.message, parseRemoteErrorDetails(error));
@@ -61,14 +30,64 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
 
     return parseMutationResult(data);
   }
+
+  /**
+   * Her yerel komut kendi sunucu fonksiyonuna gider. Ayrim once depoya, sonra
+   * yuke bakilarak yapilir; yeni bir komut eklerken buraya tek bir dal eklenir.
+   */
+  private async invoke(
+    mutation: OutboxMutation,
+    payload: Json,
+  ): Promise<{ readonly data: Json; readonly error: RemoteError | null }> {
+    const identity = {
+      requested_organization_id: mutation.organizationId,
+      requested_branch_id: mutation.branchId,
+      requested_device_id: mutation.deviceId,
+      requested_client_mutation_id: mutation.clientMutationId,
+      requested_entity_id: mutation.entityId,
+      requested_payload: payload,
+    };
+    const versioned = { ...identity, requested_base_version: mutation.baseVersion ?? null };
+
+    if (mutation.operation === 'command') {
+      if (mutation.repository === 'orderBatches') {
+        return this.client.rpc('apply_concurrent_order_batch', identity);
+      }
+      if (mutation.repository === 'checks' && hasKey(payload, 'kind')) {
+        return this.client.rpc('apply_check_split_command', versioned);
+      }
+      if (mutation.repository === 'orderItems') {
+        if (hasKey(payload, 'voidQuantity')) {
+          return this.client.rpc('apply_order_item_void_command', versioned);
+        }
+        if (hasKey(payload, 'note')) {
+          return this.client.rpc('apply_order_item_note_command', versioned);
+        }
+        if (hasKey(payload, 'quantity')) {
+          return this.client.rpc('apply_order_item_quantity_command', versioned);
+        }
+      }
+    }
+
+    return this.client.rpc('apply_client_mutation', {
+      ...versioned,
+      requested_mutation_type: remoteMutationType(mutation),
+    });
+  }
 }
 
-function isNoteMutation(payload: Json): boolean {
+interface RemoteError {
+  readonly message: string;
+  readonly code?: string;
+  readonly details?: string;
+}
+
+function hasKey(payload: Json, key: string): boolean {
   return (
     typeof payload === 'object' &&
     payload !== null &&
     !Array.isArray(payload) &&
-    Object.prototype.hasOwnProperty.call(payload, 'note')
+    Object.prototype.hasOwnProperty.call(payload, key)
   );
 }
 

@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="tr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Orderia — POS Konsept v2</title>
+    <meta name="theme-color" content="#F6F4EF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ============ DESKTOP SAHNE (önizleme çerçevesi) ============ -->
+    <div class="stage">
+      <header class="stage-bar">
+        <div class="stage-brand">
+          <span class="stage-logo">O</span>
+          <div class="stage-brand-text">
+            <strong>Orderia</strong>
+            <span>Konsept v2 · Yüksek Sadakat Mockup</span>
+          </div>
+        </div>
+        <div class="stage-actions">
+          <button class="stage-btn" id="theme-toggle" title="Tema değiştir">
+            <i class="ri-moon-line"></i><span>Tema</span>
+          </button>
+          <button class="stage-btn" id="frame-toggle" title="Tam ekran">
+            <i class="ri-fullscreen-line"></i><span>Tam Ekran</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ============ TELEFON ============ -->
+      <div class="phone" id="phone">
+        <div class="phone-island"></div>
+        <div class="statusbar">
+          <span class="status-time" id="clock">09:41</span>
+          <div class="status-icons">
+            <i class="ri-signal-tower-fill"></i>
+            <i class="ri-wifi-fill"></i>
+            <i class="ri-battery-fill"></i>
+          </div>
+        </div>
+
+        <div class="app">
+          <!-- ======= UYGULAMA ÜST BARİ ======= -->
+          <header class="app-header">
+            <div class="brand">
+              <div class="brand-mark"><i class="ri-restaurant-2-line"></i></div>
+              <div class="brand-text">
+                <span class="brand-name">Orderia</span>
+                <span class="brand-branch">Kadıköy · Akşam Vardiyası</span>
+              </div>
+            </div>
+            <div class="header-actions">
+              <button class="icon-btn" id="search-open" aria-label="Ara">
+                <i class="ri-search-line"></i>
+              </button>
+              <button class="icon-btn has-dot" id="notif-btn" aria-label="Bildirimler">
+                <i class="ri-notification-3-line"></i>
+              </button>
+            </div>
+          </header>
+
+          <!-- ======= GÖRÜNÜM BAŞLIĞI ======= -->
+          <div class="view-head">
+            <h1 class="view-title" id="view-title">Masalar</h1>
+            <span class="view-sub" id="view-sub">6 aktif adisyon · 16 masa</span>
+          </div>
+
+          <!-- ======= GÖVDE ======= -->
+          <main class="app-body">
+            <!-- ========== 1. MASALAR ========== -->
+            <section class="panel active" id="tables-view">
+              <div class="kpi-row">
+                <div class="kpi">
+                  <span class="kpi-label">Açık Adisyon</span>
+                  <span class="kpi-value num" id="kpi-revenue">₺0</span>
+                  <span class="kpi-hint up"><i class="ri-arrow-up-line"></i>%18 dünden</span>
+                </div>
+                <div class="kpi">
+                  <span class="kpi-label">Doluluk</span>
+                  <span class="kpi-value num" id="kpi-occupied">0/16</span>
+                  <span class="kpi-hint" id="kpi-occupied-pct">—</span>
+                </div>
+                <div class="kpi">
+                  <span class="kpi-label">Ort. Oturma</span>
+                  <span class="kpi-value num">48<span class="kpi-unit">dk</span></span>
+                  <span class="kpi-hint down"><i class="ri-arrow-down-line"></i>6 dk kısaldı</span>
+                </div>
+              </div>
+
+              <div class="seg-row" id="hall-seg">
+                <button class="seg-btn active" data-hall="all">Tümü</button>
+                <button class="seg-btn" data-hall="main">Ana Salon</button>
+                <button class="seg-btn" data-hall="terrace">Teras</button>
+                <button class="seg-btn" data-hall="vip">VIP Bahçe</button>
+                <button class="seg-btn" data-hall="bar">Bar</button>
+              </div>
+
+              <div class="chip-row" id="status-chips">
+                <button class="chip active" data-status="all">Tümü</button>
+                <button class="chip" data-status="free"><i class="dot dot-free"></i>Boş</button>
+                <button class="chip" data-status="occupied"><i class="dot dot-occ"></i>Dolu</button>
+                <button class="chip" data-status="billing">
+                  <i class="dot dot-bill"></i>Hesap
+                </button>
+              </div>
+
+              <div class="tables-map" id="tables-grid"></div>
+
+              <div class="map-legend">
+                <span><i class="dot dot-free"></i>Boş</span>
+                <span><i class="dot dot-occ"></i>Dolu</span>
+                <span><i class="dot dot-bill"></i>Hesap İstedi</span>
+              </div>
+            </section>
+
+            <!-- ========== 2. SİPARİŞ / POS ========== -->
+            <section class="panel" id="pos-view">
+              <button class="table-picker" id="table-picker-btn">
+                <div class="tp-left">
+                  <span class="tp-label">Aktif Masa</span>
+                  <span class="tp-name" id="tp-name">Masa 01</span>
+                </div>
+                <div class="tp-right">
+                  <span class="status-pill occ" id="tp-status">Dolu</span>
+                  <i class="ri-expand-up-down-line"></i>
+                </div>
+              </button>
+
+              <div class="cat-row" id="cat-row">
+                <button class="cat-btn active" data-cat="all">Tümü</button>
+                <button class="cat-btn" data-cat="burgers">Burger</button>
+                <button class="cat-btn" data-cat="pizzas">Pizza</button>
+                <button class="cat-btn" data-cat="mains">Izgara</button>
+                <button class="cat-btn" data-cat="drinks">İçecek</button>
+                <button class="cat-btn" data-cat="desserts">Tatlı</button>
+              </div>
+
+              <div class="product-grid" id="product-grid"></div>
+            </section>
+
+            <!-- ========== 3. MENÜ YÖNETİMİ ========== -->
+            <section class="panel" id="menu-view">
+              <div class="panel-head">
+                <p class="panel-note">8 ürün · 5 kategori</p>
+                <button class="btn btn-primary btn-sm" id="btn-add-item">
+                  <i class="ri-add-line"></i>Yeni Ürün
+                </button>
+              </div>
+              <div class="menu-list" id="menu-list"></div>
+            </section>
+
+            <!-- ========== 4. RAPOR ========== -->
+            <section class="panel" id="analytics-view">
+              <div class="big-stat">
+                <span class="big-stat-label">Bugünkü Ciro</span>
+                <span class="big-stat-value num">₺12.480</span>
+                <span class="kpi-hint up"><i class="ri-arrow-up-line"></i>%18 · dün ₺10.570</span>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3>Saatlik Satış</h3>
+                  <span class="card-meta">12:00 – 22:00</span>
+                </div>
+                <div class="bar-chart">
+                  <div class="bar" style="--h: 32%">
+                    <i class="bar-tip num">₺1.2k</i><span class="num">12</span>
+                  </div>
+                  <div class="bar" style="--h: 58%">
+                    <i class="bar-tip num">₺2.4k</i><span class="num">14</span>
+                  </div>
+                  <div class="bar peak" style="--h: 96%">
+                    <i class="bar-tip num">₺4.1k</i><span class="num">16</span>
+                  </div>
+                  <div class="bar" style="--h: 52%">
+                    <i class="bar-tip num">₺2.2k</i><span class="num">18</span>
+                  </div>
+                  <div class="bar" style="--h: 78%">
+                    <i class="bar-tip num">₺3.5k</i><span class="num">20</span>
+                  </div>
+                  <div class="bar" style="--h: 44%">
+                    <i class="bar-tip num">₺1.8k</i><span class="num">22</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <h3>En Çok Satanlar</h3>
+                  <span class="card-meta">Bu hafta</span>
+                </div>
+                <div class="rank-list" id="rank-list"></div>
+              </div>
+            </section>
+
+            <!-- ========== 5. AYARLAR ========== -->
+            <section class="panel" id="settings-view">
+              <div class="profile-card">
+                <div class="avatar-lg">MZ</div>
+                <div class="profile-info">
+                  <strong>Melih Zafer</strong>
+                  <span>Genel Müdür · Kadıköy Merkez</span>
+                </div>
+                <button class="icon-btn" aria-label="Profili düzenle">
+                  <i class="ri-pencil-line"></i>
+                </button>
+              </div>
+
+              <span class="group-label">Vardiya</span>
+              <div class="group">
+                <button class="row" data-toast="Vardiya listesi yakında">
+                  <span class="row-icon"><i class="ri-team-line"></i></span>
+                  <span class="row-text">Vardiyadaki Personel</span>
+                  <span class="row-meta">2 aktif</span>
+                  <i class="ri-arrow-right-s-line row-chevron"></i>
+                </button>
+                <button class="row" id="btn-copy-qr">
+                  <span class="row-icon"><i class="ri-qr-code-line"></i></span>
+                  <span class="row-text">Masa QR Menü Bağlantısı</span>
+                  <i class="ri-file-copy-line row-chevron"></i>
+                </button>
+              </div>
+
+              <span class="group-label">Donanım</span>
+              <div class="group">
+                <button class="row" data-toast="Yazıcı zaten bağlı">
+                  <span class="row-icon"><i class="ri-printer-line"></i></span>
+                  <span class="row-text">Mutfak Termal Yazıcı</span>
+                  <span class="status-pill ok">Bağlı</span>
+                </button>
+              </div>
+
+              <span class="group-label">Güvenlik</span>
+              <div class="group">
+                <button class="row" data-toast="İzin yönetimi yakında">
+                  <span class="row-icon"><i class="ri-shield-keyhole-line"></i></span>
+                  <span class="row-text">Garson İzinleri & POS Kilidi</span>
+                  <i class="ri-arrow-right-s-line row-chevron"></i>
+                </button>
+                <div class="row static">
+                  <span class="row-icon"><i class="ri-contrast-2-line"></i></span>
+                  <span class="row-text">Koyu Tema</span>
+                  <button
+                    class="switch"
+                    id="theme-switch"
+                    role="switch"
+                    aria-checked="false"
+                    aria-label="Koyu tema"
+                  >
+                    <i></i>
+                  </button>
+                </div>
+              </div>
+
+              <button class="btn btn-ghost-danger btn-block" data-toast="Çıkış bu demoda kapalı">
+                <i class="ri-logout-box-r-line"></i>Oturumu Kapat
+              </button>
+            </section>
+          </main>
+
+          <!-- ======= YÜZEN SEPET (POS) ======= -->
+          <button class="cart-fab" id="cart-fab">
+            <span class="cart-fab-count num" id="fab-count">0</span>
+            <span class="cart-fab-text">
+              <strong>Adisyon</strong>
+              <span id="fab-sub">Ürün seçilmedi</span>
+            </span>
+            <span class="cart-fab-total num" id="fab-total">₺0</span>
+            <i class="ri-arrow-up-s-line"></i>
+          </button>
+
+          <!-- ======= ALT NAVİGASYON ======= -->
+          <nav class="bottom-nav">
+            <button class="nav-item active" data-tab="tables-view">
+              <i class="ri-layout-grid-line"></i><span>Masalar</span>
+            </button>
+            <button class="nav-item" data-tab="pos-view">
+              <i class="ri-bill-line"></i><span>Sipariş</span>
+              <i class="nav-badge num" id="nav-badge" hidden>0</i>
+            </button>
+            <button class="nav-item" data-tab="menu-view">
+              <i class="ri-book-open-line"></i><span>Menü</span>
+            </button>
+            <button class="nav-item" data-tab="analytics-view">
+              <i class="ri-line-chart-line"></i><span>Rapor</span>
+            </button>
+            <button class="nav-item" data-tab="settings-view">
+              <i class="ri-settings-3-line"></i><span>Ayarlar</span>
+            </button>
+          </nav>
+
+          <!-- ============ SHEET: ADİSYON ============ -->
+          <div class="sheet-backdrop" id="sheet-cart">
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-head">
+                <div>
+                  <h2 class="sheet-title" id="cart-title">Masa 01</h2>
+                  <span class="sheet-sub" id="cart-sub">Garson — · —</span>
+                </div>
+                <button class="sheet-close" data-close="sheet-cart" aria-label="Kapat">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+
+              <div class="sheet-body" id="cart-items"></div>
+
+              <div class="sheet-foot">
+                <div class="sum-row">
+                  <span>Ara Toplam</span><span class="num" id="sum-sub">₺0.00</span>
+                </div>
+                <div class="sum-row">
+                  <span>KDV (%10)</span><span class="num" id="sum-tax">₺0.00</span>
+                </div>
+                <div class="sum-row total">
+                  <span>Toplam</span><span class="num" id="sum-total">₺0.00</span>
+                </div>
+                <div class="sheet-actions">
+                  <button class="btn btn-secondary" id="btn-kitchen">
+                    <i class="ri-fire-line"></i>Mutfağa Gönder
+                  </button>
+                  <button class="btn btn-primary" id="btn-pay">
+                    <i class="ri-bank-card-line"></i>Ödeme Al
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ SHEET: ÖDEME ============ -->
+          <div class="sheet-backdrop" id="sheet-pay">
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-head">
+                <div>
+                  <h2 class="sheet-title" id="pay-title">Ödeme</h2>
+                  <span class="sheet-sub" id="pay-sub">Masa 01</span>
+                </div>
+                <button class="sheet-close" data-close="sheet-pay" aria-label="Kapat">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+
+              <div class="sheet-body" id="pay-body">
+                <div class="pay-amount">
+                  <span>Ödenecek Tutar</span>
+                  <strong class="num" id="pay-amount">₺0.00</strong>
+                </div>
+
+                <span class="field-label">Bölüşme</span>
+                <div class="seg-full" id="split-seg">
+                  <button class="seg-btn active" data-split="full">Tek Ödeme</button>
+                  <button class="seg-btn" data-split="equal">Eşit Böl</button>
+                  <button class="seg-btn" data-split="item">Ürün Bazlı</button>
+                </div>
+
+                <div class="split-equal" id="split-equal" hidden>
+                  <div class="stepper">
+                    <button class="step-btn" id="guest-minus" aria-label="Azalt">
+                      <i class="ri-subtract-line"></i>
+                    </button>
+                    <span class="num" id="guest-count">2</span>
+                    <button class="step-btn" id="guest-plus" aria-label="Arttır">
+                      <i class="ri-add-line"></i>
+                    </button>
+                  </div>
+                  <span class="split-hint num" id="split-hint">kişi başı ₺0.00</span>
+                </div>
+                <p class="split-note" id="split-note" hidden>
+                  Ürün bazlı bölüşmede misafirler adisyondaki kalemleri tek tek seçer.
+                </p>
+
+                <span class="field-label">Ödeme Yöntemi</span>
+                <div class="pay-methods" id="pay-methods">
+                  <button class="pay-method active" data-pay="card">
+                    <i class="ri-bank-card-line"></i><span>Kart</span>
+                  </button>
+                  <button class="pay-method" data-pay="cash">
+                    <i class="ri-money-dollar-circle-line"></i><span>Nakit</span>
+                  </button>
+                  <button class="pay-method" data-pay="nfc">
+                    <i class="ri-contactless-payment-line"></i><span>Temassız</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="sheet-foot">
+                <button class="btn btn-primary btn-block" id="btn-pay-confirm">
+                  <i class="ri-check-line"></i>Ödemeyi Tamamla
+                </button>
+              </div>
+
+              <!-- başarı katmanı -->
+              <div class="pay-success" id="pay-success" hidden>
+                <div class="success-ring"><i class="ri-check-line"></i></div>
+                <strong>Ödeme Alındı</strong>
+                <span id="success-sub">Masa 01 serbest bırakıldı</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ SHEET: ÜRÜN OPSİYONLARI ============ -->
+          <div class="sheet-backdrop" id="sheet-mod">
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-head">
+                <div>
+                  <h2 class="sheet-title" id="mod-title">Ürün</h2>
+                  <span class="sheet-sub num" id="mod-price">₺0.00</span>
+                </div>
+                <button class="sheet-close" data-close="sheet-mod" aria-label="Kapat">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+
+              <div class="sheet-body">
+                <div class="mod-qty">
+                  <span class="field-label">Adet</span>
+                  <div class="stepper">
+                    <button class="step-btn" id="mod-minus" aria-label="Azalt">
+                      <i class="ri-subtract-line"></i>
+                    </button>
+                    <span class="num" id="mod-qty">1</span>
+                    <button class="step-btn" id="mod-plus" aria-label="Arttır">
+                      <i class="ri-add-line"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <span class="field-label">Pişme Tercihi</span>
+                <div class="opt-row" id="mod-cook">
+                  <button class="opt-btn" data-extra="0">Az Pişmiş</button>
+                  <button class="opt-btn active" data-extra="0">Orta</button>
+                  <button class="opt-btn" data-extra="0">Çok Pişmiş</button>
+                </div>
+
+                <span class="field-label">Ekstralar</span>
+                <div class="opt-row" id="mod-extras">
+                  <button class="opt-btn multi" data-extra="25">
+                    Cheddar <em class="num">+₺25</em>
+                  </button>
+                  <button class="opt-btn multi" data-extra="40">
+                    Trüf Sos <em class="num">+₺40</em>
+                  </button>
+                  <button class="opt-btn multi" data-extra="30">
+                    Soğan Halkası <em class="num">+₺30</em>
+                  </button>
+                </div>
+              </div>
+
+              <div class="sheet-foot">
+                <button class="btn btn-primary btn-block" id="btn-mod-confirm">
+                  <i class="ri-add-line"></i><span>Ekle · </span
+                  ><span class="num" id="mod-total">₺0.00</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ SHEET: MASA SEÇİCİ ============ -->
+          <div class="sheet-backdrop" id="sheet-tables">
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-head">
+                <div>
+                  <h2 class="sheet-title">Masa Seç</h2>
+                  <span class="sheet-sub">Siparişin işleneceği masayı seçin</span>
+                </div>
+                <button class="sheet-close" data-close="sheet-tables" aria-label="Kapat">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+              <div class="sheet-body">
+                <div class="pick-list" id="pick-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ SHEET: ARAMA ============ -->
+          <div class="sheet-backdrop" id="sheet-search">
+            <div class="sheet">
+              <div class="sheet-handle"></div>
+              <div class="sheet-head">
+                <div class="search-field">
+                  <i class="ri-search-line"></i>
+                  <input
+                    type="search"
+                    id="search-input"
+                    placeholder="Menüde ara…"
+                    autocomplete="off"
+                  />
+                </div>
+                <button class="sheet-close" data-close="sheet-search" aria-label="Kapat">
+                  <i class="ri-close-line"></i>
+                </button>
+              </div>
+              <div class="sheet-body">
+                <div class="search-results" id="search-results"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- toast -->
+          <div class="toast-wrap" id="toast-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

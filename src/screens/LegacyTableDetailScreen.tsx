@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateId } from '../constants/branding';
+import { QuantityStepper } from '../components/QuantityStepper';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   ServiceButton,
@@ -16,6 +17,7 @@ import {
   useAdaptiveLayout,
 } from '../design-system';
 import { useLocalization } from '../i18n';
+import { Translation } from '../i18n/languages';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useLayoutStore, useMenuStore, useOrderStore } from '../stores';
 import { MenuItem, TicketLine } from '../types';
@@ -52,6 +54,7 @@ export default function LegacyTableDetailScreen() {
   const openTable = useOrderStore((state) => state.openTable);
   const addTicketLine = useOrderStore((state) => state.addTicketLine);
   const updateTicketLine = useOrderStore((state) => state.updateTicketLine);
+  const updateLineQuantity = useOrderStore((state) => state.updateLineQuantity);
   const tickets = useMemo(
     () =>
       Object.values(openTickets)
@@ -71,6 +74,7 @@ export default function LegacyTableDetailScreen() {
   const [noteProduct, setNoteProduct] = useState<MenuItem>();
   const [note, setNote] = useState('');
   const [cancelling, setCancelling] = useState<TicketLine>();
+  const [showDraftModal, setShowDraftModal] = useState(false);
   const selectedTicket = tickets.find((ticket) => ticket.id === selectedTicketId);
   const activeItems = useMemo(() => {
     const matcher = createTextMatcher(query);
@@ -121,6 +125,61 @@ export default function LegacyTableDetailScreen() {
         },
       ]);
     }
+  };
+
+  const changeDraftQuantity = (lineId: string, delta: number) => {
+    remember(
+      draft
+        .map((line) => (line.id === lineId ? { ...line, quantity: line.quantity + delta } : line))
+        .filter((line) => line.quantity > 0),
+    );
+  };
+
+  const decrementDraftProduct = (item: MenuItem) => {
+    // En son eklenen (notlu satırlar dahil) eşleşen satırı azalt
+    const index = draft.reduce(
+      (found, line, lineIndex) => (line.item.id === item.id ? lineIndex : found),
+      -1,
+    );
+    if (index >= 0) {
+      changeDraftQuantity(draft[index].id, -1);
+    }
+  };
+
+  const removeDraftLine = (lineId: string) => {
+    remember(draft.filter((line) => line.id !== lineId));
+  };
+
+  const repeatTicketLines = () => {
+    if (!selectedTicket) return;
+    const lines = selectedTicket.lines.filter((line) => line.status !== 'cancelled');
+    if (lines.length === 0) return;
+    const additions = lines.flatMap((line) => {
+      const item = menuItems.find((candidate) => candidate.id === line.menuItemId);
+      if (!item || !item.isActive) return [];
+      return [
+        {
+          id: generateId(),
+          item,
+          quantity: line.quantity,
+          ...(line.note ? { note: line.note } : {}),
+        },
+      ];
+    });
+    if (additions.length > 0) {
+      remember([...draft, ...additions]);
+    }
+  };
+
+  const appendNotePreset = (preset: string) => {
+    setNote((current) => {
+      const trimmed = current.trim();
+      if (!trimmed) return preset;
+      if (trimmed.toLocaleLowerCase('tr').includes(preset.toLocaleLowerCase('tr'))) {
+        return trimmed;
+      }
+      return `${trimmed}, ${preset}`;
+    });
   };
 
   const sendDraft = () => {
@@ -192,6 +251,7 @@ export default function LegacyTableDetailScreen() {
 
       <ScrollView
         horizontal
+        accessibilityRole="tablist"
         contentContainerStyle={{
           alignItems: 'center',
           gap: tokens.space.xs,
@@ -205,6 +265,7 @@ export default function LegacyTableDetailScreen() {
           <LocalChip
             key={ticket.id}
             label={ticket.name || `${t.orderName} ${index + 1}`}
+            role="tab"
             onPress={() => {
               setPendingTicketName('');
               setSelectedTicketId(ticket.id);
@@ -215,6 +276,7 @@ export default function LegacyTableDetailScreen() {
         {pendingTicketName ? (
           <LocalChip
             label={pendingTicketName}
+            role="tab"
             onPress={() => setSelectedTicketId(undefined)}
             selected={!selectedTicketId}
           />
@@ -222,6 +284,7 @@ export default function LegacyTableDetailScreen() {
         <LocalChip
           icon="add"
           label={t.addOrder}
+          role="tab"
           onPress={() => {
             setNewTicketName('');
             setShowTicketModal(true);
@@ -232,6 +295,7 @@ export default function LegacyTableDetailScreen() {
 
       {compact ? (
         <View
+          accessibilityRole="tablist"
           style={{
             flexDirection: 'row',
             paddingBottom: tokens.space.xs,
@@ -323,6 +387,19 @@ export default function LegacyTableDetailScreen() {
                           {line.createdByName || t.deviceOnly}
                           {line.cancellationReason ? ` · ${line.cancellationReason}` : ''}
                         </Text>
+                        {line.status === 'pending' && selectedTicket ? (
+                          <QuantityStepper
+                            decreaseLabel={`${t.decrease}: ${line.nameSnapshot}`}
+                            increaseLabel={`${t.increase}: ${line.nameSnapshot}`}
+                            onDecrease={() =>
+                              updateLineQuantity(selectedTicket.id, line.id, line.quantity - 1)
+                            }
+                            onIncrease={() =>
+                              updateLineQuantity(selectedTicket.id, line.id, line.quantity + 1)
+                            }
+                            quantity={line.quantity}
+                          />
+                        ) : null}
                       </View>
                       <View style={{ alignItems: 'flex-end' }}>
                         <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
@@ -357,11 +434,13 @@ export default function LegacyTableDetailScreen() {
               />
               <ScrollView
                 horizontal
+                accessibilityRole="tablist"
                 contentContainerStyle={{ gap: tokens.space.xs, paddingTop: tokens.space.sm }}
                 showsHorizontalScrollIndicator={false}
               >
                 <LocalChip
                   label={t.allCategories}
+                  role="tab"
                   onPress={() => setCategoryId('all')}
                   selected={categoryId === 'all'}
                 />
@@ -369,6 +448,7 @@ export default function LegacyTableDetailScreen() {
                   <LocalChip
                     key={category.id}
                     label={category.name}
+                    role="tab"
                     onPress={() => setCategoryId(category.id)}
                     selected={categoryId === category.id}
                   />
@@ -421,7 +501,7 @@ export default function LegacyTableDetailScreen() {
                         </Text>
                         <View
                           style={{
-                            alignItems: 'flex-end',
+                            alignItems: 'center',
                             flexDirection: 'row',
                             justifyContent: 'space-between',
                             marginTop: 'auto',
@@ -431,7 +511,14 @@ export default function LegacyTableDetailScreen() {
                             {formatPrice(item.price)}
                           </Text>
                           {count > 0 ? (
-                            <ServiceStatusPill label={`+${count}`} tone="warning" />
+                            <QuantityStepper
+                              compact
+                              decreaseLabel={`${t.decrease}: ${item.name}`}
+                              increaseLabel={`${t.increase}: ${item.name}`}
+                              onDecrease={() => decrementDraftProduct(item)}
+                              onIncrease={() => addProduct(item)}
+                              quantity={count}
+                            />
                           ) : null}
                         </View>
                       </Pressable>
@@ -470,19 +557,34 @@ export default function LegacyTableDetailScreen() {
           }}
         />
         <ServiceIconButton
+          disabled={
+            !selectedTicket ||
+            selectedTicket.lines.filter((line) => line.status !== 'cancelled').length === 0
+          }
+          icon="repeat"
+          label={t.repeatLastOrder}
+          onPress={repeatTicketLines}
+        />
+        <ServiceIconButton
           disabled={draft.length === 0}
           icon="trash-outline"
           label={t.delete}
           onPress={() => remember([])}
         />
-        <View style={{ flex: 1 }}>
+        <Pressable
+          accessibilityHint={t.editDraft}
+          accessibilityRole="button"
+          disabled={draft.length === 0}
+          onPress={() => setShowDraftModal(true)}
+          style={{ flex: 1, minHeight: 48, justifyContent: 'center' }}
+        >
           <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
             {draft.reduce((sum, line) => sum + line.quantity, 0)} {t.itemsFound}
           </Text>
           <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
             {formatPrice(draftTotal)}
           </Text>
-        </View>
+        </Pressable>
         <ServiceButton
           disabled={draft.length === 0}
           icon="paper-plane"
@@ -531,6 +633,31 @@ export default function LegacyTableDetailScreen() {
           placeholder={t.addNoteHint}
           value={note}
         />
+        <Text
+          style={[
+            tokens.typography.caption,
+            { color: tokens.colors.textSubtle, marginBottom: tokens.space.xxs },
+          ]}
+        >
+          {t.quickNotes}
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: tokens.space.xs,
+            marginBottom: tokens.space.sm,
+          }}
+        >
+          {notePresets(t).map((preset) => (
+            <LocalChip
+              key={preset}
+              label={preset}
+              onPress={() => appendNotePreset(preset)}
+              selected={false}
+            />
+          ))}
+        </View>
         <LocalModalActions
           confirmLabel={t.addItem}
           onCancel={() => setNoteProduct(undefined)}
@@ -539,6 +666,66 @@ export default function LegacyTableDetailScreen() {
             setNoteProduct(undefined);
           }}
         />
+      </LocalModal>
+
+      <LocalModal
+        onClose={() => setShowDraftModal(false)}
+        title={t.editDraft}
+        visible={showDraftModal}
+      >
+        {draft.length === 0 ? (
+          <Text
+            style={[
+              tokens.typography.body,
+              { color: tokens.colors.textSubtle, marginBottom: tokens.space.sm },
+            ]}
+          >
+            {t.draftEmpty}
+          </Text>
+        ) : (
+          <ScrollView style={{ maxHeight: 420 }}>
+            {draft.map((line) => (
+              <View
+                key={line.id}
+                style={{
+                  alignItems: 'center',
+                  borderBottomColor: tokens.colors.borderLight,
+                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  gap: tokens.space.sm,
+                  paddingVertical: tokens.space.sm,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+                    {line.item.name}
+                  </Text>
+                  {line.note ? (
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
+                      {t.note}: {line.note}
+                    </Text>
+                  ) : null}
+                  <Text style={[tokens.typography.caption, { color: tokens.colors.textMuted }]}>
+                    {formatPrice(line.item.price * line.quantity)}
+                  </Text>
+                </View>
+                <QuantityStepper
+                  decreaseLabel={`${t.decrease}: ${line.item.name}`}
+                  increaseLabel={`${t.increase}: ${line.item.name}`}
+                  onDecrease={() => changeDraftQuantity(line.id, -1)}
+                  onIncrease={() => changeDraftQuantity(line.id, 1)}
+                  quantity={line.quantity}
+                />
+                <ServiceIconButton
+                  icon="trash-outline"
+                  label={`${t.delete}: ${line.item.name}`}
+                  onPress={() => removeDraftLine(line.id)}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        )}
+        <LocalModalActions onCancel={() => setShowDraftModal(false)} />
       </LocalModal>
 
       <LocalModal
@@ -579,21 +766,34 @@ export default function LegacyTableDetailScreen() {
   );
 }
 
+function notePresets(t: Translation): readonly string[] {
+  return [
+    t.presetHurry,
+    t.presetNoOnion,
+    t.presetRare,
+    t.presetWellDone,
+    t.presetSpicy,
+    t.presetSauceSide,
+  ];
+}
+
 function LocalChip({
   label,
   selected,
   onPress,
   icon,
+  role = 'button',
 }: {
   readonly label: string;
   readonly selected: boolean;
   readonly onPress: () => void;
   readonly icon?: keyof typeof Ionicons.glyphMap;
+  readonly role?: 'button' | 'tab';
 }) {
   const { tokens } = useTheme();
   return (
     <Pressable
-      accessibilityRole="tab"
+      accessibilityRole={role}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => ({

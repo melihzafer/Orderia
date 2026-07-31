@@ -9,11 +9,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AppState, Platform } from 'react-native';
+import { AppState, Linking, Platform } from 'react-native';
 import uuid from 'react-native-uuid';
+import { captureOperationalError, recordOperationalEvent } from '../observability';
 import { AuthGateway, SupabaseAuthGateway } from '../services/supabase/authGateway';
-import { getSupabaseClient, subscribeToNativeAuthAutoRefresh } from '../services/supabase/client';
-import { DeviceRow } from '../services/supabase/database.types';
+import {
+  clearAuthRedirectParams,
+  getSupabaseClient,
+  subscribeToNativeAuthAutoRefresh,
+} from '../services/supabase/client';
+import { DeviceRow, SignupRequestRow } from '../services/supabase/database.types';
 import {
   AuthContextValue,
   AuthStatus,
@@ -24,7 +29,7 @@ import {
 
 const deviceStorageKey = 'orderia.cloud.device_id';
 const branchStorageKeyPrefix = 'orderia.cloud.active_branch';
-const defaultAppVersion = '1.0.1';
+const defaultAppVersion = '2.0.0';
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -65,6 +70,8 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
   const [activeBranchId, setActiveBranchId] = useState<string | null>(null);
   const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
   const [devices, setDevices] = useState<readonly DeviceRow[]>([]);
+  const [pendingSignupEmail, setPendingSignupEmail] = useState<string | undefined>();
+  const [pendingApprovals, setPendingApprovals] = useState<readonly SignupRequestRow[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     resolution.configurationError,
   );
@@ -98,6 +105,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       setDevices([]);
       setErrorMessage(undefined);
       setStatus('ready');
+      recordOperationalEvent('auth_success', { operation: 'activate_branch' });
     },
     [gateway],
   );
@@ -128,6 +136,18 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
 
         const branches = accessibleBranches(targetWorkspace);
         if (branches.length === 0) {
+          // Üyelik yok: bekleyen onay başvurusu var mı?
+          const signupRequest = await gateway.getMySignupRequest().catch(() => null);
+          if (revision !== hydrationRevision.current) return;
+          if (signupRequest?.status === 'pending') {
+            setSession(targetSession);
+            setWorkspace(targetWorkspace);
+            setActiveBranchId(null);
+            setPendingSignupEmail(signupRequest.email);
+            setErrorMessage(undefined);
+            setStatus('pending_approval');
+            return;
+          }
           setSession(targetSession);
           setWorkspace(targetWorkspace);
           setActiveBranchId(null);
@@ -155,6 +175,10 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         if (revision !== hydrationRevision.current) return;
 
         if (isDeviceRevocationError(error)) {
+          captureOperationalError(error, 'auth_failure', {
+            operation: 'restore_revoked_device',
+            errorClass: error instanceof Error ? error.name : 'UnknownError',
+          });
           await gateway.signOut().catch(() => undefined);
           setSession(null);
           setWorkspace(null);
@@ -169,6 +193,10 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setActiveBranchId(null);
         setErrorMessage('Your Orderia workspace could not be loaded.');
         setStatus('error');
+        captureOperationalError(error, 'auth_failure', {
+          operation: 'restore_workspace',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
       }
     },
     [activateBranch, gateway],
@@ -186,12 +214,17 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     }
 
     const unsubscribeAuth = gateway.onAuthStateChange((_event, nextSession) => {
+      if (nextSession) clearAuthRedirectParams();
       void restoreSession(nextSession);
     });
     void gateway
       .getSession()
       .then(restoreSession)
-      .catch(() => {
+      .catch((error) => {
+        captureOperationalError(error, 'auth_failure', {
+          operation: 'restore_session',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
         setErrorMessage('The saved session could not be restored.');
         setStatus('signed_out');
       });
@@ -202,6 +235,34 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       unsubscribeRefresh();
     };
   }, [gateway, restoreSession, suppliedGateway]);
+
+  // Native derlemede Google donusu derin baglantiyla gelir; kodu oturuma
+  // burada takas ederiz. Webde bunu Supabase istemcisi kendi yapar.
+  useEffect(() => {
+    if (!gateway || Platform.OS === 'web') return;
+
+    const handleUrl = (url: string) => {
+      if (!url.includes('code=')) return;
+      void gateway
+        .completeOAuthRedirect(url)
+        .then(restoreSession)
+        .catch((error) => {
+          captureOperationalError(error, 'auth_failure', {
+            operation: 'complete_oauth_redirect',
+            errorClass: error instanceof Error ? error.name : 'UnknownError',
+          });
+          setStatus('signed_out');
+          setErrorMessage('Google sign-in could not be completed. Please try again.');
+        });
+    };
+
+    const subscription = Linking.addEventListener('url', (event) => handleUrl(event.url));
+    void Linking.getInitialURL().then((url) => {
+      if (url) handleUrl(url);
+    });
+
+    return () => subscription.remove();
+  }, [gateway, restoreSession]);
 
   const activeBranch = workspace?.branches.find((branch) => branch.id === activeBranchId) ?? null;
   const activeOrganization =
@@ -222,12 +283,82 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       try {
         const nextSession = await gateway.signIn(email.trim(), password);
         await restoreSession(nextSession);
-      } catch {
+      } catch (error) {
+        captureOperationalError(error, 'auth_failure', {
+          operation: 'sign_in',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
         setStatus('signed_out');
         setErrorMessage('Email or password is incorrect.');
       }
     },
     [gateway, restoreSession],
+  );
+
+  /**
+   * Google ile giris. PWA'da da calisir: Supabase sayfayi yonlendirir, geri
+   * donuste oturum URL'den okunur ve adres cubugu temizlenir. Boylece garson
+   * sifre hatirlamak zorunda kalmaz ve verisi kendi hesabina bagli kalir.
+   */
+  const signInWithGoogle = useCallback(async () => {
+    if (!gateway) {
+      throw new Error('Orderia Cloud is not configured');
+    }
+
+    setErrorMessage(undefined);
+    try {
+      const handoff = await gateway.startGoogleSignIn(oauthRedirectUrl());
+      if (handoff.redirected) {
+        // Tarayici Supabase'e gidiyor; donusteki oturumu onAuthStateChange alir.
+        return;
+      }
+      if (!handoff.authorizationUrl) {
+        throw new Error('oauth_authorization_url_missing');
+      }
+      setStatus('initializing');
+      await Linking.openURL(handoff.authorizationUrl);
+    } catch (error) {
+      captureOperationalError(error, 'auth_failure', {
+        operation: 'sign_in_google',
+        errorClass: error instanceof Error ? error.name : 'UnknownError',
+      });
+      setStatus('signed_out');
+      setErrorMessage('Google sign-in could not be started. Check the connection and try again.');
+    }
+  }, [gateway]);
+
+  const signUp = useCallback(
+    async (email: string, password: string, displayName: string) => {
+      if (!gateway) {
+        throw new Error('Orderia Cloud is not configured');
+      }
+
+      setStatus('initializing');
+      setErrorMessage(undefined);
+      try {
+        const nextSession = await gateway.signUp(email.trim(), password, displayName.trim());
+        const request = await gateway.requestSignup(displayName.trim());
+        setSession(nextSession);
+        setPendingSignupEmail(request.email);
+        setStatus('pending_approval');
+        recordOperationalEvent('auth_success', { operation: 'sign_up' });
+      } catch (error) {
+        captureOperationalError(error, 'auth_failure', {
+          operation: 'sign_up',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        setStatus('signed_out');
+        if (error instanceof Error && error.message === 'email_confirmation_must_be_disabled') {
+          setErrorMessage(
+            'This Supabase project still sends confirmation emails to users. Disable "Confirm email" in Supabase Auth settings so only the owner receives approval emails.',
+          );
+        } else {
+          setErrorMessage('Registration failed. The email may already be in use.');
+        }
+        throw error;
+      }
+    },
+    [gateway],
   );
 
   const signOut = useCallback(async () => {
@@ -239,6 +370,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     setActiveBranchId(null);
     setCurrentDeviceId(null);
     setDevices([]);
+    setPendingSignupEmail(undefined);
     setErrorMessage(undefined);
     setStatus('signed_out');
   }, [gateway]);
@@ -341,6 +473,40 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     [activeMembership, currentDeviceId, gateway, refreshDevices, signOut],
   );
 
+  const refreshApprovals = useCallback(async () => {
+    if (!gateway || activeMembership?.role !== 'manager') {
+      setPendingApprovals([]);
+      return;
+    }
+    try {
+      setPendingApprovals(await gateway.listPendingSignupRequests());
+    } catch {
+      setPendingApprovals([]);
+    }
+  }, [activeMembership, gateway]);
+
+  const approveSignup = useCallback(
+    async (signupId: string) => {
+      if (!gateway || activeMembership?.role !== 'manager') {
+        throw new Error('Manager access is required to approve signups');
+      }
+      await gateway.approveSignupRequest(signupId);
+      await refreshApprovals();
+    },
+    [activeMembership, gateway, refreshApprovals],
+  );
+
+  const rejectSignup = useCallback(
+    async (signupId: string) => {
+      if (!gateway || activeMembership?.role !== 'manager') {
+        throw new Error('Manager access is required to reject signups');
+      }
+      await gateway.rejectSignupRequest(signupId);
+      await refreshApprovals();
+    },
+    [activeMembership, gateway, refreshApprovals],
+  );
+
   const value: AuthContextValue = {
     status,
     cloudEnabled: gateway !== null,
@@ -352,8 +518,16 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     currentDeviceId,
     devices,
     errorMessage,
+    pendingSignupEmail,
+    pendingApprovals,
+    googleSignInAvailable: gateway !== null,
     signIn,
+    signInWithGoogle,
+    signUp,
     signOut,
+    refreshApprovals,
+    approveSignup,
+    rejectSignup,
     retry,
     switchBranch,
     refreshDevices,
@@ -369,6 +543,18 @@ export function useAuth(): AuthContextValue {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
+}
+
+/**
+ * Google donusunun gelecegi adres. Web/PWA'da uygulamanin acildigi sayfa,
+ * native derlemede uygulamanin kendi semasi kullanilir. Ikisi de Supabase'in
+ * "Redirect URLs" listesinde tanimli olmalidir.
+ */
+function oauthRedirectUrl(): string {
+  if (Platform.OS !== 'web') return 'orderia://auth-callback';
+  const location = (globalThis as unknown as { readonly location?: Location }).location;
+  if (!location) return 'orderia://auth-callback';
+  return `${location.origin}${location.pathname}`;
 }
 
 function branchStorageKey(userId: string): string {

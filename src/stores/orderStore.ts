@@ -288,7 +288,17 @@ export const useOrderStore = create<OrderState>()(
 
       updateLineQuantity: (ticketId, lineId, quantity) => {
         if (quantity <= 0) {
-          get().removeTicketLine(ticketId, lineId);
+          // Explicit zero means "remove the line" regardless of its status.
+          // removeTicketLine only drops pending lines, so we cannot delegate.
+          set((state) => ({
+            openTickets: {
+              ...state.openTickets,
+              [ticketId]: {
+                ...state.openTickets[ticketId],
+                lines: state.openTickets[ticketId].lines.filter((line) => line.id !== lineId),
+              },
+            },
+          }));
         } else {
           get().updateTicketLine(ticketId, lineId, { quantity });
         }

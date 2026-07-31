@@ -4,7 +4,6 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -41,16 +40,20 @@ import {
   toDomainId,
 } from '../domain';
 import {
+  CheckSplitPlan,
+  CheckSplitSheet,
   DraftOrderLine,
   TableWorkspaceSnapshot,
   WorkspaceProduct,
-  cancelOrderItem,
+  applyCheckSplit,
   loadTableWorkspace,
   loadWorkspacePreferences,
   saveWorkspacePreferences,
   sendOrderBatch,
   resolveOrderItemNoteConflict,
   updateOrderItemNote,
+  updateOrderItemQuantity,
+  voidOrderItemQuantity,
 } from '../features/table-workspace';
 import { ConfirmCheckPaymentsCommand, PaymentSheet } from '../features/payments';
 import {
@@ -59,6 +62,7 @@ import {
   TransferTableSessionCommand,
 } from '../features/table-operations';
 import { PreparedReceiptPdf, ReceiptReadySheet, presentReceiptPdf } from '../features/receipts';
+import { QuantityStepper } from '../components/QuantityStepper';
 import { Language, useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { createTextMatcher } from '../utils/searchUtils';
@@ -66,6 +70,13 @@ import { createTextMatcher } from '../utils/searchUtils';
 type TableDetailRoute = RouteProp<RootStackParamList, 'TableDetail'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 type PaletteScope = 'all' | 'favorites' | 'recent' | string;
+type NoticeTone = 'error' | 'success';
+
+interface WorkspaceNotice {
+  readonly title: string;
+  readonly body?: string;
+  readonly tone: NoticeTone;
+}
 
 export default function TableDetailScreen() {
   const data = useOrderiaData();
@@ -118,6 +129,7 @@ function CloudTableWorkspace({
     resolveProfileNames,
     revision,
     scope,
+    setCatalogAvailability,
     sync,
     transferOrMergeTableSession,
   } = useOrderiaData();
@@ -141,8 +153,11 @@ function CloudTableWorkspace({
   const [cancellingItem, setCancellingItem] = useState<OrderItem>();
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem>();
   const [editingNote, setEditingNote] = useState('');
+  const [showDraftSheet, setShowDraftSheet] = useState(false);
   const [payingCheck, setPayingCheck] = useState<Check>();
   const [paymentBusy, setPaymentBusy] = useState(false);
+  const [splittingCheck, setSplittingCheck] = useState<Check>();
+  const [splitBusy, setSplitBusy] = useState(false);
   const [showTableOperation, setShowTableOperation] = useState(false);
   const [tableOperationBusy, setTableOperationBusy] = useState(false);
   const [readyReceipt, setReadyReceipt] = useState<Receipt>();
@@ -151,8 +166,19 @@ function CloudTableWorkspace({
   const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
   const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
   const [incomingMessage, setIncomingMessage] = useState<string>();
+  const [notice, setNotice] = useState<WorkspaceNotice>();
+  const [availabilityTarget, setAvailabilityTarget] = useState<WorkspaceProduct>();
   const snapshotRef = useRef<TableWorkspaceSnapshot | null>(null);
   const tableId = toDomainId<RestaurantTableId>(route.params.tableId);
+
+  /**
+   * Uyarilari ekranin kendi seridinde gosteririz. react-native-web'de
+   * Alert.alert sessizce hicbir sey yapmaz; PWA'da calisan bir garsonun
+   * "gonderilemedi" uyarisini kacirmasi kabul edilemez.
+   */
+  const notify = useCallback((title: string, body?: string, tone: NoticeTone = 'error') => {
+    setNotice({ title, ...(body ? { body } : {}), tone });
+  }, []);
 
   const reload = useCallback(async () => {
     if (!database || !scope) return;
@@ -242,6 +268,14 @@ function CloudTableWorkspace({
     return () => clearTimeout(timer);
   }, [incomingMessage]);
 
+  // Basarili islem bildirimi kendiliginden kaybolur; hata garson kapatana
+  // kadar ekranda kalir.
+  useEffect(() => {
+    if (notice?.tone !== 'success') return;
+    const timer = setTimeout(() => setNotice(undefined), 5_000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   useEffect(() => {
     if (!snapshot || pendingCheckName) return;
     if (selectedCheckId && snapshot.checks.some((check) => check.id === selectedCheckId)) return;
@@ -312,7 +346,26 @@ function CloudTableWorkspace({
     setDraft(next);
   };
 
+  /**
+   * Masadan tek dokunusla "bugun bitti" / "geri geldi". Mutfaktan haber gelen
+   * garson menu ekranina gitmek zorunda kalmasin.
+   */
+  const applyAvailability = async (product: WorkspaceProduct) => {
+    setAvailabilityTarget(undefined);
+    try {
+      await setCatalogAvailability([product.id], !product.isAvailable);
+      await reload();
+      void refresh();
+    } catch (error) {
+      notify(copy.availabilityFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
   const addProduct = (product: WorkspaceProduct, configure = false) => {
+    if (!product.isAvailable) {
+      setAvailabilityTarget(product);
+      return;
+    }
     const defaults = product.modifierGroups.flatMap((group) =>
       group.options.filter((option) => option.isDefault).map((option) => option.id),
     );
@@ -371,6 +424,91 @@ function CloudTableWorkspace({
     setUndoStack((history) => history.slice(0, -1));
   };
 
+  const changeDraftQuantity = (lineId: string, delta: number) => {
+    rememberDraft(
+      draft
+        .map((line) => (line.id === lineId ? { ...line, quantity: line.quantity + delta } : line))
+        .filter((line) => line.quantity > 0),
+    );
+  };
+
+  const removeDraftLine = (lineId: string) => {
+    rememberDraft(draft.filter((line) => line.id !== lineId));
+  };
+
+  const decrementDraftProduct = (product: WorkspaceProduct) => {
+    // Önce modifiersüz/notsuz düz satırı azalt, yoksa son eşleşen satırı
+    const plainIndex = draft.findLastIndex(
+      (line) =>
+        line.product.id === product.id &&
+        line.selectedOptionIds.length === 0 &&
+        !(line.note ?? '').trim(),
+    );
+    const fallbackIndex = draft.reduce(
+      (found, line, index) => (line.product.id === product.id ? index : found),
+      -1,
+    );
+    const index = plainIndex >= 0 ? plainIndex : fallbackIndex;
+    if (index >= 0) {
+      changeDraftQuantity(draft[index].id, -1);
+    }
+  };
+
+  const repeatLastBatch = () => {
+    if (!snapshot) return;
+    const activeItems = snapshot.orderItems.filter((item) => item.status !== 'cancelled');
+    if (activeItems.length === 0) return;
+    // En yeni batch: en son oluşturulan aktif ürünün batch'i
+    const newestItem = activeItems.reduce((latest, item) =>
+      Date.parse(item.createdAt) > Date.parse(latest.createdAt) ? item : latest,
+    );
+    const latestBatchId = newestItem.orderBatchId;
+    const batchItems = activeItems.filter((item) => item.orderBatchId === latestBatchId);
+    const additions: DraftOrderLine[] = batchItems.flatMap((item, index) => {
+      const product = snapshot.products.find((candidate) => candidate.id === item.menuItemId);
+      if (!product || !product.isAvailable) return [];
+      const optionIds = snapshot.orderItemModifiers
+        .filter((modifier) => modifier.orderItemId === item.id)
+        .flatMap((modifier) => {
+          const option = product.modifierGroups
+            .flatMap((group) => group.options)
+            .find((candidate) => candidate.name === modifier.modifierOptionNameSnapshot);
+          return option ? [option.id] : [];
+        });
+      return [
+        {
+          id: `${product.id}.repeat.${Date.now()}.${index}`,
+          product,
+          quantity: item.quantity,
+          ...(item.note?.trim() ? { note: item.note.trim() } : {}),
+          selectedOptionIds: optionIds,
+        },
+      ];
+    });
+    if (additions.length > 0) {
+      rememberDraft([...draft, ...additions]);
+      setShowPaletteOnCompact(true);
+    }
+  };
+
+  const changeItemQuantity = async (item: OrderItem, nextQuantity: number) => {
+    if (!database || !scope) return;
+    try {
+      await updateOrderItemQuantity({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        item,
+        quantity: nextQuantity,
+      });
+      await reload();
+      void refresh();
+    } catch (error) {
+      notify(copy.quantityChangeFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
   const submit = async () => {
     if (!database || !scope || !snapshot || draft.length === 0) return;
     setSubmitting(true);
@@ -395,29 +533,43 @@ function CloudTableWorkspace({
       await reload();
       void refresh();
     } catch (error) {
-      Alert.alert(copy.sendFailed, error instanceof Error ? error.message : copy.tryAgain);
+      notify(copy.sendFailed, error instanceof Error ? error.message : copy.tryAgain);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const cancelItem = async (reason: CancellationReason) => {
-    if (!database || !scope || !cancellingItem) return;
+  const cancelItem = async (reason: CancellationReason, quantity: number) => {
+    if (!database || !scope || !cancellingItem || !snapshot) return;
     if (reason.requiresManager && !isManager) return;
     try {
-      await cancelOrderItem({
+      // Fazla gelen tek bir adet icin tum satiri silmek yerine yalnizca o
+      // adet dusulur; kalanlar masada servise devam eder.
+      const paidQuantity = snapshot.paymentAllocations
+        .filter(
+          (allocation) =>
+            allocation.orderItemId === cancellingItem.id &&
+            snapshot.payments.some(
+              (payment) => payment.id === allocation.paymentId && payment.status === 'confirmed',
+            ),
+        )
+        .reduce((total, allocation) => total + (allocation.quantity ?? cancellingItem.quantity), 0);
+      await voidOrderItemQuantity({
         database,
         scope,
         actorUserId,
         deviceId,
         item: cancellingItem,
+        modifiers: snapshot.orderItemModifiers,
+        quantity,
+        paidQuantity,
         reasonId: reason.id,
       });
       setCancellingItem(undefined);
       await reload();
       void refresh();
     } catch (error) {
-      Alert.alert(copy.cancelFailed, error instanceof Error ? error.message : copy.tryAgain);
+      notify(copy.cancelFailed, error instanceof Error ? error.message : copy.tryAgain);
     }
   };
 
@@ -436,7 +588,7 @@ function CloudTableWorkspace({
       await reload();
       void refresh();
     } catch (error) {
-      Alert.alert(copy.noteSaveFailed, error instanceof Error ? error.message : copy.tryAgain);
+      notify(copy.noteSaveFailed, error instanceof Error ? error.message : copy.tryAgain);
     }
   };
 
@@ -459,7 +611,7 @@ function CloudTableWorkspace({
       await reload();
       void refresh();
     } catch (error) {
-      Alert.alert(copy.conflictFailed, error instanceof Error ? error.message : copy.tryAgain);
+      notify(copy.conflictFailed, error instanceof Error ? error.message : copy.tryAgain);
     }
   };
 
@@ -485,16 +637,17 @@ function CloudTableWorkspace({
           setPreparedReceiptPdf(undefined);
           setReadyReceipt(receipt);
         } else {
-          Alert.alert(copy.paymentConfirmed, copy.receiptSyncing);
+          notify(copy.paymentConfirmed, copy.receiptSyncing, 'success');
         }
       } else {
-        Alert.alert(
+        notify(
           copy.paymentConfirmed,
           `${copy.remaining}: ${formatMoney(
             result.remainingMinor,
             command.currencyCode,
             language,
           )}`,
+          'success',
         );
       }
       await reload();
@@ -513,6 +666,32 @@ function CloudTableWorkspace({
     }
   };
 
+  const confirmSplit = async (plan: CheckSplitPlan, targetCheck?: Check) => {
+    if (!database || !scope || !splittingCheck) return;
+    setSplitBusy(true);
+    try {
+      const result = await applyCheckSplit({
+        database,
+        scope,
+        deviceId,
+        actorUserId,
+        sourceCheck: splittingCheck,
+        ...(targetCheck ? { targetCheck } : {}),
+        plan,
+      });
+      setSplittingCheck(undefined);
+      // Garson bolmeden sonra dogal olarak yeni hesabi gormek ister.
+      setSelectedCheckId(result.targetCheck.id);
+      await reload();
+      void refresh();
+    } catch (error) {
+      await reload();
+      throw error instanceof Error ? error : new Error(copy.splitFailed);
+    } finally {
+      setSplitBusy(false);
+    }
+  };
+
   const openReceiptPdf = async (mode: 'download' | 'share') => {
     if (!readyReceipt) return;
     setReceiptBusy(true);
@@ -521,7 +700,7 @@ function CloudTableWorkspace({
       setPreparedReceiptPdf(prepared);
       await presentReceiptPdf(prepared.signedUrl, readyReceipt.receiptNumber, mode);
     } catch (error) {
-      Alert.alert(copy.pdfFailed, error instanceof Error ? error.message : copy.tryAgain);
+      notify(copy.pdfFailed, error instanceof Error ? error.message : copy.tryAgain);
     } finally {
       setReceiptBusy(false);
     }
@@ -536,7 +715,7 @@ function CloudTableWorkspace({
       const clientMutationId = toDomainId<MutationId>(secureUuid());
       const result = await transferOrMergeTableSession(deviceId, clientMutationId, command);
       setShowTableOperation(false);
-      Alert.alert(
+      notify(
         result.mode === 'merged' ? copy.tablesMerged : copy.tableMoved,
         `${snapshot?.table.label ?? ''} → ${target.table.label}`,
       );
@@ -634,6 +813,42 @@ function CloudTableWorkspace({
         tableLabel={snapshot.table.label}
       />
 
+      {notice ? (
+        <View
+          accessibilityLiveRegion="assertive"
+          accessibilityRole="alert"
+          style={{
+            alignItems: 'flex-start',
+            backgroundColor:
+              notice.tone === 'success'
+                ? tokens.colors.state.delivered.bg
+                : tokens.colors.state.pending.bg,
+            borderRadius: tokens.radius.medium,
+            flexDirection: 'row',
+            marginBottom: tokens.space.xs,
+            marginHorizontal: tokens.space.md,
+            padding: tokens.space.sm,
+          }}
+        >
+          <Ionicons
+            color={notice.tone === 'success' ? tokens.colors.success : tokens.colors.error}
+            name={notice.tone === 'success' ? 'checkmark-circle' : 'alert-circle'}
+            size={20}
+          />
+          <View style={{ flex: 1, marginLeft: tokens.space.xs }}>
+            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+              {notice.title}
+            </Text>
+            {notice.body ? (
+              <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                {notice.body}
+              </Text>
+            ) : null}
+          </View>
+          <ServiceIconButton icon="close" label={copy.close} onPress={() => setNotice(undefined)} />
+        </View>
+      ) : null}
+
       {incomingMessage ? (
         <View
           accessibilityLiveRegion="polite"
@@ -683,6 +898,7 @@ function CloudTableWorkspace({
 
       {compact ? (
         <View
+          accessibilityRole="tablist"
           style={{
             flexDirection: 'row',
             paddingHorizontal: tokens.space.md,
@@ -723,6 +939,7 @@ function CloudTableWorkspace({
             modifiers={snapshot.orderItemModifiers}
             conflicts={snapshot.conflicts}
             onCancel={setCancellingItem}
+            onChangeQuantity={(item, nextQuantity) => void changeItemQuantity(item, nextQuantity)}
             onEditNote={(item) => {
               setEditingNote(item.note ?? '');
               setEditingNoteItem(item);
@@ -731,6 +948,9 @@ function CloudTableWorkspace({
               if (selectedCheck) setPayingCheck(selectedCheck);
             }}
             onResolveConflict={resolveNoteConflict}
+            onSplit={() => {
+              if (selectedCheck) setSplittingCheck(selectedCheck);
+            }}
             waiterNames={waiterNames}
           />
         ) : null}
@@ -743,8 +963,10 @@ function CloudTableWorkspace({
             favoriteIds={favoriteIds}
             language={language}
             onAdd={addProduct}
+            onDecrement={decrementDraftProduct}
             onQuery={setQuery}
             onScope={selectPaletteScope}
+            onToggleAvailability={setAvailabilityTarget}
             onToggleFavorite={toggleFavorite}
             products={filteredProducts}
             query={query}
@@ -759,11 +981,25 @@ function CloudTableWorkspace({
         draft={draft}
         language={language}
         onClear={() => rememberDraft([])}
+        onOpenDraft={() => setShowDraftSheet(true)}
+        onRepeat={repeatLastBatch}
         onSend={() => void submit()}
         onUndo={undo}
+        repeatAvailable={snapshot.orderItems.some((item) => item.status !== 'cancelled')}
         submitting={submitting}
         totalMinor={draftTotal}
         undoAvailable={undoStack.length > 0}
+      />
+
+      <DraftSheet
+        copy={copy}
+        currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
+        draft={draft}
+        language={language}
+        onChangeQuantity={changeDraftQuantity}
+        onClose={() => setShowDraftSheet(false)}
+        onRemove={removeDraftLine}
+        visible={showDraftSheet}
       />
 
       <NameCheckModal
@@ -837,6 +1073,47 @@ function CloudTableWorkspace({
           online={sync.online}
           orderItems={snapshot.orderItems.filter((item) => item.checkId === payingCheck.id)}
           payments={snapshot.payments}
+          visible
+        />
+      ) : null}
+      <WorkspaceModal
+        onClose={() => setAvailabilityTarget(undefined)}
+        title={availabilityTarget?.isAvailable ? copy.soldOutTitle : copy.restoreProductTitle}
+        visible={Boolean(availabilityTarget)}
+      >
+        <Text
+          style={[
+            tokens.typography.body,
+            { color: tokens.colors.textSubtle, marginBottom: tokens.space.md },
+          ]}
+        >
+          {availabilityTarget?.name}
+        </Text>
+        <ServiceButton
+          fullWidth
+          icon={availabilityTarget?.isAvailable ? 'close-circle-outline' : 'refresh-outline'}
+          label={availabilityTarget?.isAvailable ? copy.markSoldOut : copy.restoreProduct}
+          onPress={() => {
+            if (availabilityTarget) void applyAvailability(availabilityTarget);
+          }}
+        />
+        <ModalActions cancel={copy.cancel} onCancel={() => setAvailabilityTarget(undefined)} />
+      </WorkspaceModal>
+
+      {splittingCheck ? (
+        <CheckSplitSheet
+          allocations={snapshot.paymentAllocations}
+          busy={splitBusy}
+          items={snapshot.orderItems}
+          language={language}
+          modifiers={snapshot.orderItemModifiers}
+          onClose={() => {
+            if (!splitBusy) setSplittingCheck(undefined);
+          }}
+          onConfirm={confirmSplit}
+          openChecks={snapshot.checks}
+          payments={snapshot.payments}
+          sourceCheck={splittingCheck}
           visible
         />
       ) : null}
@@ -975,6 +1252,7 @@ function CheckStrip({
   return (
     <ScrollView
       horizontal
+      accessibilityRole="tablist"
       showsHorizontalScrollIndicator={false}
       style={{ flexGrow: 0 }}
       contentContainerStyle={{
@@ -988,14 +1266,20 @@ function CheckStrip({
         <Chip
           key={check.id}
           label={check.name}
+          role="tab"
           selected={check.id === selectedCheckId}
           onPress={() => onSelect(check.id)}
         />
       ))}
       {pendingCheckName ? (
-        <Chip label={pendingCheckName} selected={!selectedCheckId} onPress={onSelectPending} />
+        <Chip
+          label={pendingCheckName}
+          role="tab"
+          selected={!selectedCheckId}
+          onPress={onSelectPending}
+        />
       ) : null}
-      <Chip icon="add" label={copy.newCheck} selected={false} onPress={onAdd} />
+      <Chip icon="add" label={copy.newCheck} role="tab" selected={false} onPress={onAdd} />
     </ScrollView>
   );
 }
@@ -1005,16 +1289,18 @@ function Chip({
   selected,
   onPress,
   icon,
+  role = 'button',
 }: {
   readonly label: string;
   readonly selected: boolean;
   readonly onPress: () => void;
   readonly icon?: keyof typeof Ionicons.glyphMap;
+  readonly role?: 'button' | 'tab';
 }) {
   const { tokens } = useTheme();
   return (
     <Pressable
-      accessibilityRole="tab"
+      accessibilityRole={role}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => ({
@@ -1109,9 +1395,11 @@ function OrderPane({
   language,
   currencyCode,
   onCancel,
+  onChangeQuantity,
   onEditNote,
   onPay,
   onResolveConflict,
+  onSplit,
 }: {
   readonly checkName: string;
   readonly checkTotal: number;
@@ -1123,6 +1411,7 @@ function OrderPane({
   readonly language: Language;
   readonly currencyCode: string;
   readonly onCancel: (item: OrderItem) => void;
+  readonly onChangeQuantity: (item: OrderItem, nextQuantity: number) => void;
   readonly onEditNote: (item: OrderItem) => void;
   readonly onPay: () => void;
   readonly onResolveConflict: (
@@ -1130,8 +1419,10 @@ function OrderPane({
     conflict: TableWorkspaceSnapshot['conflicts'][number],
     resolution: 'server' | 'local',
   ) => void;
+  readonly onSplit: () => void;
 }) {
   const { tokens } = useTheme();
+  const hasLiveItems = items.some((item) => item.status !== 'cancelled');
   return (
     <ServiceSurface padding="none" style={{ flex: 1, minWidth: 0 }}>
       <View
@@ -1156,8 +1447,16 @@ function OrderPane({
           <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
             {formatMoney(checkTotal, currencyCode, language)}
           </Text>
-          {items.some((item) => item.status !== 'cancelled') ? (
-            <ServiceButton icon="card-outline" label={copy.takePayment} onPress={onPay} />
+          {hasLiveItems ? (
+            <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
+              <ServiceButton
+                icon="git-branch-outline"
+                label={copy.splitCheck}
+                onPress={onSplit}
+                variant="outline"
+              />
+              <ServiceButton icon="card-outline" label={copy.takePayment} onPress={onPay} />
+            </View>
           ) : null}
         </View>
       </View>
@@ -1212,6 +1511,16 @@ function OrderPane({
                       {waiterNames[item.createdBy] ?? copy.unknownWaiter} ·{' '}
                       {timeOnly(item.createdAt, language)}
                     </Text>
+                    {item.status === 'ordered' ? (
+                      <QuantityStepper
+                        decreaseDisabled={item.quantity <= 1}
+                        decreaseLabel={`${copy.decrease}: ${item.nameSnapshot}`}
+                        increaseLabel={`${copy.increase}: ${item.nameSnapshot}`}
+                        onDecrease={() => onChangeQuantity(item, item.quantity - 1)}
+                        onIncrease={() => onChangeQuantity(item, item.quantity + 1)}
+                        quantity={item.quantity}
+                      />
+                    ) : null}
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
@@ -1307,7 +1616,9 @@ function PalettePane({
   onScope,
   onQuery,
   onAdd,
+  onDecrement,
   onToggleFavorite,
+  onToggleAvailability,
 }: {
   readonly categories: TableWorkspaceSnapshot['categories'];
   readonly products: readonly WorkspaceProduct[];
@@ -1321,7 +1632,9 @@ function PalettePane({
   readonly onScope: (scope: PaletteScope) => void;
   readonly onQuery: (query: string) => void;
   readonly onAdd: (product: WorkspaceProduct, configure?: boolean) => void;
+  readonly onDecrement: (product: WorkspaceProduct) => void;
   readonly onToggleFavorite: (id: string) => void;
+  readonly onToggleAvailability: (product: WorkspaceProduct) => void;
 }) {
   const { tokens } = useTheme();
   return (
@@ -1335,23 +1648,27 @@ function PalettePane({
         />
         <ScrollView
           horizontal
+          accessibilityRole="tablist"
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: tokens.space.xs, paddingTop: tokens.space.sm }}
         >
           <Chip
             label={copy.all}
+            role="tab"
             selected={selectedScope === 'all'}
             onPress={() => onScope('all')}
           />
           <Chip
             icon="star"
             label={copy.favorites}
+            role="tab"
             selected={selectedScope === 'favorites'}
             onPress={() => onScope('favorites')}
           />
           <Chip
             icon="time"
             label={copy.recents}
+            role="tab"
             selected={selectedScope === 'recent'}
             onPress={() => onScope('recent')}
           />
@@ -1359,6 +1676,7 @@ function PalettePane({
             <Chip
               key={category.id}
               label={category.name}
+              role="tab"
               selected={selectedScope === category.id}
               onPress={() => onScope(category.id)}
             />
@@ -1377,20 +1695,32 @@ function PalettePane({
             const inDraft = draft
               .filter((line) => line.product.id === item.id)
               .reduce((total, line) => total + line.quantity, 0);
+            const soldOut = !item.isAvailable;
             return (
               <View style={{ flex: 1, maxWidth: '50%', padding: tokens.space.xxs }}>
                 <Pressable
-                  accessibilityHint={copy.longPress}
-                  accessibilityLabel={`${item.name}, ${formatMoney(item.priceMinor, currencyCode, language)}`}
+                  accessibilityHint={soldOut ? copy.soldOutHint : copy.longPress}
+                  accessibilityLabel={
+                    soldOut
+                      ? `${item.name}, ${copy.soldOut}`
+                      : `${item.name}, ${formatMoney(item.priceMinor, currencyCode, language)}`
+                  }
                   accessibilityRole="button"
-                  onLongPress={() => onAdd(item, true)}
-                  onPress={() => onAdd(item)}
+                  accessibilityState={{ disabled: soldOut }}
+                  onLongPress={() => (soldOut ? onToggleAvailability(item) : onAdd(item, true))}
+                  onPress={() => (soldOut ? onToggleAvailability(item) : onAdd(item))}
                   style={({ pressed }) => ({
                     backgroundColor: pressed ? tokens.colors.accentSoft : tokens.colors.surfaceAlt,
-                    borderColor: inDraft > 0 ? tokens.colors.accent : tokens.colors.border,
+                    borderColor: soldOut
+                      ? tokens.colors.border
+                      : inDraft > 0
+                        ? tokens.colors.accent
+                        : tokens.colors.border,
                     borderRadius: tokens.radius.medium,
-                    borderWidth: inDraft > 0 ? 2 : 1,
+                    borderStyle: soldOut ? 'dashed' : 'solid',
+                    borderWidth: inDraft > 0 && !soldOut ? 2 : 1,
                     minHeight: 92,
+                    opacity: soldOut ? 0.55 : 1,
                     padding: tokens.space.sm,
                   })}
                 >
@@ -1429,17 +1759,28 @@ function PalettePane({
                   </View>
                   <View
                     style={{
-                      alignItems: 'flex-end',
+                      alignItems: 'center',
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       marginTop: 'auto',
                     }}
                   >
-                    <Text style={[tokens.typography.label, { color: tokens.colors.primary }]}>
-                      {formatMoney(item.priceMinor, item.currencyCode, language)}
-                    </Text>
-                    {inDraft > 0 ? (
-                      <ServiceStatusPill label={`+${inDraft}`} tone="warning" />
+                    {soldOut ? (
+                      <ServiceStatusPill label={copy.soldOut} tone="error" />
+                    ) : (
+                      <Text style={[tokens.typography.label, { color: tokens.colors.primary }]}>
+                        {formatMoney(item.priceMinor, item.currencyCode, language)}
+                      </Text>
+                    )}
+                    {inDraft > 0 && !soldOut ? (
+                      <QuantityStepper
+                        compact
+                        decreaseLabel={`${copy.decrease}: ${item.name}`}
+                        increaseLabel={`${copy.increase}: ${item.name}`}
+                        onDecrease={() => onDecrement(item)}
+                        onIncrease={() => onAdd(item)}
+                        quantity={inDraft}
+                      />
                     ) : null}
                   </View>
                 </Pressable>
@@ -1460,8 +1801,11 @@ function DraftBar({
   copy,
   submitting,
   undoAvailable,
+  repeatAvailable,
   onUndo,
   onClear,
+  onOpenDraft,
+  onRepeat,
   onSend,
 }: {
   readonly draft: readonly DraftOrderLine[];
@@ -1471,8 +1815,11 @@ function DraftBar({
   readonly copy: WorkspaceCopy;
   readonly submitting: boolean;
   readonly undoAvailable: boolean;
+  readonly repeatAvailable: boolean;
   readonly onUndo: () => void;
   readonly onClear: () => void;
+  readonly onOpenDraft: () => void;
+  readonly onRepeat: () => void;
   readonly onSend: () => void;
 }) {
   const { tokens } = useTheme();
@@ -1499,19 +1846,31 @@ function DraftBar({
         onPress={onUndo}
       />
       <ServiceIconButton
+        disabled={!repeatAvailable}
+        icon="repeat"
+        label={copy.repeatLastOrder}
+        onPress={onRepeat}
+      />
+      <ServiceIconButton
         disabled={draft.length === 0}
         icon="trash-outline"
         label={copy.clearDraft}
         onPress={onClear}
       />
-      <View style={{ flex: 1 }}>
+      <Pressable
+        accessibilityHint={copy.editDraft}
+        accessibilityRole="button"
+        disabled={draft.length === 0}
+        onPress={onOpenDraft}
+        style={{ flex: 1, justifyContent: 'center', minHeight: 48 }}
+      >
         <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
           {count} {copy.products}
         </Text>
         <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
           {formatMoney(totalMinor, currencyCode, language)}
         </Text>
-      </View>
+      </Pressable>
       <ServiceButton
         disabled={draft.length === 0}
         icon="paper-plane"
@@ -1522,6 +1881,98 @@ function DraftBar({
         variant="accent"
       />
     </View>
+  );
+}
+
+function DraftSheet({
+  draft,
+  visible,
+  currencyCode,
+  language,
+  copy,
+  onChangeQuantity,
+  onRemove,
+  onClose,
+}: {
+  readonly draft: readonly DraftOrderLine[];
+  readonly visible: boolean;
+  readonly currencyCode: string;
+  readonly language: Language;
+  readonly copy: WorkspaceCopy;
+  readonly onChangeQuantity: (lineId: string, delta: number) => void;
+  readonly onRemove: (lineId: string) => void;
+  readonly onClose: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <WorkspaceModal title={copy.editDraft} visible={visible} onClose={onClose}>
+      {draft.length === 0 ? (
+        <Text
+          style={[
+            tokens.typography.body,
+            { color: tokens.colors.textSubtle, marginBottom: tokens.space.sm },
+          ]}
+        >
+          {copy.draftEmpty}
+        </Text>
+      ) : (
+        <ScrollView style={{ maxHeight: 420 }}>
+          {draft.map((line) => {
+            const selectedOptions = line.product.modifierGroups
+              .flatMap((group) => group.options)
+              .filter((option) => line.selectedOptionIds.includes(option.id));
+            return (
+              <View
+                key={line.id}
+                style={{
+                  alignItems: 'center',
+                  borderBottomColor: tokens.colors.borderLight,
+                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  gap: tokens.space.sm,
+                  paddingVertical: tokens.space.sm,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+                    {line.product.name}
+                  </Text>
+                  {selectedOptions.map((option) => (
+                    <Text
+                      key={option.id}
+                      style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+                    >
+                      + {option.name}
+                    </Text>
+                  ))}
+                  {line.note ? (
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
+                      {copy.note}: {line.note}
+                    </Text>
+                  ) : null}
+                  <Text style={[tokens.typography.caption, { color: tokens.colors.textMuted }]}>
+                    {formatMoney(draftLineTotal(line), currencyCode, language)}
+                  </Text>
+                </View>
+                <QuantityStepper
+                  decreaseLabel={`${copy.decrease}: ${line.product.name}`}
+                  increaseLabel={`${copy.increase}: ${line.product.name}`}
+                  onDecrease={() => onChangeQuantity(line.id, -1)}
+                  onIncrease={() => onChangeQuantity(line.id, 1)}
+                  quantity={line.quantity}
+                />
+                <ServiceIconButton
+                  icon="trash-outline"
+                  label={`${copy.clearDraft}: ${line.product.name}`}
+                  onPress={() => onRemove(line.id)}
+                />
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+      <ModalActions cancel={copy.close} onCancel={onClose} />
+    </WorkspaceModal>
   );
 }
 
@@ -1591,6 +2042,7 @@ function ItemNoteModal({
         placeholder={copy.noteExample}
         value={note}
       />
+      <NotePresetChips copy={copy} note={note} onChange={onChange} />
       <ModalActions
         cancel={copy.close}
         confirm={copy.saveNote}
@@ -1598,6 +2050,50 @@ function ItemNoteModal({
         onConfirm={onConfirm}
       />
     </WorkspaceModal>
+  );
+}
+
+function NotePresetChips({
+  copy,
+  note,
+  onChange,
+}: {
+  readonly copy: WorkspaceCopy;
+  readonly note: string;
+  readonly onChange: (note: string) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <View style={{ marginTop: tokens.space.xs }}>
+      <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+        {copy.quickNotes}
+      </Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: tokens.space.xs,
+          marginTop: tokens.space.xs,
+        }}
+      >
+        {copy.notePresets.map((preset) => (
+          <Chip
+            key={preset}
+            label={preset}
+            selected={false}
+            onPress={() => {
+              const trimmed = note.trim();
+              if (!trimmed) {
+                onChange(preset);
+                return;
+              }
+              if (trimmed.toLocaleLowerCase().includes(preset.toLocaleLowerCase())) return;
+              onChange(`${trimmed}, ${preset}`);
+            }}
+          />
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -1667,6 +2163,7 @@ function ProductConfigurationModal({
           placeholder={copy.noteExample}
           value={note}
         />
+        <NotePresetChips copy={copy} note={note} onChange={onChangeNote} />
       </ScrollView>
       <ModalActions
         cancel={copy.close}
@@ -1692,9 +2189,18 @@ function CancellationModal({
   readonly isManager: boolean;
   readonly copy: WorkspaceCopy;
   readonly onClose: () => void;
-  readonly onCancel: (reason: CancellationReason) => void;
+  readonly onCancel: (reason: CancellationReason, quantity: number) => void;
 }) {
   const { tokens } = useTheme();
+  const maximum = item?.quantity ?? 1;
+  const [quantity, setQuantity] = useState(maximum);
+
+  // Satir degistiginde adet, o satirin tamamina doner: yarim kalmis bir
+  // secim yanlislikla baska bir urune tasinmasin.
+  useEffect(() => {
+    setQuantity(maximum);
+  }, [item?.id, maximum]);
+
   return (
     <WorkspaceModal
       title={`${copy.cancelItem}: ${item?.nameSnapshot ?? ''}`}
@@ -1709,6 +2215,34 @@ function CancellationModal({
       >
         {copy.chooseReason}
       </Text>
+      {maximum > 1 ? (
+        <View
+          style={{
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: tokens.space.md,
+            marginBottom: tokens.space.md,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+              {copy.voidQuantityTitle}
+            </Text>
+            <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+              {copy.voidQuantityLabel}: {quantity} / {maximum}
+            </Text>
+          </View>
+          <QuantityStepper
+            decreaseDisabled={quantity <= 1}
+            decreaseLabel={copy.decrease}
+            increaseDisabled={quantity >= maximum}
+            increaseLabel={copy.increase}
+            onDecrease={() => setQuantity((current) => Math.max(1, current - 1))}
+            onIncrease={() => setQuantity((current) => Math.min(maximum, current + 1))}
+            quantity={quantity}
+          />
+        </View>
+      ) : null}
       {reasons.length === 0 ? (
         <ServiceEmptyState
           body={copy.askManagerReasons}
@@ -1724,7 +2258,7 @@ function CancellationModal({
               fullWidth
               icon={reason.requiresManager ? 'shield-checkmark-outline' : 'close-circle-outline'}
               label={`${reason.name}${reason.requiresManager ? ` · ${copy.manager}` : ''}`}
-              onPress={() => onCancel(reason)}
+              onPress={() => onCancel(reason, quantity)}
               variant="outline"
             />
           ))}
@@ -1946,6 +2480,27 @@ interface WorkspaceCopy {
   readonly tableChanged: string;
   readonly receiptSyncing: string;
   readonly pdfFailed: string;
+  readonly decrease: string;
+  readonly increase: string;
+  readonly editDraft: string;
+  readonly draftEmpty: string;
+  readonly repeatLastOrder: string;
+  readonly quickNotes: string;
+  readonly quantityChangeFailed: string;
+  readonly cancel: string;
+  readonly soldOut: string;
+  readonly soldOutHint: string;
+  readonly soldOutTitle: string;
+  readonly markSoldOut: string;
+  readonly restoreProductTitle: string;
+  readonly restoreProduct: string;
+  readonly availabilityFailed: string;
+  readonly splitCheck: string;
+  readonly splitFailed: string;
+  readonly splitDone: string;
+  readonly voidQuantityTitle: string;
+  readonly voidQuantityLabel: string;
+  readonly notePresets: readonly string[];
 }
 
 function workspaceCopy(language: Language): WorkspaceCopy {
@@ -2018,6 +2573,27 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       tableChanged: 'Kaynak veya hedef masa başka bir cihazda değişti. Güncel durumu kontrol edin.',
       receiptSyncing: 'Fiş oluşturuldu ve arşive senkronize ediliyor.',
       pdfFailed: 'Fiş PDF’i hazırlanamadı',
+      decrease: 'Azalt',
+      increase: 'Artır',
+      editDraft: 'Taslağı düzenle',
+      draftEmpty: 'Taslak boş',
+      repeatLastOrder: 'Son siparişi tekrarla',
+      quickNotes: 'Hızlı notlar',
+      quantityChangeFailed: 'Adet değiştirilemedi',
+      cancel: 'Vazgeç',
+      soldOut: 'Tükendi',
+      soldOutHint: 'Stoğa geri almak için dokun',
+      soldOutTitle: 'Bugünlük tükendi mi?',
+      markSoldOut: 'Tükendi olarak işaretle',
+      restoreProductTitle: 'Tekrar satışa açılsın mı?',
+      restoreProduct: 'Satışa aç',
+      availabilityFailed: 'Ürün durumu değiştirilemedi',
+      splitCheck: 'Hesabı böl',
+      splitFailed: 'Hesap bölünemedi',
+      splitDone: 'Hesap bölündü',
+      voidQuantityTitle: 'Kaç adet iptal edilsin?',
+      voidQuantityLabel: 'İptal edilecek adet',
+      notePresets: ['Acil', 'Soğansız', 'Az pişmiş', 'İyi pişmiş', 'Acılı', 'Sos ayrıda'],
     };
   }
   if (language === 'bg') {
@@ -2089,6 +2665,34 @@ function workspaceCopy(language: Language): WorkspaceCopy {
       tableChanged: 'Източникът или целта са променени. Проверете текущото състояние.',
       receiptSyncing: 'Разписката е създадена и се синхронизира с архива.',
       pdfFailed: 'PDF файлът не бе подготвен',
+      decrease: 'Намали',
+      increase: 'Увеличи',
+      editDraft: 'Редакция на черновата',
+      draftEmpty: 'Черновата е празна',
+      repeatLastOrder: 'Повтори последната поръчка',
+      quickNotes: 'Бързи бележки',
+      quantityChangeFailed: 'Количеството не е променено',
+      cancel: 'Отказ',
+      soldOut: 'Изчерпан',
+      soldOutHint: 'Докоснете, за да го върнете в наличност',
+      soldOutTitle: 'Изчерпан ли е за днес?',
+      markSoldOut: 'Отбележи като изчерпан',
+      restoreProductTitle: 'Да се върне ли в продажба?',
+      restoreProduct: 'Върни в продажба',
+      availabilityFailed: 'Наличността не беше променена',
+      splitCheck: 'Раздели сметката',
+      splitFailed: 'Сметката не беше разделена',
+      splitDone: 'Сметката е разделена',
+      voidQuantityTitle: 'Колко бройки да се откажат?',
+      voidQuantityLabel: 'Бройки за отказ',
+      notePresets: [
+        'Спешно',
+        'Без лук',
+        'По-малко печено',
+        'Добре изпечено',
+        'Пикантно',
+        'Сосът отделно',
+      ],
     };
   }
   return {
@@ -2159,5 +2763,26 @@ function workspaceCopy(language: Language): WorkspaceCopy {
     tableChanged: 'The source or target changed on another device. Review the current state.',
     receiptSyncing: 'The receipt was issued and is syncing to the archive.',
     pdfFailed: 'Receipt PDF could not be prepared',
+    decrease: 'Decrease',
+    increase: 'Increase',
+    editDraft: 'Edit draft',
+    draftEmpty: 'Draft is empty',
+    repeatLastOrder: 'Repeat last order',
+    quickNotes: 'Quick notes',
+    quantityChangeFailed: 'Quantity could not be changed',
+    cancel: 'Cancel',
+    soldOut: 'Sold out',
+    soldOutHint: 'Tap to put it back in stock',
+    soldOutTitle: 'Sold out for today?',
+    markSoldOut: 'Mark sold out',
+    restoreProductTitle: 'Put it back on sale?',
+    restoreProduct: 'Back on sale',
+    availabilityFailed: 'Availability could not be changed',
+    splitCheck: 'Split check',
+    splitFailed: 'The check could not be split',
+    splitDone: 'Check split',
+    voidQuantityTitle: 'How many should be voided?',
+    voidQuantityLabel: 'Units to void',
+    notePresets: ['Rush', 'No onion', 'Rare', 'Well done', 'Spicy', 'Sauce on the side'],
   };
 }

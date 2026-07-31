@@ -83,6 +83,19 @@ export type PulledSyncEventRow = Omit<SyncEventRow, 'sequence'> & {
   cursor: string;
 };
 
+export type SignupRequestRow = {
+  id: string;
+  user_id: string;
+  email: string;
+  display_name: string;
+  organization_id: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  requested_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  notified_at: string | null;
+};
+
 export type ActiveSessionParticipantRow = {
   user_id: string;
   display_name: string;
@@ -234,6 +247,7 @@ export type Database = {
       modifier_options: TableDefinition<ModifierOptionRow>;
       menu_item_translations: TableDefinition<MenuItemTranslationRow>;
       menu_ai_requests: TableDefinition<MenuAiRequestRow>;
+      signup_requests: TableDefinition<SignupRequestRow>;
     };
     Views: Record<never, never>;
     Functions: {
@@ -286,6 +300,42 @@ export type Database = {
         Returns: Json;
       };
       apply_order_item_note_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      apply_order_item_quantity_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      apply_order_item_void_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      apply_check_split_command: {
         Args: {
           requested_organization_id: string;
           requested_branch_id: string;
@@ -394,6 +444,23 @@ export type Database = {
         };
         Returns: Json;
       };
+      inspect_legacy_migration: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_snapshot: Json;
+        };
+        Returns: Json;
+      };
+      apply_legacy_migration: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_snapshot: Json;
+        };
+        Returns: Json;
+      };
       pull_sync_events: {
         Args: {
           requested_organization_id: string;
@@ -402,6 +469,34 @@ export type Database = {
           page_size?: number;
         };
         Returns: PulledSyncEventRow[];
+      };
+      request_signup: {
+        Args: {
+          requested_display_name: string;
+        };
+        Returns: SignupRequestRow;
+      };
+      my_signup_request: {
+        Args: Record<string, never>;
+        Returns: SignupRequestRow | null;
+      };
+      list_pending_signup_requests: {
+        Args: Record<string, never>;
+        Returns: SignupRequestRow[];
+      };
+      approve_signup_request: {
+        Args: {
+          requested_signup_id: string;
+          requested_role?: MembershipRole;
+          requested_branch_id?: string | null;
+        };
+        Returns: Json;
+      };
+      reject_signup_request: {
+        Args: {
+          requested_signup_id: string;
+        };
+        Returns: Json;
       };
     };
     Enums: Record<never, never>;

@@ -5,8 +5,17 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '../AuthContext';
 import { AuthWorkspace } from '../authTypes';
-import { AuthGateway, RegisterDeviceInput } from '../../services/supabase/authGateway';
-import { BranchRow, DeviceRow, MembershipRow } from '../../services/supabase/database.types';
+import {
+  AuthGateway,
+  GoogleSignInHandoff,
+  RegisterDeviceInput,
+} from '../../services/supabase/authGateway';
+import {
+  BranchRow,
+  DeviceRow,
+  MembershipRow,
+  SignupRequestRow,
+} from '../../services/supabase/database.types';
 
 jest.mock('react-native-uuid', () => ({
   __esModule: true,
@@ -90,6 +99,28 @@ describe('AuthProvider session restore', () => {
     expect(gateway.signOutCount).toBe(1);
     expect(screen.getByTestId('error').props.children).toMatch(/revoked/);
   });
+
+  it('hands Google sign-in the callback address this build can be reached at', async () => {
+    const gateway = new FakeAuthGateway(
+      null,
+      createWorkspace([createMembership('membership-waiter', 'branch-1', 'waiter')]),
+    );
+    const screen = await render(
+      <AuthProvider gateway={gateway}>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status').props.children).toBe('signed_out');
+    });
+    await fireEvent.press(screen.getByText('google'));
+
+    await waitFor(() => {
+      expect(gateway.googleRedirects).toEqual(['orderia://auth-callback']);
+    });
+    expect(screen.getByTestId('error').props.children).toBe('');
+  });
 });
 
 function AuthProbe() {
@@ -99,6 +130,13 @@ function AuthProbe() {
       <Text testID="status">{auth.status}</Text>
       <Text testID="active-branch">{auth.activeBranch?.id ?? 'none'}</Text>
       <Text testID="error">{auth.errorMessage ?? ''}</Text>
+      <Pressable
+        onPress={() => {
+          void auth.signInWithGoogle();
+        }}
+      >
+        <Text>google</Text>
+      </Pressable>
       {auth.workspace?.branches.map((branch) => (
         <Pressable
           key={branch.id}
@@ -117,11 +155,16 @@ class FakeAuthGateway implements AuthGateway {
   readonly registeredDevices: RegisterDeviceInput[] = [];
   registrationError?: Error;
   signOutCount = 0;
+  readonly googleRedirects: string[] = [];
+  pendingSignup: SignupRequestRow | null = null;
 
   constructor(
     private readonly session: Session | null,
     private readonly workspace: AuthWorkspace,
-  ) {}
+    signupRequest?: SignupRequestRow | null,
+  ) {
+    this.pendingSignup = signupRequest ?? null;
+  }
 
   async getSession(): Promise<Session | null> {
     return this.session;
@@ -134,6 +177,19 @@ class FakeAuthGateway implements AuthGateway {
   }
 
   async signIn(_email: string, _password: string): Promise<Session> {
+    if (!this.session) throw new Error('No fixture session');
+    return this.session;
+  }
+
+  async startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff> {
+    this.googleRedirects.push(redirectTo);
+    return {
+      authorizationUrl: `https://accounts.google.test/o?redirect=${redirectTo}`,
+      redirected: false,
+    };
+  }
+
+  async completeOAuthRedirect(_url: string): Promise<Session> {
     if (!this.session) throw new Error('No fixture session');
     return this.session;
   }
@@ -162,6 +218,48 @@ class FakeAuthGateway implements AuthGateway {
 
   async revokeDevice(_deviceId: string): Promise<DeviceRow> {
     throw new Error('Not implemented in this fixture');
+  }
+
+  async signUp(_email: string, _password: string, displayName: string): Promise<Session> {
+    if (!this.session) throw new Error('No fixture session');
+    this.pendingSignup = {
+      id: 'signup-1',
+      user_id: '',
+      email: _email,
+      display_name: displayName,
+      organization_id: null,
+      status: 'pending',
+      requested_at: new Date().toISOString(),
+      decided_by: null,
+      decided_at: null,
+      notified_at: null,
+    };
+    return this.session;
+  }
+
+  async requestSignup(_displayName: string): Promise<SignupRequestRow> {
+    if (!this.pendingSignup) throw new Error('No pending signup fixture');
+    return this.pendingSignup;
+  }
+
+  async getMySignupRequest(): Promise<SignupRequestRow | null> {
+    return this.pendingSignup;
+  }
+
+  async listPendingSignupRequests(): Promise<readonly SignupRequestRow[]> {
+    return this.pendingSignup ? [this.pendingSignup] : [];
+  }
+
+  async approveSignupRequest(_signupId: string): Promise<void> {
+    if (this.pendingSignup) {
+      this.pendingSignup = { ...this.pendingSignup, status: 'approved' };
+    }
+  }
+
+  async rejectSignupRequest(_signupId: string): Promise<void> {
+    if (this.pendingSignup) {
+      this.pendingSignup = { ...this.pendingSignup, status: 'rejected' };
+    }
   }
 }
 

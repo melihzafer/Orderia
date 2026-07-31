@@ -14,6 +14,7 @@ import {
   AddHallScreen,
   AddMenuItemScreen,
   AnalyticsScreen,
+  ApprovalsScreen,
   DeviceManagementScreen,
   EditTableScreen,
   HistoryScreen,
@@ -35,6 +36,7 @@ export type RootStackParamList = {
   EditTable: { tableId: string };
   AddCategory: { categoryId?: string };
   Analytics: undefined;
+  Approvals: undefined;
   QRMenu: undefined;
   Devices: undefined;
 };
@@ -242,6 +244,13 @@ export default function AppNavigator() {
           name="Devices"
           options={{
             title: 'Authorized devices',
+          }}
+        />
+        <Stack.Screen
+          component={ApprovalsScreen}
+          name="Approvals"
+          options={{
+            title: t.pendingApprovalTitle ?? 'Approvals',
           }}
         />
       </Stack.Navigator>

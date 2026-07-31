@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="tr" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Orderia Mobile POS - Craft Edition</title>
+    <meta name="theme-color" content="#07090E" />
+    <!-- Google Fonts & Remix Icon -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- DESKTOP PREVIEW CONTROL BAR -->
+    <div class="desktop-preview-bar">
+      <div class="preview-brand-tag">
+        <span class="craft-badge">PRO POS</span>
+        <span class="preview-title">Orderia Mobile PWA (Michelin Design)</span>
+      </div>
+      <button class="btn-toggle-frame" id="toggle-frame-btn">
+        <i class="ri-fullscreen-line"></i> Tam Ekran Görünüm
+      </button>
+    </div>
+
+    <!-- HYPER-REALISTIC IPHONE 16 PRO FRAME CONTAINER -->
+    <div class="phone-frame-container" id="phone-container">
+      <!-- DYNAMIC ISLAND NOTCH & STATUS BAR -->
+      <div class="dynamic-island-notch">
+        <div class="island-camera"></div>
+        <div class="island-pill">
+          <span class="island-live-dot"></span>
+          <span class="island-text">Sipariş 14:22</span>
+        </div>
+      </div>
+
+      <div class="ios-status-bar">
+        <span class="status-time">15:28</span>
+        <div class="status-icons">
+          <i class="ri-signal-tower-fill"></i>
+          <i class="ri-wifi-fill"></i>
+          <i class="ri-battery-charge-fill"></i>
+        </div>
+      </div>
+
+      <!-- MAIN MOBILE APP SHELL -->
+      <div class="mobile-app">
+        <!-- TOP APP HEADER -->
+        <header class="mobile-header">
+          <div class="header-top">
+            <div class="mobile-brand">
+              <div class="brand-avatar">
+                <i class="ri-restaurant-2-fill"></i>
+              </div>
+              <div class="brand-text">
+                <h2>Orderia <span class="pro-tag">CRAFT</span></h2>
+                <span class="branch-pill"
+                  ><i class="ri-map-pin-2-fill"></i> Kadıköy • Teras & Salon</span
+                >
+              </div>
+            </div>
+
+            <div class="header-actions">
+              <button class="icon-btn-mobile" id="theme-toggle" title="Tema Değiştir">
+                <i class="ri-sun-line light-icon"></i>
+                <i class="ri-moon-clear-line dark-icon"></i>
+              </button>
+              <button class="icon-btn-mobile" title="Bildirimler">
+                <i class="ri-notification-3-line"></i>
+                <span class="badge-dot"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Active View Header -->
+          <div class="mobile-view-bar">
+            <div>
+              <h1 id="mobile-view-title">Masa & Düzen Haritası</h1>
+              <span class="view-sub-meta" id="mobile-view-sub">16 Masa • 6 Aktif Adisyon</span>
+            </div>
+            <button class="search-trigger-btn" id="search-trigger" title="Hızlı Ara">
+              <i class="ri-search-2-line"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- SCROLLABLE BODY AREA -->
+        <main class="mobile-body">
+          <!-- VIEW 1: MASALAR & SALON HARİTASI -->
+          <section class="mobile-panel active" id="tables-view">
+            <!-- KPI Metrics Cards -->
+            <div class="mobile-kpi-scroll">
+              <div class="mobile-kpi-card">
+                <div class="kpi-icon-sm gold"><i class="ri-wallet-3-fill"></i></div>
+                <div>
+                  <span class="kpi-title">Açık Adisyon Ciro</span>
+                  <span class="kpi-num text-gold" id="kpi-revenue">₺3,450.00</span>
+                </div>
+              </div>
+              <div class="mobile-kpi-card">
+                <div class="kpi-icon-sm emerald"><i class="ri-pie-chart-fill"></i></div>
+                <div>
+                  <span class="kpi-title">Masa Doluluğu</span>
+                  <span class="kpi-num" id="kpi-occupied">6 / 16 (%37)</span>
+                </div>
+              </div>
+              <div class="mobile-kpi-card">
+                <div class="kpi-icon-sm blue"><i class="ri-time-fill"></i></div>
+                <div>
+                  <span class="kpi-title">Ortalama Oturma</span>
+                  <span class="kpi-num">48 Dakika</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hall Selector Pills -->
+            <div class="hall-pills-scroll">
+              <button class="hall-pill active" data-hall="all">Tüm Alanlar (16)</button>
+              <button class="hall-pill" data-hall="main">Ana Salon (8)</button>
+              <button class="hall-pill" data-hall="terrace">Teras (4)</button>
+              <button class="hall-pill" data-hall="vip">VIP Bahçe (4)</button>
+            </div>
+
+            <!-- Filter & View Controls Bar -->
+            <div class="mobile-filter-bar">
+              <div class="filter-pills">
+                <button class="m-filter-btn active" data-status="all">Tümü</button>
+                <button class="m-filter-btn free" data-status="free">Boş (10)</button>
+                <button class="m-filter-btn occupied" data-status="occupied">Dolu (4)</button>
+                <button class="m-filter-btn billing" data-status="billing">Hesap (2)</button>
+              </div>
+            </div>
+
+            <!-- Authentic Table Shapes Grid -->
+            <div class="mobile-tables-grid" id="tables-grid">
+              <!-- Dynamically rendered with realistic table shapes -->
+            </div>
+          </section>
+
+          <!-- VIEW 2: POS / SİPARİŞ & ADİSYON -->
+          <section class="mobile-panel" id="pos-view">
+            <!-- Category Selector -->
+            <div class="cat-pills-scroll">
+              <button class="cat-pill active" data-cat="all">🔥 Tüm Menü</button>
+              <button class="cat-pill" data-cat="burgers">🍔 Artisanal Burger</button>
+              <button class="cat-pill" data-cat="pizzas">🍕 Taş Fırın Pizza</button>
+              <button class="cat-pill" data-cat="mains">🥩 Izgara & Biftek</button>
+              <button class="cat-pill" data-cat="drinks">🍷 İçecek & Kokteyl</button>
+              <button class="cat-pill" data-cat="desserts">🍰 Özel Tatlılar</button>
+            </div>
+
+            <!-- Active Table Banner Selector -->
+            <div class="cart-table-banner">
+              <div class="banner-info">
+                <i class="ri-restaurant-line"></i>
+                <span>Sipariş Masası:</span>
+                <select id="mobile-table-select">
+                  <option value="M-01">Masa 01 - Ana Salon (Dolu)</option>
+                  <option value="M-02">Masa 02 - Ana Salon (Boş)</option>
+                  <option value="M-03">Masa 03 - Teras (Hesap)</option>
+                  <option value="M-05">Masa 05 - VIP Bahçe (Dolu)</option>
+                </select>
+              </div>
+              <span class="badge badge-warning" id="banner-status-badge">Açık Adisyon</span>
+            </div>
+
+            <!-- Real Food Photos Product Grid -->
+            <div class="mobile-product-grid" id="pos-products">
+              <!-- Dynamically generated via app.js -->
+            </div>
+
+            <!-- Floating POS Cart Action Bar -->
+            <div class="floating-cart-bar" id="open-cart-sheet">
+              <div class="cart-bar-left">
+                <div class="cart-badge-count" id="floating-cart-count">0</div>
+                <div class="cart-bar-text">
+                  <span class="cart-title">Adisyonu İncele</span>
+                  <span class="cart-sub" id="floating-cart-sub">Ürün seçilmedi</span>
+                </div>
+              </div>
+              <div class="cart-bar-right">
+                <span class="cart-total-price" id="floating-cart-price">₺0.00</span>
+                <i class="ri-arrow-up-s-line"></i>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 3: MENÜ YÖNETİMİ -->
+          <section class="mobile-panel" id="menu-view">
+            <div class="panel-section-header">
+              <h3>Restoran Ürün Kataloğu</h3>
+              <button class="btn-sm btn-primary" id="btn-add-item">
+                <i class="ri-add-line"></i> Yeni Ürün
+              </button>
+            </div>
+
+            <div class="mobile-menu-list" id="mobile-menu-list">
+              <!-- Menu items generated dynamically -->
+            </div>
+          </section>
+
+          <!-- VIEW 4: ANALİTİK & CİRO -->
+          <section class="mobile-panel" id="analytics-view">
+            <div class="analytics-header">
+              <h3>Günlük Ciro & Performans</h3>
+              <span class="date-tag"><i class="ri-calendar-line"></i> Bugün</span>
+            </div>
+
+            <div class="mobile-chart-card">
+              <h4>Saatlik Satış Hacmi (₺)</h4>
+              <div class="m-bar-chart">
+                <div class="m-bar" style="--h: 40%" data-val="₺1.2k"><span>12:00</span></div>
+                <div class="m-bar" style="--h: 70%" data-val="₺2.4k"><span>14:00</span></div>
+                <div class="m-bar" style="--h: 95%" data-val="₺4.1k"><span>16:00</span></div>
+                <div class="m-bar" style="--h: 60%" data-val="₺2.2k"><span>18:00</span></div>
+                <div class="m-bar" style="--h: 85%" data-val="₺3.5k"><span>20:00</span></div>
+              </div>
+            </div>
+
+            <div class="top-selling-mobile">
+              <h4>En Çok Satanlar (Bu Hafta)</h4>
+              <div class="m-rank-list" id="top-sellers-mobile">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 5: AYARLAR & VARDİYA -->
+          <section class="mobile-panel" id="settings-view">
+            <div class="mobile-user-card">
+              <div class="user-avatar-lg">MZ</div>
+              <div class="user-details">
+                <h3>Melih Zafer</h3>
+                <p>Genel Müdür • Kadıköy Merkez</p>
+              </div>
+            </div>
+
+            <div class="mobile-settings-list">
+              <div class="settings-item">
+                <i class="ri-user-heart-fill"></i>
+                <span>Vardiyadaki Personeller (2 Aktif Garson)</span>
+                <i class="ri-arrow-right-s-line"></i>
+              </div>
+              <div class="settings-item" id="btn-copy-qr">
+                <i class="ri-qr-code-fill"></i>
+                <span>Masa QR Menü Bağlantısı</span>
+                <i class="ri-file-copy-line"></i>
+              </div>
+              <div class="settings-item">
+                <i class="ri-printer-fill"></i>
+                <span>Mutfak Termal Yazıcı</span>
+                <span class="badge badge-success">Bağlı</span>
+              </div>
+              <div class="settings-item">
+                <i class="ri-shield-keyhole-fill"></i>
+                <span>Garson İzinleri & POS Kilidi</span>
+                <i class="ri-arrow-right-s-line"></i>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR -->
+        <nav class="mobile-bottom-nav">
+          <button class="bottom-nav-item active" data-tab="tables-view">
+            <i class="ri-layout-grid-fill"></i>
+            <span>Masalar</span>
+          </button>
+          <button class="bottom-nav-item" data-tab="pos-view">
+            <i class="ri-shopping-bag-3-fill"></i>
+            <span>Sipariş</span>
+            <span class="nav-dot-badge" id="nav-pos-badge"></span>
+          </button>
+          <button class="bottom-nav-item" data-tab="menu-view">
+            <i class="ri-restaurant-line"></i>
+            <span>Menü</span>
+          </button>
+          <button class="bottom-nav-item" data-tab="analytics-view">
+            <i class="ri-pie-chart-2-fill"></i>
+            <span>Rapor</span>
+          </button>
+          <button class="bottom-nav-item" data-tab="settings-view">
+            <i class="ri-settings-4-fill"></i>
+            <span>Ayarlar</span>
+          </button>
+        </nav>
+
+        <!-- SLIDE-UP BOTTOM SHEET FOR CART / BILL -->
+        <div class="bottom-sheet-backdrop" id="cart-sheet-backdrop">
+          <div class="bottom-sheet">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-header">
+              <div>
+                <h3 id="sheet-table-title">Masa 01 Adisyonu</h3>
+                <span class="sheet-sub" id="sheet-waiter-info"
+                  >Garson: Ahmet H. • Oturma Süresi: 58 dk</span
+                >
+              </div>
+              <button class="sheet-close-btn" id="close-cart-sheet">&times;</button>
+            </div>
+
+            <div class="sheet-body" id="sheet-cart-items">
+              <!-- Cart items dynamically rendered -->
+            </div>
+
+            <div class="sheet-footer">
+              <div class="sheet-summary-line">
+                <span>Ara Toplam:</span>
+                <span id="sheet-subtotal">₺0.00</span>
+              </div>
+              <div class="sheet-summary-line">
+                <span>KDV (%10):</span>
+                <span id="sheet-tax">₺0.00</span>
+              </div>
+              <div class="sheet-summary-line total">
+                <span>GENEL TOPLAM:</span>
+                <strong id="sheet-total" class="text-gold">₺0.00</strong>
+              </div>
+
+              <div class="sheet-action-grid">
+                <button class="btn btn-secondary" id="btn-sheet-kitchen">
+                  <i class="ri-fire-fill"></i> Mutfağa Gönder
+                </button>
+                <button class="btn btn-gold" id="btn-sheet-pay">
+                  <i class="ri-money-dollar-box-fill"></i> Hesap Kes / Öde
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHECKOUT PAYMENT MODAL (BOTTOM SHEET STYLE) -->
+        <div class="bottom-sheet-backdrop" id="payment-sheet-backdrop">
+          <div class="bottom-sheet">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-header">
+              <h3 id="pay-modal-title">Ödeme Al</h3>
+              <button class="sheet-close-btn" id="close-pay-sheet">&times;</button>
+            </div>
+
+            <div class="sheet-body">
+              <div class="pay-amount-box">
+                <span>Ödenecek Toplam Tutar:</span>
+                <h2 id="pay-total-display">₺0.00</h2>
+              </div>
+
+              <!-- Split Selector options -->
+              <div class="split-selector">
+                <button class="split-btn active" data-split="full">Tek Ödeme</button>
+                <button class="split-btn" data-split="equal">Eşit Böl (Alman Usulü)</button>
+                <button class="split-btn" data-split="item">Ürüne Göre Böl</button>
+              </div>
+
+              <div class="mobile-pay-options">
+                <button class="m-pay-btn active" data-pay="card">
+                  <i class="ri-bank-card-fill"></i>
+                  <span>Kredi Kartı</span>
+                </button>
+                <button class="m-pay-btn" data-pay="cash">
+                  <i class="ri-money-dollar-box-fill"></i>
+                  <span>Nakit</span>
+                </button>
+                <button class="m-pay-btn" data-pay="contactless">
+                  <i class="ri-contactless-payment-fill"></i>
+                  <span>Temassız / NFC</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="sheet-footer">
+              <button class="btn btn-gold btn-block" id="btn-confirm-mobile-pay">
+                <i class="ri-check-double-line"></i> Ödemeyi Tamamla ve Masayı Boşalt
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRODUCT MODIFIER SELECTION SHEET -->
+        <div class="bottom-sheet-backdrop" id="modifier-sheet-backdrop">
+          <div class="bottom-sheet">
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-header">
+              <div>
+                <h3 id="mod-product-title">Ürün Seçenekleri</h3>
+                <span class="sheet-sub" id="mod-product-price">₺0.00</span>
+              </div>
+              <button class="sheet-close-btn" id="close-mod-sheet">&times;</button>
+            </div>
+            <div class="sheet-body">
+              <div class="mod-group">
+                <label class="mod-label">Pişme Tercihi:</label>
+                <div class="mod-options">
+                  <button class="mod-opt-btn active">Az Pişmiş (Rare)</button>
+                  <button class="mod-opt-btn">Orta (Medium)</button>
+                  <button class="mod-opt-btn">Çok Pişmiş (Well Done)</button>
+                </div>
+              </div>
+              <div class="mod-group" style="margin-top: 12px">
+                <label class="mod-label">Ekstra İkram / Sos:</label>
+                <div class="mod-options">
+                  <button class="mod-opt-btn">+ Cheddar Peyniri (+₺25)</button>
+                  <button class="mod-opt-btn">+ Trüf Mantarı Sos (+₺40)</button>
+                </div>
+              </div>
+            </div>
+            <div class="sheet-footer">
+              <button class="btn btn-primary btn-block" id="btn-confirm-modifier">
+                <i class="ri-add-line"></i> Masaya Ekle
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOAST NOTIFICATION CONTAINER -->
+        <div class="toast-container" id="toast-container"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

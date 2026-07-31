@@ -11,14 +11,22 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
 
-export default function LoginScreen() {
+export default function LoginScreen({
+  onCreateAccount,
+}: {
+  readonly onCreateAccount?: () => void;
+}) {
   const { colors } = useTheme();
-  const { errorMessage, signIn } = useAuth();
+  const { t } = useLocalization();
+  const { errorMessage, googleSignInAvailable, signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const busy = submitting || googleBusy;
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !busy;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -28,6 +36,17 @@ export default function LoginScreen() {
       await signIn(email, password);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    if (busy) return;
+
+    setGoogleBusy(true);
+    try {
+      await signInWithGoogle();
+    } finally {
+      setGoogleBusy(false);
     }
   };
 
@@ -121,6 +140,48 @@ export default function LoginScreen() {
               {submitting ? 'Signing in…' : 'Sign in'}
             </Text>
           </Pressable>
+
+          {googleSignInAvailable ? (
+            <>
+              <View style={styles.dividerRow}>
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+                <Text style={[styles.dividerText, { color: colors.textMuted }]}>or</Text>
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                disabled={busy}
+                onPress={() => {
+                  void handleGoogle();
+                }}
+                style={({ pressed }) => [
+                  styles.button,
+                  styles.googleButton,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                    opacity: busy ? 0.45 : pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text style={[styles.buttonText, { color: colors.text }]}>
+                  {googleBusy ? 'Opening Google…' : 'Continue with Google'}
+                </Text>
+              </Pressable>
+            </>
+          ) : null}
+
+          {onCreateAccount ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onCreateAccount}
+              style={styles.secondaryAction}
+            >
+              <Text style={[styles.secondaryText, { color: colors.primary }]}>
+                {t.createAccount}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -186,5 +247,31 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  googleButton: {
+    borderWidth: 1,
+  },
+  dividerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  secondaryAction: {
+    alignItems: 'center',
+    marginTop: 14,
+    padding: 10,
+  },
+  secondaryText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

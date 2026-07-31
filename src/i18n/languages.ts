@@ -359,6 +359,44 @@ export interface Translation {
   generateQR: string;
   shareQRCodes: string;
   exportQRCodes: string;
+
+  // Waiter speed & draft editing
+  decrease: string;
+  increase: string;
+  editDraft: string;
+  draftEmpty: string;
+  repeatLastOrder: string;
+  quickNotes: string;
+  presetHurry: string;
+  presetNoOnion: string;
+  presetRare: string;
+  presetWellDone: string;
+  presetSpicy: string;
+  presetSauceSide: string;
+
+  // Auth & account approval
+  emailLabel: string;
+  passwordLabel: string;
+  displayNameLabel: string;
+  confirmPasswordLabel: string;
+  createAccount: string;
+  registerTitle: string;
+  registerSubtitle: string;
+  register: string;
+  registering: string;
+  haveAccount: string;
+  passwordTooShort: string;
+  passwordsDoNotMatch: string;
+  invalidEmail: string;
+  registerSuccessTitle: string;
+  registerSuccessBody: string;
+  pendingApprovalTitle: string;
+  pendingApprovalBody: string;
+  checkAgain: string;
+  approvalsTitle: string;
+  noPendingApprovals: string;
+  approve: string;
+  reject: string;
 }
 
 export const translations: Record<string, Translation> = {
@@ -728,6 +766,45 @@ export const translations: Record<string, Translation> = {
     generateQR: 'QR Kodu Oluştur',
     shareQRCodes: 'QR Kodlarını Paylaş',
     exportQRCodes: 'QR Kodlarını Dışa Aktar',
+
+    // Waiter speed & draft editing
+    decrease: 'Azalt',
+    increase: 'Artır',
+    editDraft: 'Taslağı Düzenle',
+    draftEmpty: 'Taslak boş',
+    repeatLastOrder: 'Son Siparişi Tekrarla',
+    quickNotes: 'Hızlı notlar',
+    presetHurry: 'Acil',
+    presetNoOnion: 'Soğansız',
+    presetRare: 'Az pişmiş',
+    presetWellDone: 'İyi pişmiş',
+    presetSpicy: 'Acılı',
+    presetSauceSide: 'Sos ayrıda',
+
+    // Auth & account approval
+    emailLabel: 'E-posta',
+    passwordLabel: 'Şifre',
+    displayNameLabel: 'Ad Soyad',
+    confirmPasswordLabel: 'Şifre (tekrar)',
+    createAccount: 'Hesap Oluştur',
+    registerTitle: 'Yeni Hesap',
+    registerSubtitle: 'Hesabınız yönetici onayından sonra aktif olur.',
+    register: 'Kaydol',
+    registering: 'Kaydediliyor…',
+    haveAccount: 'Zaten hesabınız var mı? Giriş yapın',
+    passwordTooShort: 'Şifre en az 6 karakter olmalı',
+    passwordsDoNotMatch: 'Şifreler eşleşmiyor',
+    invalidEmail: 'Geçerli bir e-posta adresi girin',
+    registerSuccessTitle: 'Kayıt alındı',
+    registerSuccessBody: 'Kaydınız yöneticiye iletildi. Onaylandığında giriş yapabilirsiniz.',
+    pendingApprovalTitle: 'Onay bekleniyor',
+    pendingApprovalBody:
+      'Hesabınız henüz yönetici tarafından onaylanmadı. Onaylandığında giriş yapabilirsiniz.',
+    checkAgain: 'Tekrar kontrol et',
+    approvalsTitle: 'Hesap Onayları',
+    noPendingApprovals: 'Bekleyen başvuru yok',
+    approve: 'Onayla',
+    reject: 'Reddet',
   },
 
   bg: {
@@ -1097,6 +1174,44 @@ export const translations: Record<string, Translation> = {
     generateQR: 'Генериране на QR код',
     shareQRCodes: 'Споделяне на QR кодове',
     exportQRCodes: 'Експорт на QR кодове',
+
+    // Waiter speed & draft editing
+    decrease: 'Намали',
+    increase: 'Увеличи',
+    editDraft: 'Редакция на черновата',
+    draftEmpty: 'Черновата е празна',
+    repeatLastOrder: 'Повтори последната поръчка',
+    quickNotes: 'Бързи бележки',
+    presetHurry: 'Спешно',
+    presetNoOnion: 'Без лук',
+    presetRare: 'По-малко печено',
+    presetWellDone: 'Добре изпечено',
+    presetSpicy: 'Пикантно',
+    presetSauceSide: 'Сосът отделно',
+
+    // Auth & account approval
+    emailLabel: 'Имейл',
+    passwordLabel: 'Парола',
+    displayNameLabel: 'Име и фамилия',
+    confirmPasswordLabel: 'Парола (отново)',
+    createAccount: 'Създай акаунт',
+    registerTitle: 'Нов акаунт',
+    registerSubtitle: 'Акаунтът се активира след одобрение от управител.',
+    register: 'Регистрация',
+    registering: 'Регистриране…',
+    haveAccount: 'Вече имате акаунт? Влезте',
+    passwordTooShort: 'Паролата трябва да е поне 6 знака',
+    passwordsDoNotMatch: 'Паролите не съвпадат',
+    invalidEmail: 'Въведете валиден имейл адрес',
+    registerSuccessTitle: 'Регистрацията е приета',
+    registerSuccessBody: 'Заявката е изпратена на управителя. Ще можете да влезете след одобрение.',
+    pendingApprovalTitle: 'Изчаква одобрение',
+    pendingApprovalBody: 'Акаунтът ви все още не е одобрен от управителя.',
+    checkAgain: 'Провери отново',
+    approvalsTitle: 'Одобрения на акаунти',
+    noPendingApprovals: 'Няма чакащи заявки',
+    approve: 'Одобри',
+    reject: 'Отхвърли',
   },
 
   en: {
@@ -1463,5 +1578,43 @@ export const translations: Record<string, Translation> = {
     generateQR: 'Generate QR Code',
     shareQRCodes: 'Share QR Codes',
     exportQRCodes: 'Export QR Codes',
+
+    // Waiter speed & draft editing
+    decrease: 'Decrease',
+    increase: 'Increase',
+    editDraft: 'Edit Draft',
+    draftEmpty: 'Draft is empty',
+    repeatLastOrder: 'Repeat Last Order',
+    quickNotes: 'Quick notes',
+    presetHurry: 'Rush',
+    presetNoOnion: 'No onion',
+    presetRare: 'Rare',
+    presetWellDone: 'Well done',
+    presetSpicy: 'Spicy',
+    presetSauceSide: 'Sauce on the side',
+
+    // Auth & account approval
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    displayNameLabel: 'Full name',
+    confirmPasswordLabel: 'Password (again)',
+    createAccount: 'Create account',
+    registerTitle: 'New Account',
+    registerSubtitle: 'Your account becomes active after manager approval.',
+    register: 'Sign up',
+    registering: 'Signing up…',
+    haveAccount: 'Already have an account? Sign in',
+    passwordTooShort: 'Password must be at least 6 characters',
+    passwordsDoNotMatch: 'Passwords do not match',
+    invalidEmail: 'Enter a valid email address',
+    registerSuccessTitle: 'Registration received',
+    registerSuccessBody: 'Your request was sent to the manager. You can sign in once approved.',
+    pendingApprovalTitle: 'Waiting for approval',
+    pendingApprovalBody: 'Your account has not been approved by the manager yet.',
+    checkAgain: 'Check again',
+    approvalsTitle: 'Account Approvals',
+    noPendingApprovals: 'No pending requests',
+    approve: 'Approve',
+    reject: 'Reject',
   },
 };

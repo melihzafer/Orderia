@@ -293,6 +293,211 @@ export async function updateOrderItemNote(input: UpdateOrderItemNoteInput): Prom
   });
 }
 
+export interface UpdateOrderItemQuantityInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly item: OrderItem;
+  readonly quantity: number;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+export async function updateOrderItemQuantity(
+  input: UpdateOrderItemQuantityInput,
+): Promise<OrderItem> {
+  if (input.item.status !== 'ordered') {
+    throw new Error('Only items that have not been served yet can change quantity');
+  }
+  if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || input.quantity > 999) {
+    throw new Error('Quantity must be a whole number between 1 and 999');
+  }
+  if (input.quantity === input.item.quantity) {
+    return input.item;
+  }
+  const updatedAt = (input.now ?? new Date()).toISOString();
+  const mutationId = toDomainId<MutationId>((input.createUuid ?? defaultUuid)());
+  const updated: OrderItem = {
+    ...input.item,
+    quantity: input.quantity,
+    updatedBy: input.actorUserId,
+    updatedAt,
+    version: input.item.version + 1,
+    syncStatus: 'pending',
+    clientMutationId: mutationId,
+  };
+  const mutation: OutboxMutation = {
+    id: mutationId,
+    ...input.scope,
+    deviceId: input.deviceId,
+    clientMutationId: mutationId,
+    idempotencyKey: `${input.deviceId}:${mutationId}`,
+    repository: 'orderItems',
+    entityId: input.item.id,
+    operation: 'command',
+    payload: { quantity: input.quantity },
+    baseVersion: input.item.serverVersion ?? input.item.version,
+    status: 'pending',
+    attemptCount: 0,
+    createdAt: updatedAt,
+  };
+
+  return input.database.transaction(async (transaction) => {
+    const stored = await transaction.repository('orderItems').put(input.scope, updated, {
+      expectedVersion: input.item.version,
+    });
+    await transaction.outbox.enqueue(mutation);
+    return stored;
+  });
+}
+
+export interface VoidOrderItemQuantityInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly item: OrderItem;
+  readonly modifiers: readonly OrderItemModifier[];
+  readonly quantity: number;
+  readonly reasonId: CancellationReasonId;
+  /** Odemesi onaylanmis adet; bu adet iptal edilemez. */
+  readonly paidQuantity?: number;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+export interface VoidOrderItemQuantityResult {
+  /** Serviste kalan satir; tamami iptal edildiyse iptal edilmis satirin kendisi. */
+  readonly remainingItem: OrderItem;
+  /** Kismi iptalde olusan, denetim izi tasiyan iptal satiri. */
+  readonly voidedItem?: OrderItem;
+}
+
+/**
+ * "Bir bira fazla gelmis, kimse icmemis" durumu: satirin tamamini degil,
+ * yalnizca fazla adedi dusurur. Kismi iptalde adet sessizce azaltilmaz;
+ * gerekcesiyle birlikte ayri bir iptal satiri birakilir ki adisyon, rapor ve
+ * fis ayni hikayeyi anlatsin.
+ */
+export async function voidOrderItemQuantity(
+  input: VoidOrderItemQuantityInput,
+): Promise<VoidOrderItemQuantityResult> {
+  assertOrderItemTransition(input.item.status, 'cancelled');
+  if (!Number.isSafeInteger(input.quantity) || input.quantity < 1) {
+    throw new OrderDraftValidationError(
+      'Void quantity must be a positive whole number',
+      'INVALID_QUANTITY',
+    );
+  }
+  const paidQuantity = input.paidQuantity ?? 0;
+  const voidableQuantity = input.item.quantity - paidQuantity;
+  if (input.quantity > voidableQuantity) {
+    throw new OrderDraftValidationError(
+      `Only ${Math.max(0, voidableQuantity)} of ${input.item.nameSnapshot} can be voided`,
+      'INVALID_QUANTITY',
+    );
+  }
+
+  const occurredAt = (input.now ?? new Date()).toISOString();
+  const createUuid = input.createUuid ?? defaultUuid;
+  const mutationId = toDomainId<MutationId>(createUuid());
+  const isFullVoid = input.quantity === input.item.quantity;
+
+  const remainingItem: OrderItem = isFullVoid
+    ? {
+        ...input.item,
+        status: 'cancelled',
+        updatedBy: input.actorUserId,
+        updatedAt: occurredAt,
+        cancelledBy: input.actorUserId,
+        cancelledAt: occurredAt,
+        cancellationReasonId: input.reasonId,
+        version: input.item.version + 1,
+        syncStatus: 'pending',
+        clientMutationId: mutationId,
+      }
+    : {
+        ...input.item,
+        quantity: input.item.quantity - input.quantity,
+        updatedBy: input.actorUserId,
+        updatedAt: occurredAt,
+        version: input.item.version + 1,
+        syncStatus: 'pending',
+        clientMutationId: mutationId,
+      };
+
+  const voidedItemId = isFullVoid ? undefined : toDomainId<OrderItemId>(createUuid());
+  const voidedItem: OrderItem | undefined = voidedItemId
+    ? {
+        ...input.item,
+        id: voidedItemId,
+        quantity: input.quantity,
+        status: 'cancelled',
+        updatedBy: input.actorUserId,
+        createdAt: occurredAt,
+        updatedAt: occurredAt,
+        cancelledBy: input.actorUserId,
+        cancelledAt: occurredAt,
+        cancellationReasonId: input.reasonId,
+        version: 1,
+        syncStatus: 'pending',
+        clientMutationId: mutationId,
+      }
+    : undefined;
+
+  const voidedModifiers = voidedItemId
+    ? input.modifiers
+        .filter((modifier) => modifier.orderItemId === input.item.id)
+        .map((modifier) => ({
+          sourceModifierId: modifier.id,
+          entity: {
+            ...modifier,
+            id: toDomainId<OrderItemModifierId>(createUuid()),
+            orderItemId: voidedItemId,
+          } satisfies OrderItemModifier,
+        }))
+    : [];
+
+  const mutation: OutboxMutation = {
+    id: mutationId,
+    ...input.scope,
+    deviceId: input.deviceId,
+    clientMutationId: mutationId,
+    idempotencyKey: `${input.deviceId}:${mutationId}`,
+    repository: 'orderItems',
+    entityId: input.item.id,
+    operation: 'command',
+    payload: {
+      voidQuantity: input.quantity,
+      reasonId: input.reasonId,
+      ...(voidedItemId ? { voidedItemId } : {}),
+      modifiers: voidedModifiers.map((modifier) => ({
+        id: modifier.entity.id,
+        sourceModifierId: modifier.sourceModifierId,
+      })),
+    },
+    baseVersion: input.item.serverVersion ?? input.item.version,
+    status: 'pending',
+    attemptCount: 0,
+    createdAt: occurredAt,
+  };
+
+  return input.database.transaction(async (transaction) => {
+    const stored = await transaction
+      .repository('orderItems')
+      .put(input.scope, remainingItem, { expectedVersion: input.item.version });
+    if (voidedItem) {
+      await transaction.repository('orderItems').put(input.scope, voidedItem);
+      for (const modifier of voidedModifiers) {
+        await transaction.repository('orderItemModifiers').put(input.scope, modifier.entity);
+      }
+    }
+    await transaction.outbox.enqueue(mutation);
+    return { remainingItem: stored, ...(voidedItem ? { voidedItem } : {}) };
+  });
+}
+
 export type NoteConflictResolution = 'server' | 'local';
 
 export interface ResolveOrderItemNoteConflictInput {

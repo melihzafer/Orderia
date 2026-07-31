@@ -58,10 +58,14 @@ imzasız bırakır ve debug anahtarının production artifact üretmesini engell
 
 1. EAS `preview` ortamında `EXPO_PUBLIC_SUPABASE_URL` ve
    `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` tanımlanır.
-2. Android APK iki fiziksel telefonda kurulur; login, çevrimdışı sipariş, yeniden açılış,
+2. Production ortamında Sentry DSN, private auth token, org ve project tanımlanır;
+   `npm run release:env` geçmeden build alınmaz.
+3. Android APK iki fiziksel telefonda kurulur; login, çevrimdışı sipariş, yeniden açılış,
    senkron ve PDF receipt test edilir.
-3. iPhone Safari’de ilk online açılış yapılır, Ana Ekrana Ekle uygulanır, uçak modunda
+4. iPhone Safari’de ilk online açılış yapılır, Ana Ekrana Ekle uygulanır, uçak modunda
    app-shell ve IndexedDB verisi kontrol edilir.
-4. Açık ödeme ve bekleyen outbox varken yeni service worker’ın reload yapmadığı doğrulanır.
-5. Production AAB iç test kanalına taslak olarak yüklenir; pilot onayı olmadan genel yayına
+5. Açık ödeme ve bekleyen outbox varken yeni service worker’ın reload yapmadığı doğrulanır.
+6. Production host `public/_headers` içindeki CSP/HSTS/cache politikasını desteklemiyorsa eşdeğer
+   header’lar platform yapılandırmasında tanımlanır ve `curl -I` kanıtı alınır.
+7. Production AAB iç test kanalına taslak olarak yüklenir; pilot onayı olmadan genel yayına
    alınmaz.

@@ -1,6 +1,6 @@
 {
   "name": "orderia",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -24,6 +24,9 @@
     "test:pwa": "npm run build:web && npm run test:pwa:only",
     "test:pwa:only": "playwright test --config playwright.pwa.config.ts",
     "test:db": "npx --yes supabase@2.109.1 test db",
+    "security:audit": "node scripts/check-security-baseline.mjs && node scripts/check-secrets.mjs",
+    "release:env": "node scripts/verify-release-env.mjs",
+    "load:staging": "node scripts/load/staging-concurrent-orders.mjs",
     "supabase:start": "npx --yes supabase@2.109.1 start",
     "supabase:stop": "npx --yes supabase@2.109.1 stop --no-backup",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build:web",
@@ -38,6 +41,7 @@
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
+    "@sentry/react-native": "~6.14.0",
     "@supabase/supabase-js": "^2.110.8",
     "expo": "~53.0.27",
     "expo-dev-client": "~5.2.4",
@@ -51,6 +55,7 @@
     "expo-splash-screen": "~0.30.10",
     "expo-sqlite": "~15.2.14",
     "expo-status-bar": "~2.2.3",
+    "expo-system-ui": "~5.0.11",
     "nativewind": "^2.0.11",
     "pdfmake": "^0.2.20",
     "react": "19.0.0",
@@ -69,6 +74,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@babel/core": "^7.20.0",
     "@playwright/test": "^1.62.0",
     "@svgr/webpack": "^8.1.0",

@@ -116,11 +116,11 @@ export async function loadTableWorkspace(
   );
   const activeGroups = modifierGroups.filter((group) => !group.deletedAt);
   const activeOptions = modifierOptions.filter((option) => option.isActive && !option.deletedAt);
+  // Tukenen urun paletten kaybolmaz. Kaybolursa garson "menude yoktu"
+  // sanip aramaya devam eder; gorunur ama kapali olursa "bugun yok" bilgisi
+  // masada aninda verilir.
   const products = menuItems
-    .filter(
-      (item) =>
-        item.isActive && item.isAvailable && !item.deletedAt && categoryById.has(item.categoryId),
-    )
+    .filter((item) => item.isActive && !item.deletedAt && categoryById.has(item.categoryId))
     .map<WorkspaceProduct>((item) => ({
       ...item,
       categoryName: categoryById.get(item.categoryId)?.name ?? '',
@@ -134,7 +134,10 @@ export async function loadTableWorkspace(
             .sort(compareSortOrder),
         })),
     }))
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort(
+      (left, right) =>
+        Number(right.isAvailable) - Number(left.isAvailable) || left.name.localeCompare(right.name),
+    );
 
   return {
     table,

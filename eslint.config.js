@@ -22,9 +22,25 @@ module.exports = defineConfig([
     },
   },
   {
+    // Edge function'lar Deno'da kosar; jsr:/npm:/https: belirteclerini
+    // Node cozumleyicisi bulamaz, bu beklenen bir durumdur.
     files: ['supabase/functions/**/*.ts'],
     languageOptions: {
       globals: globals.deno,
+    },
+    rules: {
+      'import/no-unresolved': 'off',
+    },
+  },
+  {
+    // Derleme ve CI betikleri Node'da kosar; Expo'nun derleme aninda
+    // gomdugu env kurali burada gecerli degildir.
+    files: ['scripts/**/*.mjs', 'scripts/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      'expo/no-dynamic-env-var': 'off',
     },
   },
   {

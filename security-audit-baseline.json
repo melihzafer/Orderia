@@ -1,0 +1,15 @@
+{
+  "reviewedOn": "2026-07-26",
+  "expiresOn": "2026-09-30",
+  "owner": "Orderia release owner",
+  "trackingIssue": "https://github.com/melihzafer/Orderia/issues/33",
+  "maximumVulnerablePackages": {
+    "critical": 0,
+    "high": 58,
+    "moderate": 4,
+    "low": 0,
+    "total": 62
+  },
+  "acceptedAdvisorySources": [1113715, 1117015, 1119441, 1124252, 1124288, 1124334],
+  "reason": "Accepted temporarily because all findings resolve through the controlled Expo 57 / React Native 0.86 upgrade, not a safe in-place patch. Production input does not reach Metro, PostCSS, AJV, brace expansion, or UUID buffer APIs. New advisories, critical findings, count growth, or expiry fail CI."
+}

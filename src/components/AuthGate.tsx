@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import BranchSelectionScreen from '../screens/BranchSelectionScreen';
 import LoginScreen from '../screens/LoginScreen';
+import PendingApprovalScreen from '../screens/PendingApprovalScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 
 export function AuthGate({ children }: { readonly children: React.ReactNode }) {
   const { colors } = useTheme();
   const { status, cloudEnabled, errorMessage, retry, signOut } = useAuth();
+  const [showRegister, setShowRegister] = useState(false);
 
   if (status === 'unconfigured' || status === 'ready') {
     return <>{children}</>;
   }
 
   if (status === 'signed_out') {
-    return <LoginScreen />;
+    return showRegister ? (
+      <RegisterScreen onBackToLogin={() => setShowRegister(false)} />
+    ) : (
+      <LoginScreen onCreateAccount={() => setShowRegister(true)} />
+    );
+  }
+
+  if (status === 'pending_approval') {
+    return <PendingApprovalScreen />;
   }
 
   if (status === 'select_branch') {

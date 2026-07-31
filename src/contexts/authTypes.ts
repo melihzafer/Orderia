@@ -5,6 +5,7 @@ import {
   MembershipRow,
   OrganizationRow,
   ProfileRow,
+  SignupRequestRow,
 } from '../services/supabase/database.types';
 
 export interface AuthWorkspace {
@@ -15,7 +16,13 @@ export interface AuthWorkspace {
 }
 
 export type AuthStatus =
-  'unconfigured' | 'initializing' | 'signed_out' | 'select_branch' | 'ready' | 'error';
+  | 'unconfigured'
+  | 'initializing'
+  | 'signed_out'
+  | 'pending_approval'
+  | 'select_branch'
+  | 'ready'
+  | 'error';
 
 export interface AuthContextValue {
   readonly status: AuthStatus;
@@ -28,8 +35,16 @@ export interface AuthContextValue {
   readonly currentDeviceId: string | null;
   readonly devices: readonly DeviceRow[];
   readonly errorMessage?: string;
+  readonly pendingSignupEmail?: string;
+  readonly pendingApprovals: readonly SignupRequestRow[];
+  readonly googleSignInAvailable: boolean;
   signIn(email: string, password: string): Promise<void>;
+  signInWithGoogle(): Promise<void>;
+  signUp(email: string, password: string, displayName: string): Promise<void>;
   signOut(): Promise<void>;
+  refreshApprovals(): Promise<void>;
+  approveSignup(signupId: string): Promise<void>;
+  rejectSignup(signupId: string): Promise<void>;
   retry(): Promise<void>;
   switchBranch(branchId: string): Promise<void>;
   refreshDevices(): Promise<void>;

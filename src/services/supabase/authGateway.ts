@@ -1,5 +1,6 @@
 import { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js';
-import { Database, DeviceRow } from './database.types';
+import { Platform } from 'react-native';
+import { Database, DeviceRow, SignupRequestRow } from './database.types';
 import type { AuthWorkspace } from '../../contexts/authTypes';
 
 export interface RegisterDeviceInput {
@@ -11,12 +12,26 @@ export interface RegisterDeviceInput {
   readonly pushEndpoint?: string;
 }
 
+export interface GoogleSignInHandoff {
+  /** Webde tarayici zaten yonlendirildi; native tarafta bu URL acilir. */
+  readonly authorizationUrl?: string;
+  readonly redirected: boolean;
+}
+
 export interface AuthGateway {
   getSession(): Promise<Session | null>;
   onAuthStateChange(
     listener: (event: AuthChangeEvent, session: Session | null) => void,
   ): () => void;
   signIn(email: string, password: string): Promise<Session>;
+  startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff>;
+  completeOAuthRedirect(url: string): Promise<Session>;
+  signUp(email: string, password: string, displayName: string): Promise<Session>;
+  requestSignup(displayName: string): Promise<SignupRequestRow>;
+  getMySignupRequest(): Promise<SignupRequestRow | null>;
+  listPendingSignupRequests(): Promise<readonly SignupRequestRow[]>;
+  approveSignupRequest(signupId: string, role?: 'waiter' | 'manager'): Promise<void>;
+  rejectSignupRequest(signupId: string): Promise<void>;
   signOut(): Promise<void>;
   loadWorkspace(userId: string): Promise<AuthWorkspace>;
   registerDevice(input: RegisterDeviceInput): Promise<DeviceRow>;
@@ -53,6 +68,99 @@ export class SupabaseAuthGateway implements AuthGateway {
       throw new Error('Supabase did not return an authenticated session');
     }
     return data.session;
+  }
+
+  /**
+   * Google ile giris. Web/PWA'da Supabase sayfayi kendisi yonlendirir; native
+   * derlemede yetkilendirme adresi geri doner ve uygulama onu tarayicida acar.
+   */
+  async startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff> {
+    const isWeb = Platform.OS === 'web';
+    const { data, error } = await this.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        skipBrowserRedirect: !isWeb,
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+    if (error) throw error;
+    return {
+      ...(data.url ? { authorizationUrl: data.url } : {}),
+      redirected: isWeb,
+    };
+  }
+
+  async completeOAuthRedirect(url: string): Promise<Session> {
+    const code = new URL(url).searchParams.get('code');
+    if (!code) {
+      throw new Error('oauth_redirect_has_no_code');
+    }
+    const { data, error } = await this.client.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    if (!data.session) {
+      throw new Error('Supabase did not return an authenticated session');
+    }
+    return data.session;
+  }
+
+  async signUp(email: string, password: string, displayName: string): Promise<Session> {
+    const { data, error } = await this.client.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { display_name: displayName },
+      },
+    });
+    if (error) throw error;
+    if (!data.session) {
+      // Proje "Confirm email" açık bırakılmış: garsona değil sahibe e-posta
+      // gitmesi için bu ayar kapalı olmalı (bkz. docs/CLOUD_SYNC_SETUP.md).
+      throw new Error('email_confirmation_must_be_disabled');
+    }
+    return data.session;
+  }
+
+  async requestSignup(displayName: string): Promise<SignupRequestRow> {
+    const { data, error } = await this.client.rpc('request_signup', {
+      requested_display_name: displayName,
+    });
+    if (error) throw error;
+    // Sahibe onay e-postası gönder (best-effort; hata kaydı engellemez)
+    try {
+      await this.client.functions.invoke('signup-approval', { body: {} });
+    } catch {
+      // Edge function henüz deploy edilmemiş olabilir; yönetici uygulama
+      // içinden de onaylayabilir.
+    }
+    return data;
+  }
+
+  async getMySignupRequest(): Promise<SignupRequestRow | null> {
+    const { data, error } = await this.client.rpc('my_signup_request');
+    if (error) throw error;
+    return data;
+  }
+
+  async listPendingSignupRequests(): Promise<readonly SignupRequestRow[]> {
+    const { data, error } = await this.client.rpc('list_pending_signup_requests');
+    if (error) throw error;
+    return data;
+  }
+
+  async approveSignupRequest(signupId: string, role: 'waiter' | 'manager' = 'waiter') {
+    const { error } = await this.client.rpc('approve_signup_request', {
+      requested_signup_id: signupId,
+      requested_role: role,
+    });
+    if (error) throw error;
+  }
+
+  async rejectSignupRequest(signupId: string): Promise<void> {
+    const { error } = await this.client.rpc('reject_signup_request', {
+      requested_signup_id: signupId,
+    });
+    if (error) throw error;
   }
 
   async signOut(): Promise<void> {

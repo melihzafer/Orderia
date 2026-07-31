@@ -205,6 +205,8 @@ export default function MenuScreen() {
 
         <ScrollView
           horizontal
+          accessibilityLabel={copy.all}
+          accessibilityRole="tablist"
           contentContainerStyle={{ gap: tokens.space.xs }}
           showsHorizontalScrollIndicator={false}
         >

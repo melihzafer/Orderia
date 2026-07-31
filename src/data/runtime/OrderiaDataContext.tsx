@@ -35,6 +35,11 @@ import {
   MenuLocale,
 } from '../../features/menu-management';
 import {
+  LegacyMigrationGateway,
+  LegacyMigrationServerResult,
+  LegacyMigrationSnapshot,
+} from '../../features/legacy-migration';
+import {
   ReceiptArchiveCursor,
   ReceiptArchiveFilters,
   ReceiptArchiveGateway,
@@ -46,6 +51,7 @@ import {
   TransferTableSessionResult,
 } from '../../features/table-operations';
 import { PreparedReceiptPdf, ReceiptPdfGateway } from '../../features/receipts';
+import { captureOperationalError, recordOperationalEvent } from '../../observability';
 import { ActiveSessionParticipantRow, Database, getSupabaseClient } from '../../services/supabase';
 import { LocalDatabase, RepositoryScope } from '../contracts';
 import {
@@ -111,6 +117,11 @@ export interface OrderiaDataContextValue {
     existing?: { readonly id: MenuItemId; readonly version: number },
   ): Promise<MenuItemId>;
   setCatalogAvailability(itemIds: readonly MenuItemId[], isAvailable: boolean): Promise<number>;
+  inspectLegacyMigration(snapshot: LegacyMigrationSnapshot): Promise<LegacyMigrationServerResult>;
+  applyLegacyMigration(
+    deviceId: DeviceId,
+    snapshot: LegacyMigrationSnapshot,
+  ): Promise<LegacyMigrationServerResult>;
 }
 
 interface OrderiaDataProviderProps {
@@ -177,8 +188,12 @@ export function OrderiaDataProvider({
         setReadiness('ready');
         setErrorMessage(undefined);
       })
-      .catch(() => {
+      .catch((error) => {
         if (!active) return;
+        captureOperationalError(error, 'local_database_failure', {
+          operation: 'open_local_database',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
         setDatabase(null);
         setReadiness('error');
         setErrorMessage('Local orders could not be opened on this device.');
@@ -198,6 +213,7 @@ export function OrderiaDataProvider({
     if (refreshInFlight.current) return refreshInFlight.current;
 
     const job = (async () => {
+      const startedAt = Date.now();
       if (!database || !scope || !client) {
         if (mounted.current) {
           setRevision((current) => current + 1);
@@ -227,6 +243,16 @@ export function OrderiaDataProvider({
         }
 
         const next = await inspectLocalSync(database, scope, online, false);
+        recordOperationalEvent(
+          'sync_latency',
+          { operation: 'push_pull_refresh' },
+          Date.now() - startedAt,
+        );
+        recordOperationalEvent(
+          'sync_queue_depth',
+          { operation: 'outbox_after_refresh' },
+          next.pendingCount,
+        );
         if (!mounted.current) return;
         setSync(next);
         setRevision((current) => current + 1);
@@ -234,7 +260,11 @@ export function OrderiaDataProvider({
         if (online) {
           setLastSuccessfulSyncAt(new Date().toISOString());
         }
-      } catch {
+      } catch (error) {
+        captureOperationalError(error, 'sync_failure', {
+          operation: 'push_pull_refresh',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
         const next = await inspectLocalSync(database, scope, browserIsOnline(), true).catch(() =>
           deriveSyncStatus({
             online: browserIsOnline(),
@@ -299,14 +329,28 @@ export function OrderiaDataProvider({
       command: ConfirmCheckPaymentsCommand,
     ): Promise<ConfirmCheckPaymentsResult> => {
       if (!client || !scope) throw new Error('Cloud payment service is unavailable');
-      const result = await new SupabasePaymentGateway(client).confirm({
-        ...scope,
-        deviceId,
-        clientMutationId,
-        command,
-      });
-      await refresh();
-      return result;
+      const startedAt = Date.now();
+      try {
+        const result = await new SupabasePaymentGateway(client).confirm({
+          ...scope,
+          deviceId,
+          clientMutationId,
+          command,
+        });
+        recordOperationalEvent(
+          'payment_latency',
+          { operation: 'confirm_check_payments' },
+          Date.now() - startedAt,
+        );
+        await refresh();
+        return result;
+      } catch (error) {
+        captureOperationalError(error, 'payment_failure', {
+          operation: 'confirm_check_payments',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        throw error;
+      }
     },
     [client, refresh, scope],
   );
@@ -318,14 +362,23 @@ export function OrderiaDataProvider({
       command: TransferTableSessionCommand,
     ): Promise<TransferTableSessionResult> => {
       if (!client || !scope) throw new Error('Cloud table operation service is unavailable');
-      const result = await new SupabaseTableOperationGateway(client).transferOrMerge({
-        ...scope,
-        deviceId,
-        clientMutationId,
-        command,
-      });
-      await refresh();
-      return result;
+      try {
+        const result = await new SupabaseTableOperationGateway(client).transferOrMerge({
+          ...scope,
+          deviceId,
+          clientMutationId,
+          command,
+        });
+        await refresh();
+        return result;
+      } catch (error) {
+        captureOperationalError(error, 'mutation_rejected', {
+          operation: 'transfer_or_merge_table',
+          mutationType: 'transfer_or_merge',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        throw error;
+      }
     },
     [client, refresh, scope],
   );
@@ -336,9 +389,17 @@ export function OrderiaDataProvider({
       if (receipt.organizationId !== scope.organizationId || receipt.branchId !== scope.branchId) {
         throw new Error('Receipt is outside the active branch');
       }
-      const result = await new ReceiptPdfGateway(client).prepare(receipt);
-      await refresh();
-      return result;
+      try {
+        const result = await new ReceiptPdfGateway(client).prepare(receipt);
+        await refresh();
+        return result;
+      } catch (error) {
+        captureOperationalError(error, 'receipt_render_failure', {
+          operation: 'prepare_receipt_pdf',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        throw error;
+      }
     },
     [client, refresh, scope],
   );
@@ -443,6 +504,35 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const inspectLegacyMigration = useCallback(
+    async (snapshot: LegacyMigrationSnapshot): Promise<LegacyMigrationServerResult> => {
+      if (!client || !scope) throw new Error('Cloud migration service is unavailable');
+      return new LegacyMigrationGateway(client).inspect(scope, snapshot);
+    },
+    [client, scope],
+  );
+
+  const applyLegacyMigration = useCallback(
+    async (
+      deviceId: DeviceId,
+      snapshot: LegacyMigrationSnapshot,
+    ): Promise<LegacyMigrationServerResult> => {
+      if (!client || !scope) throw new Error('Cloud migration service is unavailable');
+      try {
+        const result = await new LegacyMigrationGateway(client).apply(scope, deviceId, snapshot);
+        await refresh();
+        return result;
+      } catch (error) {
+        captureOperationalError(error, 'migration_failure', {
+          operation: 'apply_legacy_migration',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        throw error;
+      }
+    },
+    [client, refresh, scope],
+  );
+
   useEffect(() => {
     if (!database || !scope || !client) return;
 
@@ -457,6 +547,10 @@ export function OrderiaDataProvider({
       },
       (state) => {
         if (!active || state === 'connecting' || state === 'subscribed') return;
+        recordOperationalEvent('realtime_reconnect', {
+          operation: 'sync_hint_subscription',
+          errorClass: state,
+        });
         setSync((current) =>
           deriveSyncStatus({
             ...syncCounts(current),
@@ -473,8 +567,12 @@ export function OrderiaDataProvider({
         }
         unsubscribeHints = subscription.unsubscribe;
       })
-      .catch(() => {
+      .catch((error) => {
         if (!active) return;
+        captureOperationalError(error, 'sync_failure', {
+          operation: 'subscribe_realtime_sync_hints',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
         setSync((current) =>
           deriveSyncStatus({
             ...syncCounts(current),
@@ -543,6 +641,8 @@ export function OrderiaDataProvider({
       publishMenuAiDraft,
       saveCatalogItem,
       setCatalogAvailability,
+      inspectLegacyMigration,
+      applyLegacyMigration,
     }),
     [
       client,
@@ -563,6 +663,8 @@ export function OrderiaDataProvider({
       searchReceiptArchive,
       saveCatalogItem,
       setCatalogAvailability,
+      inspectLegacyMigration,
+      applyLegacyMigration,
       scope,
       sync,
       transferOrMergeTableSession,
