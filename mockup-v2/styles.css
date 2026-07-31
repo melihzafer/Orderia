@@ -188,14 +188,16 @@ body {
   width: 393px;
   height: 852px;
   max-height: calc(100vh - 130px);
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   border-radius: 54px;
-  border: 10px solid #17150f;
+  border: 10px solid #17150F;
   box-shadow:
-    0 0 0 2px #3a362c,
-    0 30px 70px rgba(27, 23, 18, 0.35);
+    0 0 0 2px #3A362C,
+    0 30px 70px rgba(27, 23, 18, .35);
   overflow: hidden;
-  transition: all 0.35s var(--ease-spring);
+  transition: all .35s var(--ease-spring);
 }
 .phone.full {
   width: 100%;
@@ -243,8 +245,9 @@ body {
    UYGULAMA İSKELETİ
    ========================================================================== */
 .app {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg);

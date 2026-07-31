@@ -83,7 +83,9 @@ create or replace function private.legacy_target_id(
 )
 returns uuid
 language plpgsql
-immutable
+-- concat_ws STABLE'dir (tip cikti fonksiyonlarina bagli), bu yuzden bu
+-- fonksiyon IMMUTABLE olamaz. Sonuc ayni sorgu icinde yine sabittir.
+stable
 set search_path = ''
 as $$
 declare
@@ -500,20 +502,22 @@ security definer
 set search_path = ''
 as $$
 declare
-  snapshot_hash text;
+  -- Degisken adi sutun adiyla ayni olursa "migration.snapshot_hash =
+  -- snapshot_hash" sutunu kendisiyle karsilastirir ve her satira uyar.
+  computed_snapshot_hash text;
   report jsonb;
   run_row public.legacy_migration_runs;
 begin
   if not private.is_manager(requested_organization_id, requested_branch_id) then
     raise exception using errcode = '42501', message = 'manager_role_required';
   end if;
-  snapshot_hash := encode(extensions.digest(requested_snapshot::text, 'sha256'), 'hex');
+  computed_snapshot_hash := encode(extensions.digest(requested_snapshot::text, 'sha256'), 'hex');
   select migration.*
   into run_row
   from public.legacy_migration_runs as migration
   where migration.organization_id = requested_organization_id
     and migration.branch_id = requested_branch_id
-    and migration.snapshot_hash = snapshot_hash;
+    and migration.snapshot_hash = computed_snapshot_hash;
   if run_row.status = 'completed' then
     return jsonb_build_object(
       'runId', run_row.id,
@@ -540,7 +544,7 @@ begin
   values (
     requested_organization_id,
     requested_branch_id,
-    snapshot_hash,
+    computed_snapshot_hash,
     requested_snapshot ->> 'sourceVersion',
     'dry_run',
     report,
@@ -577,7 +581,8 @@ set search_path = ''
 as $$
 declare
   caller_user_id uuid := (select auth.uid());
-  snapshot_hash text;
+  -- Sutun adiyla cakismasin diye ayri bir ad; bkz. inspect_legacy_migration.
+  computed_snapshot_hash text;
   report jsonb;
   run_row public.legacy_migration_runs;
   branch_row public.branches;
@@ -623,13 +628,13 @@ begin
     raise exception using errcode = '42501', message = 'device_access_denied';
   end if;
 
-  snapshot_hash := encode(extensions.digest(requested_snapshot::text, 'sha256'), 'hex');
+  computed_snapshot_hash := encode(extensions.digest(requested_snapshot::text, 'sha256'), 'hex');
   select migration.*
   into run_row
   from public.legacy_migration_runs as migration
   where migration.organization_id = requested_organization_id
     and migration.branch_id = requested_branch_id
-    and migration.snapshot_hash = snapshot_hash
+    and migration.snapshot_hash = computed_snapshot_hash
   for update;
   if run_row.status = 'completed' then
     return jsonb_build_object(
@@ -667,7 +672,7 @@ begin
     values (
       requested_organization_id,
       requested_branch_id,
-      snapshot_hash,
+      computed_snapshot_hash,
       requested_snapshot ->> 'sourceVersion',
       'applying',
       report,
@@ -1278,7 +1283,7 @@ begin
     run_row.id,
     'legacy_migration.apply',
     report,
-    concat('snapshot_sha256:', snapshot_hash),
+    concat('snapshot_sha256:', computed_snapshot_hash),
     run_row.id,
     run_row.id
   );
