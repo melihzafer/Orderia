@@ -1,5 +1,7 @@
 .expo/
 android/
+mockup/
+mockup-v2/
 coverage/
 dist/
 node_modules/
