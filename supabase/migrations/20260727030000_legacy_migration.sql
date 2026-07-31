@@ -682,15 +682,24 @@ begin
     returning * into run_row;
   end if;
 
-  select branch, organization
-  into branch_row, organization_row
+  -- PL/pgSQL bir record degiskenini cok ogeli INTO listesine koymaya izin
+  -- vermez; sube ve organizasyon ayri ayri okunur.
+  select branch.*
+  into branch_row
   from public.branches as branch
-  join public.organizations as organization on organization.id = branch.organization_id
   where branch.organization_id = requested_organization_id
     and branch.id = requested_branch_id
     and branch.status = 'active'
     and branch.deleted_at is null;
   if branch_row.id is null then
+    raise exception using errcode = '22023', message = 'legacy_target_branch_unavailable';
+  end if;
+
+  select organization.*
+  into organization_row
+  from public.organizations as organization
+  where organization.id = branch_row.organization_id;
+  if organization_row.id is null then
     raise exception using errcode = '22023', message = 'legacy_target_branch_unavailable';
   end if;
 
