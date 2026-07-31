@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(25);
 
 insert into auth.users (
   instance_id,
@@ -337,6 +337,8 @@ select is(
   2::bigint,
   'the source check version advances so stale devices are rejected'
 );
+-- Denetim kayitlari yalnizca yoneticiye aciktir; garson rolunden sayilamaz.
+reset role;
 select is(
   (
     select count(*)
@@ -347,6 +349,12 @@ select is(
   1::bigint,
   'the split is auditable as one event'
 );
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"17000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
 
 -- Aynı komut tekrar gönderilirse ikinci kez uygulanmaz.
 select is(
@@ -493,6 +501,7 @@ select is(
   'b7000000-0000-4000-8000-000000000001'::uuid,
   'the void carries the reason the guest gave'
 );
+reset role;
 select is(
   (
     select count(*)
@@ -503,6 +512,12 @@ select is(
   1::bigint,
   'a partial void is auditable'
 );
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"17000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+set local role authenticated;
 
 -- Tanımsız gerekçe ve fazla adet reddedilir.
 select throws_ok(

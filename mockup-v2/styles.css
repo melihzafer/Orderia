@@ -1939,3 +1939,35 @@ body {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   GERÇEK CİHAZ / DAR EKRAN — çerçevesiz tam ekran
+   ========================================================================== */
+@media (max-width: 460px) {
+  .stage {
+    padding: 0;
+    background: var(--bg);
+  }
+  .stage-bar {
+    display: none;
+  }
+  .phone {
+    width: 100vw;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .phone.full {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+  }
+  .phone-island {
+    display: none;
+  }
+  .statusbar {
+    padding-top: 12px;
+  }
+}
