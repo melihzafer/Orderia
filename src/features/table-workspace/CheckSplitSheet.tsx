@@ -23,12 +23,12 @@ import {
   CheckSplitValidationError,
   buildCheckSplitPlan,
   buildSplittableOrderItems,
+  groupSplittableItemsByNote,
 } from './checkSplitPlanner';
 
 export interface CheckSplitSheetProps {
   readonly visible: boolean;
   readonly sourceCheck: Check;
-  /** Ayni oturumdaki diger acik hesaplar; bosluk varsa yeni hesap acilir. */
   readonly openChecks: readonly Check[];
   readonly items: readonly OrderItem[];
   readonly modifiers: readonly OrderItemModifier[];
@@ -41,12 +41,8 @@ export interface CheckSplitSheetProps {
 }
 
 const NEW_CHECK = 'new' as const;
+type SplitStep = 'select' | 'review';
 
-/**
- * "Bu bira Ali'nin, su kola Ayse'nin": garson kalemleri karsilastirarak tasir.
- * Ustteki iki toplam her dokunusta guncellenir; masada hesap yapmak yerine
- * ekranda gorulur.
- */
 export function CheckSplitSheet({
   visible,
   sourceCheck,
@@ -65,6 +61,7 @@ export function CheckSplitSheet({
   const [moves, setMoves] = useState<Readonly<Record<string, number>>>({});
   const [targetId, setTargetId] = useState<CheckId | typeof NEW_CHECK>(NEW_CHECK);
   const [guestName, setGuestName] = useState('');
+  const [step, setStep] = useState<SplitStep>('select');
   const [error, setError] = useState<string>();
 
   const splittable = useMemo(
@@ -73,6 +70,8 @@ export function CheckSplitSheet({
   );
   const movable = splittable.filter((entry) => entry.movableQuantity > 0);
   const locked = splittable.filter((entry) => entry.movableQuantity === 0);
+  const noteGroups = useMemo(() => groupSplittableItemsByNote(movable), [movable]);
+
   const targets = openChecks.filter(
     (check) =>
       check.id !== sourceCheck.id &&
@@ -80,12 +79,14 @@ export function CheckSplitSheet({
       (check.status === 'open' || check.status === 'partially_paid'),
   );
   const targetCheck = targets.find((check) => check.id === targetId);
+  const targetName = targetCheck?.name ?? guestName.trim();
 
   useEffect(() => {
     if (!visible) return;
     setMoves({});
     setTargetId(NEW_CHECK);
     setGuestName('');
+    setStep('select');
     setError(undefined);
   }, [sourceCheck.id, visible]);
 
@@ -100,6 +101,8 @@ export function CheckSplitSheet({
     0,
   );
   const movedCount = Object.values(moves).reduce((total, quantity) => total + quantity, 0);
+  const selectedLines = movable.filter((entry) => (moves[entry.item.id] ?? 0) > 0);
+  const canContinue = movedCount > 0 && Boolean(targetName);
 
   const changeMove = (orderItemId: OrderItemId, delta: number, maximum: number) => {
     setError(undefined);
@@ -113,34 +116,50 @@ export function CheckSplitSheet({
     });
   };
 
-  const submit = async () => {
+  const selectNoteGroup = (note: string) => {
+    const grouped = noteGroups.get(note) ?? [];
+    setGuestName(note);
+    setTargetId(NEW_CHECK);
+    setMoves((current) => ({
+      ...current,
+      ...Object.fromEntries(grouped.map((entry) => [entry.item.id, entry.movableQuantity])),
+    }));
+    setError(undefined);
+  };
+
+  const buildPlan = () =>
+    buildCheckSplitPlan({
+      sourceCheck,
+      ...(targetCheck ? { targetCheck } : { targetCheckName: guestName }),
+      items,
+      modifiers,
+      payments,
+      allocations,
+      moves: Object.entries(moves).map(([orderItemId, quantity]) => ({
+        orderItemId: orderItemId as OrderItemId,
+        quantity,
+      })),
+    });
+
+  const openReview = () => {
     try {
+      buildPlan();
       setError(undefined);
-      const plan = buildCheckSplitPlan({
-        sourceCheck,
-        ...(targetCheck ? { targetCheck } : { targetCheckName: guestName }),
-        items,
-        modifiers,
-        payments,
-        allocations,
-        moves: Object.entries(moves).map(([orderItemId, quantity]) => ({
-          orderItemId: orderItemId as OrderItemId,
-          quantity,
-        })),
-      });
-      await onConfirm(plan, targetCheck);
+      setStep('review');
     } catch (caught) {
-      setError(
-        caught instanceof CheckSplitValidationError
-          ? (copy.errors[caught.code] ?? caught.message)
-          : caught instanceof Error
-            ? caught.message
-            : copy.failed,
-      );
+      setError(resolveError(caught, copy));
     }
   };
 
-  const canSubmit = movedCount > 0 && (Boolean(targetCheck) || guestName.trim().length > 0);
+  const submit = async () => {
+    try {
+      setError(undefined);
+      await onConfirm(buildPlan(), targetCheck);
+    } catch (caught) {
+      setError(resolveError(caught, copy));
+      setStep('select');
+    }
+  };
 
   return (
     <Modal
@@ -157,8 +176,8 @@ export function CheckSplitSheet({
             backgroundColor: tokens.colors.bg,
             borderTopLeftRadius: tokens.radius.large,
             borderTopRightRadius: tokens.radius.large,
-            maxHeight: '92%',
-            maxWidth: 720,
+            maxHeight: '94%',
+            maxWidth: 760,
             padding: tokens.space.lg,
             width: '100%',
           }}
@@ -176,7 +195,7 @@ export function CheckSplitSheet({
                 {copy.title}
               </Text>
               <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
-                {sourceCheck.name} · {copy.hint}
+                {sourceCheck.name} · {step === 'select' ? copy.selectHint : copy.reviewHint}
               </Text>
             </View>
             <Pressable
@@ -190,6 +209,8 @@ export function CheckSplitSheet({
             </Pressable>
           </View>
 
+          <StepIndicator current={step} language={language} />
+
           <View
             accessibilityLiveRegion="polite"
             style={{ flexDirection: 'row', gap: tokens.space.sm, marginBottom: tokens.space.md }}
@@ -197,14 +218,14 @@ export function CheckSplitSheet({
             <TotalCard
               amountMinor={stayingTotalMinor}
               currencyCode={currencyCode}
-              label={copy.staysHere}
+              label={`${sourceCheck.name} · ${copy.staysHere}`}
               language={language}
               tone="neutral"
             />
             <TotalCard
               amountMinor={movedTotalMinor}
               currencyCode={currencyCode}
-              label={copy.movesTo}
+              label={`${targetName || copy.targetPending} · ${copy.movesTo}`}
               language={language}
               tone="accent"
             />
@@ -215,12 +236,56 @@ export function CheckSplitSheet({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {movable.length === 0 ? (
-              <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
-                {copy.empty}
-              </Text>
-            ) : (
+            {step === 'select' ? (
               <>
+                <SectionTitle title={copy.targetLabel} />
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                  <TargetChip
+                    label={copy.newCheck}
+                    onPress={() => setTargetId(NEW_CHECK)}
+                    selected={targetId === NEW_CHECK}
+                  />
+                  {targets.map((check) => (
+                    <TargetChip
+                      key={check.id}
+                      label={check.name}
+                      onPress={() => setTargetId(check.id)}
+                      selected={targetId === check.id}
+                    />
+                  ))}
+                </View>
+
+                {targetId === NEW_CHECK ? (
+                  <ServiceTextField
+                    label={copy.guestNameLabel}
+                    onChangeText={setGuestName}
+                    placeholder={copy.guestNameHint}
+                    value={guestName}
+                  />
+                ) : null}
+
+                {noteGroups.size > 0 ? (
+                  <View style={{ gap: tokens.space.xs }}>
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                      {copy.quickGuests}
+                    </Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                      {[...noteGroups.entries()].map(([note, entries]) => (
+                        <TargetChip
+                          key={note}
+                          label={`${note} · ${entries.reduce(
+                            (sum, entry) => sum + entry.movableQuantity,
+                            0,
+                          )}`}
+                          onPress={() => selectNoteGroup(note)}
+                          selected={targetId === NEW_CHECK && guestName.trim() === note}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                ) : null}
+
+                <SectionTitle title={copy.itemsTitle} />
                 <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
                   <ServiceButton
                     label={copy.moveAll}
@@ -243,160 +308,206 @@ export function CheckSplitSheet({
                   />
                 </View>
 
-                {movable.map((entry) => {
-                  const moved = moves[entry.item.id] ?? 0;
-                  const staying = entry.item.quantity - moved;
-                  return (
-                    <ServiceSurface
-                      key={entry.item.id}
-                      style={{
-                        borderColor: moved > 0 ? tokens.colors.accent : tokens.colors.border,
-                        borderWidth: moved > 0 ? 2 : 1,
-                        gap: tokens.space.sm,
-                        padding: tokens.space.md,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', gap: tokens.space.sm }}>
-                        <View style={{ flex: 1 }}>
+                {movable.length === 0 ? (
+                  <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
+                    {copy.empty}
+                  </Text>
+                ) : (
+                  movable.map((entry) => {
+                    const moved = moves[entry.item.id] ?? 0;
+                    const staying = entry.item.quantity - moved;
+                    return (
+                      <ServiceSurface
+                        key={entry.item.id}
+                        style={{
+                          borderColor: moved > 0 ? tokens.colors.accent : tokens.colors.border,
+                          borderWidth: moved > 0 ? 2 : 1,
+                          gap: tokens.space.sm,
+                          padding: tokens.space.md,
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', gap: tokens.space.sm }}>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}
+                            >
+                              {entry.item.nameSnapshot}
+                            </Text>
+                            {entry.modifiers.map((modifier) => (
+                              <Text
+                                key={modifier.id}
+                                style={[
+                                  tokens.typography.caption,
+                                  { color: tokens.colors.textSubtle },
+                                ]}
+                              >
+                                + {modifier.modifierOptionNameSnapshot}
+                              </Text>
+                            ))}
+                            {entry.item.note ? (
+                              <Text
+                                style={[tokens.typography.caption, { color: tokens.colors.warning }]}
+                              >
+                                {entry.item.note}
+                              </Text>
+                            ) : null}
+                          </View>
                           <Text
-                            style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}
+                            style={[tokens.typography.label, { color: tokens.colors.textSubtle }]}
                           >
-                            {entry.item.nameSnapshot}
+                            {formatMoney(entry.unitTotalMinor, entry.item.currencyCode, language)}
                           </Text>
-                          {entry.modifiers.map((modifier) => (
-                            <Text
-                              key={modifier.id}
-                              style={[
-                                tokens.typography.caption,
-                                { color: tokens.colors.textSubtle },
-                              ]}
-                            >
-                              + {modifier.modifierOptionNameSnapshot}
-                            </Text>
-                          ))}
-                          {entry.item.note ? (
-                            <Text
-                              style={[tokens.typography.caption, { color: tokens.colors.warning }]}
-                            >
-                              {entry.item.note}
-                            </Text>
-                          ) : null}
                         </View>
-                        <Text
-                          style={[tokens.typography.label, { color: tokens.colors.textSubtle }]}
-                        >
-                          {formatMoney(entry.unitTotalMinor, entry.item.currencyCode, language)}
-                        </Text>
-                      </View>
 
+                        <View
+                          style={{
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            gap: tokens.space.sm,
+                          }}
+                        >
+                          <SideCount count={staying} label={copy.staysHere} tone="neutral" />
+                          <Pressable
+                            accessibilityLabel={`${copy.moveBack}: ${entry.item.nameSnapshot}`}
+                            accessibilityRole="button"
+                            disabled={moved === 0}
+                            hitSlop={6}
+                            onPress={() => changeMove(entry.item.id, -1, entry.movableQuantity)}
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minHeight: 52,
+                              minWidth: 52,
+                              opacity: moved === 0 ? 0.3 : 1,
+                            }}
+                          >
+                            <Ionicons color={tokens.colors.text} name="remove-circle" size={38} />
+                          </Pressable>
+                          <Pressable
+                            accessibilityLabel={`${copy.moveOne}: ${entry.item.nameSnapshot}`}
+                            accessibilityRole="button"
+                            disabled={moved >= entry.movableQuantity}
+                            hitSlop={6}
+                            onPress={() => changeMove(entry.item.id, 1, entry.movableQuantity)}
+                            style={{
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minHeight: 52,
+                              minWidth: 52,
+                              opacity: moved >= entry.movableQuantity ? 0.3 : 1,
+                            }}
+                          >
+                            <Ionicons color={tokens.colors.accent} name="add-circle" size={38} />
+                          </Pressable>
+                          <SideCount count={moved} label={copy.movesTo} tone="accent" />
+                        </View>
+                      </ServiceSurface>
+                    );
+                  })
+                )}
+
+                {locked.length > 0 ? (
+                  <View style={{ gap: tokens.space.xs }}>
+                    <Text style={[tokens.typography.label, { color: tokens.colors.textSubtle }]}>
+                      {copy.lockedTitle}
+                    </Text>
+                    {locked.map((entry) => (
                       <View
+                        key={entry.item.id}
                         style={{
                           alignItems: 'center',
                           flexDirection: 'row',
                           gap: tokens.space.sm,
+                          opacity: 0.6,
                         }}
                       >
-                        <SideCount count={staying} label={copy.staysHere} tone="neutral" />
-                        <Pressable
-                          accessibilityLabel={`${copy.moveBack}: ${entry.item.nameSnapshot}`}
-                          accessibilityRole="button"
-                          disabled={moved === 0}
-                          hitSlop={6}
-                          onPress={() => changeMove(entry.item.id, -1, entry.movableQuantity)}
-                          style={{
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: 48,
-                            minWidth: 48,
-                            opacity: moved === 0 ? 0.3 : 1,
-                          }}
+                        <Text
+                          style={[tokens.typography.body, { color: tokens.colors.text, flex: 1 }]}
                         >
-                          <Ionicons
-                            color={tokens.colors.text}
-                            name="chevron-back-circle"
-                            size={34}
-                          />
-                        </Pressable>
-                        <Pressable
-                          accessibilityLabel={`${copy.moveOne}: ${entry.item.nameSnapshot}`}
-                          accessibilityRole="button"
-                          disabled={moved >= entry.movableQuantity}
-                          hitSlop={6}
-                          onPress={() => changeMove(entry.item.id, 1, entry.movableQuantity)}
-                          style={{
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: 48,
-                            minWidth: 48,
-                            opacity: moved >= entry.movableQuantity ? 0.3 : 1,
-                          }}
-                        >
-                          <Ionicons
-                            color={tokens.colors.accent}
-                            name="chevron-forward-circle"
-                            size={34}
-                          />
-                        </Pressable>
-                        <SideCount count={moved} label={copy.movesTo} tone="accent" />
+                          {entry.item.quantity}× {entry.item.nameSnapshot}
+                        </Text>
+                        <ServiceStatusPill label={copy.paidLocked} tone="success" />
                       </View>
+                    ))}
+                  </View>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <ServiceSurface
+                  style={{
+                    backgroundColor: tokens.colors.accentSoft,
+                    gap: tokens.space.xs,
+                    padding: tokens.space.md,
+                  }}
+                >
+                  <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                    {copy.destination}
+                  </Text>
+                  <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+                    {targetName}
+                  </Text>
+                </ServiceSurface>
+
+                <SectionTitle title={copy.reviewItems} />
+                {selectedLines.map((entry) => {
+                  const quantity = moves[entry.item.id] ?? 0;
+                  return (
+                    <ServiceSurface
+                      key={entry.item.id}
+                      style={{ gap: tokens.space.xs, padding: tokens.space.md }}
+                    >
+                      <View style={{ alignItems: 'center', flexDirection: 'row', gap: tokens.space.sm }}>
+                        <Text
+                          style={[tokens.typography.bodyStrong, { color: tokens.colors.text, flex: 1 }]}
+                        >
+                          {quantity}× {entry.item.nameSnapshot}
+                        </Text>
+                        <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                          {formatMoney(
+                            entry.unitTotalMinor * quantity,
+                            entry.item.currencyCode,
+                            language,
+                          )}
+                        </Text>
+                      </View>
+                      {entry.modifiers.map((modifier) => (
+                        <Text
+                          key={modifier.id}
+                          style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+                        >
+                          + {modifier.modifierOptionNameSnapshot}
+                        </Text>
+                      ))}
+                      {entry.item.note ? (
+                        <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
+                          {entry.item.note}
+                        </Text>
+                      ) : null}
                     </ServiceSurface>
                   );
                 })}
-              </>
-            )}
 
-            {locked.length > 0 ? (
-              <View style={{ gap: tokens.space.xs }}>
-                <Text style={[tokens.typography.label, { color: tokens.colors.textSubtle }]}>
-                  {copy.lockedTitle}
-                </Text>
-                {locked.map((entry) => (
-                  <View
-                    key={entry.item.id}
+                {stayingTotalMinor === 0 ? (
+                  <ServiceSurface
                     style={{
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      gap: tokens.space.sm,
-                      opacity: 0.6,
+                      backgroundColor: tokens.colors.surfaceAlt,
+                      borderColor: tokens.colors.warning,
+                      borderWidth: 1,
+                      padding: tokens.space.md,
                     }}
                   >
-                    <Text style={[tokens.typography.body, { color: tokens.colors.text, flex: 1 }]}>
-                      {entry.item.quantity}× {entry.item.nameSnapshot}
+                    <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.warning }]}>
+                      {copy.sourceWillEmpty}
                     </Text>
-                    <ServiceStatusPill label={copy.paidLocked} tone="success" />
-                  </View>
-                ))}
-              </View>
-            ) : null}
+                  </ServiceSurface>
+                ) : null}
 
-            <View style={{ gap: tokens.space.sm }}>
-              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
-                {copy.targetLabel}
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
-                <TargetChip
-                  label={copy.newCheck}
-                  onPress={() => setTargetId(NEW_CHECK)}
-                  selected={targetId === NEW_CHECK}
-                />
-                {targets.map((check) => (
-                  <TargetChip
-                    key={check.id}
-                    label={check.name}
-                    onPress={() => setTargetId(check.id)}
-                    selected={targetId === check.id}
-                  />
-                ))}
-              </View>
-              {targetId === NEW_CHECK ? (
-                <ServiceTextField
-                  label={copy.guestNameLabel}
-                  onChangeText={setGuestName}
-                  placeholder={copy.guestNameHint}
-                  value={guestName}
-                />
-              ) : null}
-            </View>
+                <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                  {copy.auditHint}
+                </Text>
+              </>
+            )}
 
             {error ? (
               <Text
@@ -411,22 +522,92 @@ export function CheckSplitSheet({
           <View style={{ flexDirection: 'row', gap: tokens.space.sm }}>
             <ServiceButton
               disabled={busy}
-              label={copy.close}
-              onPress={onClose}
+              label={step === 'review' ? copy.back : copy.close}
+              onPress={step === 'review' ? () => setStep('select') : onClose}
               style={{ flex: 1 }}
               variant="ghost"
             />
             <ServiceButton
-              disabled={busy || !canSubmit}
-              label={`${copy.apply} (${movedCount})`}
+              disabled={busy || !canContinue}
+              label={
+                step === 'review'
+                  ? `${copy.confirm} · ${formatMoney(
+                      movedTotalMinor,
+                      currencyCode,
+                      language,
+                    )}`
+                  : `${copy.review} (${movedCount})`
+              }
               loading={busy}
-              onPress={() => void submit()}
+              onPress={step === 'review' ? () => void submit() : openReview}
               style={{ flex: 2 }}
             />
           </View>
         </View>
       </View>
     </Modal>
+  );
+}
+
+function resolveError(caught: unknown, copy: ReturnType<typeof splitCopy>): string {
+  return caught instanceof CheckSplitValidationError
+    ? (copy.errors[caught.code] ?? caught.message)
+    : caught instanceof Error
+      ? caught.message
+      : copy.failed;
+}
+
+function StepIndicator({ current, language }: { current: SplitStep; language: Language }) {
+  const { tokens } = useTheme();
+  const copy = splitCopy(language);
+  return (
+    <View
+      accessibilityRole="progressbar"
+      style={{ flexDirection: 'row', gap: tokens.space.xs, marginBottom: tokens.space.md }}
+    >
+      <View
+        style={{
+          backgroundColor: tokens.colors.accent,
+          borderRadius: tokens.radius.full,
+          flex: 1,
+          paddingVertical: tokens.space.xs,
+        }}
+      >
+        <Text style={[tokens.typography.caption, { color: tokens.colors.bg, textAlign: 'center' }]}>
+          1 · {copy.selectStep}
+        </Text>
+      </View>
+      <View
+        style={{
+          backgroundColor:
+            current === 'review' ? tokens.colors.accent : tokens.colors.surfaceAlt,
+          borderRadius: tokens.radius.full,
+          flex: 1,
+          paddingVertical: tokens.space.xs,
+        }}
+      >
+        <Text
+          style={[
+            tokens.typography.caption,
+            {
+              color: current === 'review' ? tokens.colors.bg : tokens.colors.textSubtle,
+              textAlign: 'center',
+            },
+          ]}
+        >
+          2 · {copy.reviewStep}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function SectionTitle({ title }: { readonly title: string }) {
+  const { tokens } = useTheme();
+  return (
+    <Text style={[tokens.typography.label, { color: tokens.colors.text, marginTop: tokens.space.xs }]}>
+      {title}
+    </Text>
   );
 }
 
@@ -452,7 +633,9 @@ function TotalCard({
         padding: tokens.space.md,
       }}
     >
-      <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>{label}</Text>
+      <Text numberOfLines={1} style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+        {label}
+      </Text>
       <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
         {formatMoney(amountMinor, currencyCode, language)}
       </Text>
@@ -480,10 +663,7 @@ function SideCount({
       >
         {count}
       </Text>
-      <Text
-        numberOfLines={1}
-        style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
-      >
+      <Text numberOfLines={1} style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
         {label}
       </Text>
     </View>
@@ -510,8 +690,8 @@ function TargetChip({
         borderColor: selected ? tokens.colors.accent : tokens.colors.border,
         borderRadius: tokens.radius.full,
         borderWidth: selected ? 2 : 1,
-        minHeight: 44,
         justifyContent: 'center',
+        minHeight: 44,
         paddingHorizontal: tokens.space.md,
       }}
     >
@@ -532,8 +712,10 @@ function splitCopy(language: Language) {
   const translations = {
     tr: {
       title: 'Hesabı böl',
-      hint: 'kimin ne aldığını işaretle',
+      selectHint: 'hedefi seç ve ürünleri ayır',
+      reviewHint: 'bölmeden önce son kontrol',
       close: 'Kapat',
+      back: 'Geri',
       staysHere: 'Burada kalan',
       movesTo: 'Ayrılan',
       moveOne: 'Bir adet ayır',
@@ -543,12 +725,22 @@ function splitCopy(language: Language) {
       empty: 'Bu hesapta taşınabilecek ürün yok.',
       lockedTitle: 'Ödendiği için taşınamaz',
       paidLocked: 'Ödendi',
-      targetLabel: 'Nereye gitsin?',
-      newCheck: 'Yeni hesap',
+      targetLabel: '1. Ürünler kime gidecek?',
+      targetPending: 'Hedef seçilmedi',
+      newCheck: 'Yeni kişi hesabı',
       guestNameLabel: 'Yeni hesabın adı',
-      guestNameHint: 'Örn. Ali, Pencere kenarı',
-      apply: 'Böl',
+      guestNameHint: 'Örn. Ali, Mehmet Ağa',
+      quickGuests: 'Sipariş notlarından hızlı seçim',
+      itemsTitle: '2. Ayrılacak ürünleri seç',
+      review: 'Kontrol et',
+      confirm: 'Bölmeyi onayla',
       failed: 'Hesap bölünemedi.',
+      destination: 'Hedef hesap',
+      reviewItems: 'Taşınacak ürünler',
+      sourceWillEmpty: 'Kaynak hesapta ürün kalmayacak.',
+      auditHint: 'Ürün notları, seçenekler, fiyatlar ve işlem geçmişi korunur.',
+      selectStep: 'Seçim',
+      reviewStep: 'Kontrol',
       errors: {
         EMPTY_SELECTION: 'Önce taşınacak ürünleri seç.',
         SOURCE_CHECK_LOCKED: 'Kapanmış hesap bölünemez.',
@@ -566,8 +758,10 @@ function splitCopy(language: Language) {
     },
     bg: {
       title: 'Раздели сметката',
-      hint: 'отбележете кой какво е взел',
+      selectHint: 'изберете цел и продукти',
+      reviewHint: 'последна проверка преди разделяне',
       close: 'Затвори',
+      back: 'Назад',
       staysHere: 'Остава тук',
       movesTo: 'Отделено',
       moveOne: 'Отдели една бройка',
@@ -577,12 +771,22 @@ function splitCopy(language: Language) {
       empty: 'Няма продукти за местене в тази сметка.',
       lockedTitle: 'Платено, не може да се мести',
       paidLocked: 'Платено',
-      targetLabel: 'Къде да отиде?',
-      newCheck: 'Нова сметка',
+      targetLabel: '1. При кого отиват продуктите?',
+      targetPending: 'Няма избрана цел',
+      newCheck: 'Нова лична сметка',
       guestNameLabel: 'Име на новата сметка',
-      guestNameHint: 'Напр. Али, До прозореца',
-      apply: 'Раздели',
+      guestNameHint: 'Напр. Али, Мехмед ага',
+      quickGuests: 'Бърз избор от бележките',
+      itemsTitle: '2. Изберете продуктите',
+      review: 'Провери',
+      confirm: 'Потвърди разделянето',
       failed: 'Сметката не беше разделена.',
+      destination: 'Целева сметка',
+      reviewItems: 'Продукти за преместване',
+      sourceWillEmpty: 'В изходната сметка няма да останат продукти.',
+      auditHint: 'Бележките, опциите, цените и историята на операциите се запазват.',
+      selectStep: 'Избор',
+      reviewStep: 'Проверка',
       errors: {
         EMPTY_SELECTION: 'Първо изберете продукти.',
         SOURCE_CHECK_LOCKED: 'Затворена сметка не може да се разделя.',
@@ -600,8 +804,10 @@ function splitCopy(language: Language) {
     },
     en: {
       title: 'Split check',
-      hint: 'mark who had what',
+      selectHint: 'choose a destination and move items',
+      reviewHint: 'final check before splitting',
       close: 'Close',
+      back: 'Back',
       staysHere: 'Stays here',
       movesTo: 'Split off',
       moveOne: 'Split off one',
@@ -611,12 +817,22 @@ function splitCopy(language: Language) {
       empty: 'Nothing on this check can be moved.',
       lockedTitle: 'Paid, cannot be moved',
       paidLocked: 'Paid',
-      targetLabel: 'Where does it go?',
-      newCheck: 'New check',
+      targetLabel: '1. Who should receive the items?',
+      targetPending: 'No destination',
+      newCheck: 'New guest check',
       guestNameLabel: 'Name of the new check',
-      guestNameHint: 'e.g. Ali, Window seat',
-      apply: 'Split',
+      guestNameHint: 'e.g. Ali, Mehmet',
+      quickGuests: 'Quick selection from item notes',
+      itemsTitle: '2. Choose the items',
+      review: 'Review',
+      confirm: 'Confirm split',
       failed: 'The check could not be split.',
+      destination: 'Destination check',
+      reviewItems: 'Items to move',
+      sourceWillEmpty: 'No items will remain on the source check.',
+      auditHint: 'Item notes, modifiers, prices, and audit history are preserved.',
+      selectStep: 'Select',
+      reviewStep: 'Review',
       errors: {
         EMPTY_SELECTION: 'Pick the items to move first.',
         SOURCE_CHECK_LOCKED: 'A settled check cannot be split.',
