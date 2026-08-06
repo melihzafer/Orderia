@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-06T15:42:14.516Z
-> Files: 511 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-06T15:49:41.271Z
+> Files: 512 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -45,6 +45,7 @@
 - `tsconfig.json` — TypeScript configuration (~193 tok)
 - `UI_UX_RENEWAL_PLAN.md` — Orderia — UI/UX Renewal Plan (~2732 tok)
 - `UI_UX_RENEWAL_REPORT.md` — Orderia — UI/UX Renewal Report (~4723 tok)
+- `vercel.json` (~54 tok)
 - `webpack.config.js` — Webpack configuration (~0 tok)
 - `workbox-config.cjs` (~334 tok)
 

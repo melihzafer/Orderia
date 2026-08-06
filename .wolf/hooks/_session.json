@@ -58,11 +58,18 @@
       "action": "edit",
       "tokens": 114,
       "at": "2026-08-06T15:42:14.525Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/vercel.json",
+      "action": "create",
+      "tokens": 54,
+      "at": "2026-08-06T15:49:41.283Z"
     }
   ],
   "edit_counts": {
     "supabase/functions/menu-ai-draft/index.ts": 3,
-    "supabase/functions/README.md": 2
+    "supabase/functions/README.md": 2,
+    "vercel.json": 1
   },
   "anatomy_hits": 4,
   "anatomy_misses": 0,
