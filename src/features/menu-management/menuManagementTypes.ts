@@ -6,6 +6,7 @@ import {
   ModifierGroupId,
   ModifierOptionId,
   OrganizationId,
+  FulfillmentGroup,
 } from '../../domain';
 
 export type MenuLocale = 'tr' | 'bg' | 'en';
@@ -54,6 +55,7 @@ export interface MenuAiSuggestion {
     readonly currencyCode: CurrencyCode;
     readonly categoryName: string;
     readonly prepTimeMinutes: number | null;
+    readonly fulfillmentGroup?: FulfillmentGroup;
   };
   readonly translations: readonly MenuTranslationDraft[];
   readonly modifierGroups: readonly MenuModifierGroupDraft[];
@@ -72,6 +74,7 @@ export interface EditableCatalogItem {
   readonly isActive: boolean;
   readonly isAvailable: boolean;
   readonly prepTimeMinutes: number | null;
+  readonly fulfillmentGroup: FulfillmentGroup;
   readonly translations: readonly MenuTranslationDraft[];
   readonly modifierGroups: readonly MenuModifierGroupDraft[];
   readonly confirmedAllergens: readonly ConfirmedMenuAllergen[];
@@ -105,6 +108,7 @@ export interface CatalogItem {
   readonly isActive: boolean;
   readonly isAvailable: boolean;
   readonly prepTimeMinutes?: number;
+  readonly fulfillmentGroup: FulfillmentGroup;
   readonly isOrganizationWide: boolean;
   readonly version: number;
   readonly translations: readonly MenuTranslationDraft[];
@@ -137,6 +141,7 @@ export function editableItemFromSuggestion(suggestion: MenuAiSuggestion): Editab
     isActive: true,
     isAvailable: true,
     prepTimeMinutes: suggestion.item.prepTimeMinutes,
+    fulfillmentGroup: suggestion.item.fulfillmentGroup ?? 'kitchen',
     translations: suggestion.translations,
     modifierGroups: suggestion.modifierGroups,
     confirmedAllergens: [],

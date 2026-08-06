@@ -1,0 +1,757 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-08-06T11:01:45.215Z",
+      "error_message": "Significant refactor of ",
+      "file": "C:/Users/melih/.claude/settings.json",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 4→8 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T11:01:45.215Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-08-06T11:01:47.774Z",
+      "error_message": "Incorrect value in code",
+      "file": "C:/Users/melih/.claude/settings.json",
+      "root_cause": "Had \"high\"",
+      "fix": "Changed to \"medium\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T11:01:47.774Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-08-06T13:39:19.932Z",
+      "error_message": "Wrong reference: tableCardMinimumHeight should be productTileMinimumHeight",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "Used \"tableCardMinimumHeight\" instead of \"productTileMinimumHeight\"",
+      "fix": "Changed tableCardMinimumHeight → productTileMinimumHeight",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:39:19.932Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-08-06T13:39:25.170Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/screens/HallTablesScreenModern.tsx",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 14→9 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:39:25.170Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-08-06T13:40:02.660Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/QRMenuScreenModern.tsx",
+      "root_cause": "Had 'qr-code-outline'",
+      "fix": "Changed to 'qr-code'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:40:02.660Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-08-06T13:43:01.743Z",
+      "error_message": "Wrong return value",
+      "file": "src/screens/DeviceManagementScreen.tsx",
+      "root_cause": "Was returning: 'Android';",
+      "fix": "Now returns: t.devicePlatformAndroid;",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:43:01.743Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-08-06T13:43:11.787Z",
+      "error_message": "CSS fix: title",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "title: 'Authorized devices', → t.devicesTitle,",
+      "fix": "Changed title: 'Authorized devices', → t.devicesTitle,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:43:11.787Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-08-06T13:43:48.237Z",
+      "error_message": "CSS fix: borderRadius, gap",
+      "file": "src/screens/ApprovalsScreen.tsx",
+      "root_cause": "borderRadius: 10, → 12,; gap: 6, → 8,",
+      "fix": "Changed borderRadius: 10, → 12,; gap: 6, → 8,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:43:48.237Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-08-06T13:45:19.213Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 16→8 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:45:19.213Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-08-06T13:48:46.122Z",
+      "error_message": "CSS fix: onPress",
+      "file": "src/screens/HallTablesScreenModern.tsx",
+      "root_cause": "onPress: () => navigation.navigate('AddTable', { hallId: table.hallId, tableId: table.id → () => navigation.navigate('EditTable', { tableId: table.id",
+      "fix": "Changed onPress: () => navigation.navigate('AddTable', { hallId: table.hallId, tableId: table.id → () => navigation.navigate('EditTable', { tableId: table.id",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:48:46.122Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-08-06T13:50:01.515Z",
+      "error_message": "CSS fix: label",
+      "file": "src/screens/EditTableScreenModern.tsx",
+      "root_cause": "label: nextLabel || table.label, → nextLabel || table.label || t.tableName,",
+      "fix": "Changed label: nextLabel || table.label, → nextLabel || table.label || t.tableName,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T13:50:01.515Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-08-06T14:11:05.998Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/design-system/components/ServiceListRow.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:11:05.998Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-08-06T14:11:10.827Z",
+      "error_message": "CSS fix: minHeight, paddingVertical",
+      "file": "src/design-system/components/ServiceListRow.tsx",
+      "root_cause": "minHeight: compact ? tokens.sizing.minimumTarget : tokens.sizing.primaryTarget, → isCompact ? tokens.sizing.minimumTarget : tokens.sizing.primaryTarget,; paddingVertical: compact ? tokens.space.xs : tokens.space.sm, → isCompact ? tokens.space.xs : tokens.space.sm,",
+      "fix": "Changed minHeight: compact ? tokens.sizing.minimumTarget : tokens.sizing.primaryTarget, → isCompact ? tokens.sizing.minimumTarget : tokens.sizing.primaryTarget,; paddingVertical: compact ? tokens.space.xs : tokens.space.sm, → isCompact ? tokens.space.xs : tokens.space.sm,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:11:10.827Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-08-06T14:11:37.508Z",
+      "error_message": "Wrong reference: false should be true",
+      "file": "src/stores/settingsStore.ts",
+      "root_cause": "Used \"false\" instead of \"true\"",
+      "fix": "Changed false → true",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:11:37.508Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-08-06T14:11:43.789Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/stores/settingsStore.ts",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 8→9 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:11:43.789Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-08-06T14:12:20.019Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/design-system/components/ServiceButton.tsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 4→8 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:12:20.019Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-08-06T14:12:32.734Z",
+      "error_message": "CSS fix: primaryTarget, lg",
+      "file": "src/design-system/components/ServiceButton.tsx",
+      "root_cause": "primaryTarget: tokens.sizing.minimumTarget, → size === 'compact'; lg: tokens.space.md, → size === 'compact'",
+      "fix": "Changed primaryTarget: tokens.sizing.minimumTarget, → size === 'compact'; lg: tokens.space.md, → size === 'compact'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:12:32.734Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-08-06T14:12:55.651Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/design-system/components/ServiceIconButton.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:12:55.651Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-08-06T14:13:23.475Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/features/receipt-archive/ReceiptDetailSheet.tsx",
+      "root_cause": "Had \"large\"",
+      "fix": "Changed to \"compact\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:13:23.475Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-08-06T14:14:59.329Z",
+      "error_message": "Wrong reference: xxl should be md",
+      "file": "src/screens/HomeScreen.tsx",
+      "root_cause": "Used \"xxl\" instead of \"md\"",
+      "fix": "Changed xxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:14:59.329Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-08-06T14:15:05.158Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/TablesHomeScreen.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:05.158Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-08-06T14:15:09.754Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/TablesScreenModern.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:09.754Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-08-06T14:15:14.161Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/HallTablesScreenModern.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:14.161Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-08-06T14:15:20.150Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/NewOrderScreen.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:20.150Z"
+    },
+    {
+      "id": "bug-025",
+      "timestamp": "2026-08-06T14:15:25.611Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/OrdersFlowScreen.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:25.611Z"
+    },
+    {
+      "id": "bug-026",
+      "timestamp": "2026-08-06T14:15:31.686Z",
+      "error_message": "Wrong reference: xxl should be md",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "Used \"xxl\" instead of \"md\"",
+      "fix": "Changed xxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:31.686Z"
+    },
+    {
+      "id": "bug-027",
+      "timestamp": "2026-08-06T14:15:39.888Z",
+      "error_message": "Wrong reference: xxxl should be md",
+      "file": "src/screens/QRMenuScreenModern.tsx",
+      "root_cause": "Used \"xxxl\" instead of \"md\"",
+      "fix": "Changed xxxl → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:39.888Z"
+    },
+    {
+      "id": "bug-028",
+      "timestamp": "2026-08-06T14:15:55.794Z",
+      "error_message": "CSS fix: marginTop",
+      "file": "src/design-system/components/ServiceSectionHeader.tsx",
+      "root_cause": "marginTop: tokens.space.lg, → density === 'compact' ? tokens.space.sm : tokens.space.md,",
+      "fix": "Changed marginTop: tokens.space.lg, → density === 'compact' ? tokens.space.sm : tokens.space.md,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:15:55.794Z"
+    },
+    {
+      "id": "bug-029",
+      "timestamp": "2026-08-06T14:16:12.227Z",
+      "error_message": "CSS fix: minHeight",
+      "file": "src/design-system/components/ServiceQuickAction.tsx",
+      "root_cause": "minHeight: 84, → density === 'compact' ? 68 : 84,",
+      "fix": "Changed minHeight: 84, → density === 'compact' ? 68 : 84,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:16:12.227Z"
+    },
+    {
+      "id": "bug-030",
+      "timestamp": "2026-08-06T14:16:28.728Z",
+      "error_message": "CSS fix: minHeight",
+      "file": "src/design-system/components/ServiceChoiceCard.tsx",
+      "root_cause": "minHeight: 96, → density === 'compact' ? 76 : 96,",
+      "fix": "Changed minHeight: 96, → density === 'compact' ? 76 : 96,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:16:28.728Z"
+    },
+    {
+      "id": "bug-031",
+      "timestamp": "2026-08-06T14:16:47.885Z",
+      "error_message": "CSS fix: minHeight",
+      "file": "src/design-system/components/ServiceMetricTile.tsx",
+      "root_cause": "minHeight: 76, → density === 'compact' ? 64 : 76,",
+      "fix": "Changed minHeight: 76, → density === 'compact' ? 64 : 76,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:16:47.885Z"
+    },
+    {
+      "id": "bug-032",
+      "timestamp": "2026-08-06T14:16:58.517Z",
+      "error_message": "CSS fix: padding",
+      "file": "src/design-system/components/ServiceEmptyState.tsx",
+      "root_cause": "padding: tokens.space.xl, → density === 'compact' ? tokens.space.lg : tokens.space.xl,",
+      "fix": "Changed padding: tokens.space.xl, → density === 'compact' ? tokens.space.lg : tokens.space.xl,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:16:58.517Z"
+    },
+    {
+      "id": "bug-033",
+      "timestamp": "2026-08-06T14:19:43.034Z",
+      "error_message": "CSS fix: gap",
+      "file": "src/screens/TablesScreenModern.tsx",
+      "root_cause": "gap: tokens.space.lg, → tokens.space.md,",
+      "fix": "Changed gap: tokens.space.lg, → tokens.space.md,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:19:43.034Z"
+    },
+    {
+      "id": "bug-034",
+      "timestamp": "2026-08-06T14:19:50.695Z",
+      "error_message": "CSS fix: gap",
+      "file": "src/screens/HallTablesScreenModern.tsx",
+      "root_cause": "gap: tokens.space.lg, → tokens.space.md,",
+      "fix": "Changed gap: tokens.space.lg, → tokens.space.md,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:19:50.695Z"
+    },
+    {
+      "id": "bug-035",
+      "timestamp": "2026-08-06T14:19:56.488Z",
+      "error_message": "CSS fix: gap",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "gap: tokens.space.lg, marginBottom: tokens.space.lg → tokens.space.md, marginBottom: tokens.space.md",
+      "fix": "Changed gap: tokens.space.lg, marginBottom: tokens.space.lg → tokens.space.md, marginBottom: tokens.space.md",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:19:56.488Z"
+    },
+    {
+      "id": "bug-036",
+      "timestamp": "2026-08-06T14:25:57.365Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/design-system/components/ServiceSectionHeader.tsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 10→15 lines (2 removed) | Also: {action ? (; onPress={action.onPress}",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-06T14:26:13.731Z"
+    },
+    {
+      "id": "bug-037",
+      "timestamp": "2026-08-06T14:26:05.829Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/design-system/components/ServiceSectionHeader.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:26:05.829Z"
+    },
+    {
+      "id": "bug-038",
+      "timestamp": "2026-08-06T14:31:04.828Z",
+      "error_message": "CSS fix: color",
+      "file": "src/screens/DeviceManagementScreen.tsx",
+      "root_cause": "color: isRevoked ? colors.error : colors.success, → colors.error",
+      "fix": "Changed color: isRevoked ? colors.error : colors.success, → colors.error",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:31:04.828Z"
+    },
+    {
+      "id": "bug-039",
+      "timestamp": "2026-08-06T14:31:51.861Z",
+      "error_message": "Wrong reference: useLocalization should be t",
+      "file": "src/screens/AnalyticsScreen.tsx",
+      "root_cause": "Used \"useLocalization\" instead of \"t\"",
+      "fix": "Changed useLocalization → t",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:31:51.861Z"
+    },
+    {
+      "id": "bug-040",
+      "timestamp": "2026-08-06T14:32:01.351Z",
+      "error_message": "CSS fix: color",
+      "file": "src/screens/AnalyticsScreen.tsx",
+      "root_cause": "color: tokens.colors.text → tokens.colors.primary",
+      "fix": "Changed color: tokens.colors.text → tokens.colors.primary",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:32:01.351Z"
+    },
+    {
+      "id": "bug-041",
+      "timestamp": "2026-08-06T14:35:49.016Z",
+      "error_message": "CSS fix: flexBasis",
+      "file": "src/screens/HomeScreen.tsx",
+      "root_cause": "flexBasis: '31%' → '47%'",
+      "fix": "Changed flexBasis: '31%' → '47%'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:35:49.016Z"
+    },
+    {
+      "id": "bug-042",
+      "timestamp": "2026-08-06T14:37:53.155Z",
+      "error_message": "Wrong reference: ServiceMetricTile should be ServiceScreenHeader",
+      "file": "src/screens/TablesHomeScreen.tsx",
+      "root_cause": "Used \"ServiceMetricTile\" instead of \"ServiceScreenHeader\"",
+      "fix": "Changed ServiceMetricTile → ServiceScreenHeader",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:37:53.155Z"
+    },
+    {
+      "id": "bug-043",
+      "timestamp": "2026-08-06T14:42:16.048Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/screens/SettingsScreen.tsx",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 13→16 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T14:42:16.048Z"
+    },
+    {
+      "id": "bug-044",
+      "timestamp": "2026-08-06T14:58:07.228Z",
+      "error_message": "CSS fix: fontWeight",
+      "file": "src/navigation/AdaptiveTabBar.tsx",
+      "root_cause": "fontWeight: '700', → selected ? '700' : '500',",
+      "fix": "Changed fontWeight: '700', → selected ? '700' : '500',",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-06T14:59:33.917Z"
+    },
+    {
+      "id": "bug-045",
+      "timestamp": "2026-08-06T15:41:32.101Z",
+      "error_message": "Incorrect value in code",
+      "file": "supabase/functions/menu-ai-draft/index.ts",
+      "root_cause": "Had 'OPENAI_MENU_MODEL'",
+      "fix": "Changed to 'NVIDIA_MENU_MODEL'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T15:41:32.101Z"
+    },
+    {
+      "id": "bug-046",
+      "timestamp": "2026-08-06T15:41:58.819Z",
+      "error_message": "Wrong operator: === should be !==",
+      "file": "supabase/functions/menu-ai-draft/index.ts",
+      "root_cause": "Used \"===\" instead of \"!==\"",
+      "fix": "Changed operator === → !==",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T15:41:58.819Z"
+    },
+    {
+      "id": "bug-047",
+      "timestamp": "2026-08-06T15:42:14.527Z",
+      "error_message": "Significant refactor of ",
+      "file": "supabase/functions/README.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 4→6 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T15:42:14.527Z"
+    }
+  ]
+}

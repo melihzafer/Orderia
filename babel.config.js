@@ -13,7 +13,6 @@ module.exports = function (api) {
       ],
     ],
     plugins: [
-      'nativewind/babel',
       './babel-plugin-transform-import-meta.js',
       isTest && 'babel-plugin-dynamic-import-node',
       'react-native-reanimated/plugin',

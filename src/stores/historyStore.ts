@@ -8,6 +8,8 @@ import { isBillableLine } from '../utils/financeUtils';
 
 interface HistoryState {
   dailyHistory: Record<string, DayHistory>; // date -> history
+  replaceHistory: (dailyHistory: Record<string, DayHistory>) => void;
+  updateHistoricalTicket: (ticketId: string, paymentInfo: Ticket['paymentInfo']) => void;
 
   // Actions
   addTicketToHistory: (ticket: Ticket) => void;
@@ -26,6 +28,24 @@ export const useHistoryStore = create<HistoryState>()(
   persist(
     (set, get) => ({
       dailyHistory: {},
+
+      replaceHistory: (dailyHistory) => set({ dailyHistory }),
+
+      updateHistoricalTicket: (ticketId, paymentInfo) => {
+        set((state) => ({
+          dailyHistory: Object.fromEntries(
+            Object.entries(state.dailyHistory).map(([date, history]) => [
+              date,
+              {
+                ...history,
+                tickets: history.tickets.map((ticket) =>
+                  ticket.id === ticketId ? { ...ticket, paymentInfo } : ticket,
+                ),
+              },
+            ]),
+          ),
+        }));
+      },
 
       addTicketToHistory: (ticket) => {
         const dateKey = generateDateKey(new Date(ticket.closedAt || Date.now()));
@@ -108,7 +128,8 @@ export const useHistoryStore = create<HistoryState>()(
       },
 
       getWeeklyTotal: (startDate) => {
-        const start = new Date(startDate);
+        const [year, month, day] = startDate.split('-').map(Number);
+        const start = new Date(year, month - 1, day);
         const dates = [];
 
         for (let i = 0; i < 7; i++) {

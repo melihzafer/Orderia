@@ -141,4 +141,31 @@ describe('legacy financial behavior', () => {
     });
     expect(useHistoryStore.getState().getTotalGrossForDate(generateDateKey(now))).toBe(800);
   });
+
+  it('uses the local calendar day for history keys near midnight', () => {
+    const localDate = new Date(2026, 6, 26, 0, 30);
+
+    expect(generateDateKey(localDate)).toBe('2026-07-26');
+  });
+
+  it('treats weekly start-date keys as local calendar dates', () => {
+    useHistoryStore.setState({
+      dailyHistory: {
+        '2026-07-26': {
+          id: '2026-07-26',
+          tickets: [],
+          totals: { gross: 100, byCategory: {} },
+          generatedAt: 0,
+        },
+        '2026-08-01': {
+          id: '2026-08-01',
+          tickets: [],
+          totals: { gross: 700, byCategory: {} },
+          generatedAt: 0,
+        },
+      },
+    });
+
+    expect(useHistoryStore.getState().getWeeklyTotal('2026-07-26')).toBe(800);
+  });
 });

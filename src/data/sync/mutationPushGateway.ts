@@ -66,6 +66,12 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
         if (hasKey(payload, 'quantity')) {
           return this.client.rpc('apply_order_item_quantity_command', versioned);
         }
+        if (hasKey(payload, 'served')) {
+          return this.client.rpc('apply_order_item_served_command', versioned);
+        }
+      }
+      if (mutation.repository === 'tableSessions' && hasKey(payload, 'note')) {
+        return this.client.rpc('apply_table_session_note_command', versioned);
       }
     }
 
@@ -150,6 +156,10 @@ function remoteMutationType(mutation: OutboxMutation): string {
 
   if (mutation.repository === 'orderItems' && mutation.operation === 'command') {
     return 'order_items.cancel';
+  }
+
+  if (mutation.repository === 'tableSessions' && mutation.operation === 'command') {
+    return 'table_sessions.update_note';
   }
 
   throw new MutationPushError(

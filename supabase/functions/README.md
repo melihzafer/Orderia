@@ -7,8 +7,8 @@ manager-only `publish_menu_ai_draft` transaction after explicit review.
 Set server-only secrets in each Supabase environment:
 
 ```sh
-supabase secrets set OPENAI_API_KEY=... \
-  OPENAI_MENU_MODEL=gpt-5.6-luna \
+supabase secrets set NVIDIA_API_KEY=... \
+  NVIDIA_MENU_MODEL=nvidia/nemotron-3-nano-30b-a3b \
   ORDERIA_ALLOWED_ORIGINS=https://app.example.com
 ```
 
@@ -22,7 +22,9 @@ supabase functions deploy menu-ai-draft
 do not send an Origin header. When the variable is omitted, only localhost web
 origins are accepted.
 
-The OpenAI key stays in the Edge Function runtime. The function uses the
-Responses API with strict Structured Outputs and `store: false`, records
-latency/token usage, and enforces per-user burst and per-organization daily
+The NVIDIA key stays in the Edge Function runtime. The function calls
+NVIDIA's OpenAI-compatible Chat Completions API (`integrate.api.nvidia.com`)
+in JSON-object mode, with the target schema embedded in the system prompt
+and validated server-side after the response comes back. It records
+latency/token usage and enforces per-user burst and per-organization daily
 quotas before calling the model.

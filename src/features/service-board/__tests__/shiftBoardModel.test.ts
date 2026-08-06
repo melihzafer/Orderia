@@ -189,10 +189,38 @@ describe('filterShiftBoardTables', () => {
     ).toEqual([tableId]);
   });
 
+  it('searches the customer/order name shown on an open check', () => {
+    expect(
+      filterShiftBoardTables(tables, { scope: 'all', query: 'main' }).map((table) => table.id),
+    ).toEqual([tableId]);
+  });
+
   it('shows only operational exceptions in alerts', () => {
     expect(filterShiftBoardTables(tables, { scope: 'alerts' }).map((table) => table.id)).toEqual([
       tableId,
     ]);
+  });
+
+  it('supports the home quick-action scopes for open, payment and available work', () => {
+    const openTableWithBalance = {
+      ...tables[0],
+      id: 'open-table-with-balance',
+      state: 'open' as const,
+      remainingMinor: 700,
+    };
+    const tablesIncludingOpenBalance = [...tables, openTableWithBalance];
+
+    expect(filterShiftBoardTables(tables, { scope: 'open' }).map((table) => table.id)).toEqual([
+      tableId,
+    ]);
+    expect(
+      filterShiftBoardTables(tablesIncludingOpenBalance, { scope: 'payment' }).map(
+        (table) => table.id,
+      ),
+    ).toEqual([tableId]);
+    expect(filterShiftBoardTables(tables, { scope: 'available' }).map((table) => table.id)).toEqual(
+      [availableTableId],
+    );
   });
 });
 

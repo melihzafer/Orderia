@@ -8,14 +8,14 @@ test('has no serious or critical accessibility violations in the rapid service f
   await page.goto('/');
   await expect(
     page.getByRole('heading', {
-      name: /Canlı Servis|Обслужване на живо|Live service/i,
+      name: /^(?:Masalar|Маси|Tables)$/i,
     }),
   ).toBeVisible();
 
   await assertAccessible(page);
 
-  await page.getByText(/Pencere Kenarı/i).click();
-  await expect(page.getByRole('tab', { name: /Menü|Меню|Menu/i })).toBeVisible();
+  await page.getByRole('tab', { name: /Sipariş|Поръчки|Orders/i }).click();
+  await expect(page.getByRole('heading', { name: /Sipariş|Поръчки|Orders/i })).toBeVisible();
   await assertAccessible(page);
 });
 
@@ -24,7 +24,7 @@ test('keeps keyboard focus visible and reaches primary navigation', async ({ pag
   await page.goto('/');
   await expect(
     page.getByRole('heading', {
-      name: /Canlı Servis|Обслужване на живо|Live service/i,
+      name: /^(?:Masalar|Маси|Tables)$/i,
     }),
   ).toBeVisible();
 

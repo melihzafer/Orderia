@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { Alert, Platform, Vibration } from 'react-native';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Platform, Vibration } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useOrderStore } from '../stores';
+import { useSnackbar } from '../design-system';
 import { useLocalization } from '../i18n';
 
 // Check if running in Expo Go (limited notifications) or development build
@@ -56,14 +56,121 @@ const defaultSettings: NotificationSettings = {
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
+  const settingsRef = useRef<NotificationSettings>(defaultSettings);
+  const settingsWriteChain = useRef<Promise<void>>(Promise.resolve());
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
   const { t } = useLocalization();
+  const { show } = useSnackbar();
+  const translationRef = useRef(t);
+  const showRef = useRef(show);
+  translationRef.current = t;
+  showRef.current = show;
+
+  const loadSettings = useCallback(async (): Promise<NotificationSettings> => {
+    try {
+      const storedSettings = await AsyncStorage.getItem('@notification_settings');
+      if (!storedSettings) return settingsRef.current;
+
+      const hydratedSettings = {
+        ...defaultSettings,
+        ...(JSON.parse(storedSettings) as Partial<NotificationSettings>),
+      };
+      settingsRef.current = hydratedSettings;
+      setSettings(hydratedSettings);
+      return hydratedSettings;
+    } catch (error) {
+      console.error('Error loading notification settings:', error);
+      return settingsRef.current;
+    }
+  }, []);
+
+  /**
+   * `announce` yalnızca kullanıcı bildirimleri kendisi açtığında verilir.
+   *
+   * Açılıştaki otomatik kayıt sessizdir: uygulama daha hiçbir şey yapmadan
+   * "izin ver" uyarısıyla karşılamak, karşılığında kullanıcının o an yapabileceği
+   * bir şey olmayan bir gürültü. Eskiden bu mesaj `Alert.alert` ile veriliyordu ve
+   * react-native-web'de sessizce yutulduğu için web'de hiç görünmüyordu.
+   */
+  const registerForPushNotificationsAsync = useCallback(
+    async ({ announce = false, notificationSettings = settingsRef.current } = {}) => {
+      if (!notificationSettings.enabled) return;
+
+      // Skip push notification registration in Expo Go
+      if (isExpoGo) {
+        console.warn(
+          'Push notifications are not fully supported in Expo Go. Local notifications will still work.',
+        );
+        return;
+      }
+
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+
+        if (finalStatus !== 'granted') {
+          if (announce) {
+            showRef.current({
+              message:
+                translationRef.current.notificationPermissionMessage ||
+                'Please enable notifications to receive order updates',
+              tone: 'warning',
+            });
+          }
+          return;
+        }
+
+        // Try to get push token (may fail in Expo Go)
+        try {
+          const token = (await Notifications.getExpoPushTokenAsync()).data;
+          setExpoPushToken(token);
+          console.log('✅ Expo push token obtained:', token);
+        } catch (tokenError: any) {
+          console.warn(
+            '⚠️ Could not get push token (expected in Expo Go):',
+            tokenError?.message || 'Unknown error',
+          );
+          setExpoPushToken(null);
+        }
+
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+
+          // Create specific channels for different notification types
+          await Notifications.setNotificationChannelAsync('orders', {
+            name: 'Order Updates',
+            importance: Notifications.AndroidImportance.HIGH,
+            vibrationPattern: [0, 250, 250, 250],
+            sound: 'notification_sound.wav',
+          });
+
+          await Notifications.setNotificationChannelAsync('kitchen', {
+            name: 'Kitchen Alerts',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 500, 250, 500],
+            sound: 'kitchen_alert.wav',
+          });
+        }
+      } catch (error) {
+        console.error('Error registering for push notifications:', error);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    loadSettings();
-
     // Show info about notification limitations in Expo Go
     if (isExpoGo) {
       console.info(
@@ -71,15 +178,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       );
     }
 
-    // Register for push notifications (skipped in Expo Go)
-    registerForPushNotificationsAsync();
+    // Hydrate preferences before registering so a persisted opt-out never prompts for permission.
+    void loadSettings().then((hydratedSettings) =>
+      registerForPushNotificationsAsync({ notificationSettings: hydratedSettings }),
+    );
 
     // Notification listeners
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       console.log('Notification received:', notification);
 
       // Vibrate if enabled
-      if (settings.vibration) {
+      if (settingsRef.current.vibration) {
         Vibration.vibrate(400);
       }
     });
@@ -103,96 +212,31 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const storedSettings = await AsyncStorage.getItem('@notification_settings');
-      if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
-      }
-    } catch (error) {
-      console.error('Error loading notification settings:', error);
-    }
-  };
+  }, [loadSettings, registerForPushNotificationsAsync]);
 
   const updateSettings = async (newSettings: Partial<NotificationSettings>) => {
-    const updatedSettings = { ...settings, ...newSettings };
+    const previousSettings = settingsRef.current;
+    const updatedSettings = { ...previousSettings, ...newSettings };
+    settingsRef.current = updatedSettings;
     setSettings(updatedSettings);
 
+    settingsWriteChain.current = settingsWriteChain.current
+      .catch(() => undefined)
+      .then(() =>
+        AsyncStorage.setItem('@notification_settings', JSON.stringify(settingsRef.current)),
+      );
     try {
-      await AsyncStorage.setItem('@notification_settings', JSON.stringify(updatedSettings));
+      await settingsWriteChain.current;
     } catch (error) {
       console.error('Error saving notification settings:', error);
     }
-  };
 
-  const registerForPushNotificationsAsync = async () => {
-    if (!settings.enabled) return;
-
-    // Skip push notification registration in Expo Go
-    if (isExpoGo) {
-      console.warn(
-        'Push notifications are not fully supported in Expo Go. Local notifications will still work.',
-      );
-      return;
-    }
-
-    try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        Alert.alert(
-          t.notificationPermission || 'Notification Permission',
-          t.notificationPermissionMessage || 'Please enable notifications to receive order updates',
-        );
-        return;
-      }
-
-      // Try to get push token (may fail in Expo Go)
-      try {
-        const token = (await Notifications.getExpoPushTokenAsync()).data;
-        setExpoPushToken(token);
-        console.log('✅ Expo push token obtained:', token);
-      } catch (tokenError: any) {
-        console.warn(
-          '⚠️ Could not get push token (expected in Expo Go):',
-          tokenError?.message || 'Unknown error',
-        );
-        setExpoPushToken(null);
-      }
-
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
-
-        // Create specific channels for different notification types
-        await Notifications.setNotificationChannelAsync('orders', {
-          name: 'Order Updates',
-          importance: Notifications.AndroidImportance.HIGH,
-          vibrationPattern: [0, 250, 250, 250],
-          sound: 'notification_sound.wav',
-        });
-
-        await Notifications.setNotificationChannelAsync('kitchen', {
-          name: 'Kitchen Alerts',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 500, 250, 500],
-          sound: 'kitchen_alert.wav',
-        });
-      }
-    } catch (error) {
-      console.error('Error registering for push notifications:', error);
+    // Kullanıcı bildirimleri az önce kendisi açtıysa izin sonucunu duymayı hak eder.
+    if (newSettings.enabled === true && !previousSettings.enabled) {
+      void registerForPushNotificationsAsync({
+        announce: true,
+        notificationSettings: updatedSettings,
+      });
     }
   };
 

@@ -23,8 +23,10 @@ import { InMemoryLocalDatabase } from '../../../data/testing/inMemoryLocalDataba
 import { MutationPushError, OutboxPushWorker } from '../../../data/sync';
 import {
   cancelOrderItem,
+  markOrderItemsServed,
   resolveOrderItemNoteConflict,
   sendOrderBatch,
+  updateTableSessionNote,
   updateOrderItemNote,
 } from '../orderCommands';
 import { loadTableWorkspace } from '../workspaceModel';
@@ -179,6 +181,92 @@ describe('rapid table workspace commands', () => {
       payload: { reasonId },
       repository: 'orderItems',
     });
+  });
+
+  it('marks all ordered drink lines as served in one local transaction', async () => {
+    const database = new InMemoryLocalDatabase();
+    await seedWorkspace(database);
+    const workspace = await loadTableWorkspace(database, scope, tableId);
+    const sent = await sendOrderBatch({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      tableId,
+      checkName: 'Hesap 1',
+      lines: [
+        {
+          id: 'draft-1',
+          product: workspace!.products[0],
+          quantity: 1,
+          selectedOptionIds: [optionId],
+        },
+      ],
+      createUuid: sequentialIds(),
+    });
+
+    const served = await markOrderItemsServed({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      items: sent.items,
+      createUuid: () => 'served-mutation',
+    });
+
+    expect(served[0]).toMatchObject({ status: 'served', version: 2 });
+    expect(await database.outbox.list(scope, ['pending'])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entityId: sent.items[0].id,
+          payload: { served: true },
+        }),
+      ]),
+    );
+  });
+
+  it('stores a physical location note with an idempotent session mutation', async () => {
+    const database = new InMemoryLocalDatabase();
+    await seedWorkspace(database);
+    const workspace = await loadTableWorkspace(database, scope, tableId);
+    const sent = await sendOrderBatch({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      tableId,
+      checkName: 'Hesap 1',
+      lines: [
+        {
+          id: 'draft-1',
+          product: workspace!.products[0],
+          quantity: 1,
+          selectedOptionIds: [optionId],
+        },
+      ],
+      createUuid: sequentialIds(),
+    });
+
+    const updated = await updateTableSessionNote({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      session: sent.session,
+      note: 'Mavi çadırın yanında',
+      createUuid: () => 'location-note-mutation',
+    });
+
+    expect(updated).toMatchObject({ note: 'Mavi çadırın yanında', version: 2 });
+    expect(await database.outbox.list(scope, ['pending'])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          entityId: sent.session.id,
+          payload: { note: 'Mavi çadırın yanında' },
+          repository: 'tableSessions',
+        }),
+      ]),
+    );
   });
 
   it('retains both note versions and lets the waiter explicitly keep the local note', async () => {

@@ -119,6 +119,7 @@ export class MenuCatalogGateway {
       isActive: item.is_active,
       isAvailable: item.is_available,
       ...(item.prep_time_minutes !== null ? { prepTimeMinutes: item.prep_time_minutes } : {}),
+      fulfillmentGroup: item.fulfillment_group ?? 'kitchen',
       isOrganizationWide: item.branch_id === null,
       version: item.version,
       translations: (translationsResult.data ?? [])
@@ -173,7 +174,7 @@ export class MenuCatalogGateway {
     expectedVersion: number,
     item: EditableCatalogItem,
   ): Promise<{ readonly itemId: MenuItemId; readonly status: 'published' }> {
-    const { data, error } = await this.client.rpc('publish_menu_ai_draft', {
+    const { data, error } = await this.client.rpc('publish_menu_ai_draft_with_fulfillment', {
       requested_organization_id: scope.organizationId,
       requested_branch_id: scope.branchId,
       requested_request_id: draftId,
@@ -195,7 +196,7 @@ export class MenuCatalogGateway {
     item: EditableCatalogItem,
     existing?: { readonly id: MenuItemId; readonly version: number },
   ): Promise<MenuItemId> {
-    const { data, error } = await this.client.rpc('save_catalog_item', {
+    const { data, error } = await this.client.rpc('save_catalog_item_with_fulfillment', {
       requested_organization_id: scope.organizationId,
       requested_branch_id: scope.branchId,
       requested_item_id: existing?.id ?? null,

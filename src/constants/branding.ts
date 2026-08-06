@@ -19,6 +19,10 @@ export const brand = {
   },
 };
 
+/**
+ * @deprecated Shifted alias of serviceSpace — `spacing.md` here is 12, while
+ * `serviceSpace.md` is 16. Import serviceSpace from design-system/tokens directly.
+ */
 export const spacing = {
   xs: serviceSpace.xxs,
   sm: serviceSpace.xs,
@@ -80,5 +84,8 @@ export function generateTableId(hallId: string, sequence: number): string {
 
 export function generateDateKey(date?: Date): string {
   const d = date || new Date();
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }

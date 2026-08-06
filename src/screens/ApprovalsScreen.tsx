@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 16,
   },
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 4,
   },
   date: {
     fontSize: 12,
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   decisionButton: {
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
     flex: 1,
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     justifyContent: 'center',
     minHeight: 48,
   },

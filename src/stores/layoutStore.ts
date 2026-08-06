@@ -7,6 +7,7 @@ import { generateId, generateTableId } from '../constants/branding';
 interface LayoutState {
   halls: Hall[];
   tables: Table[];
+  replaceData: (data: { halls: Hall[]; tables: Table[] }) => void;
 
   // Hall actions
   addHall: (data: CreateHallData) => Hall;
@@ -30,6 +31,8 @@ export const useLayoutStore = create<LayoutState>()(
     (set, get) => ({
       halls: [],
       tables: [],
+
+      replaceData: ({ halls, tables }) => set({ halls, tables }),
 
       // Hall actions
       addHall: (data) => {

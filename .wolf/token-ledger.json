@@ -1,0 +1,2576 @@
+{
+  "version": 1,
+  "created_at": "2026-08-06T09:09:05.336Z",
+  "lifetime": {
+    "total_tokens_estimated": 528193,
+    "total_reads": 155,
+    "total_writes": 298,
+    "total_sessions": 7,
+    "anatomy_hits": 143,
+    "anatomy_misses": 3,
+    "repeated_reads_blocked": 106,
+    "estimated_savings_vs_bare_cli": 625701
+  },
+  "sessions": [
+    {
+      "id": "session-2026-08-06-1400",
+      "started": "2026-08-06T11:00:12.514Z",
+      "ended": "2026-08-06T11:02:17.633Z",
+      "reads": [
+        {
+          "file": "C:/Users/melih/.claude/settings.json",
+          "tokens_estimated": 441,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/.claude/projects/D--Projects-Orderia/memory/MEMORY.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "C:/Users/melih/.claude/settings.json",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/settings.json",
+          "tokens_estimated": 8,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/projects/D--Projects-Orderia/memory/model-routing-opusplan.md",
+          "tokens_estimated": 234,
+          "action": "create"
+        },
+        {
+          "file": "C:/Users/melih/.claude/projects/D--Projects-Orderia/memory/MEMORY.md",
+          "tokens_estimated": 40,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 441,
+        "output_tokens_estimated": 339,
+        "reads_count": 2,
+        "writes_count": 4,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-08-06-1404",
+      "started": "2026-08-06T11:04:37.953Z",
+      "ended": "2026-08-06T11:08:29.984Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 3436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7262,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/tokens.ts",
+          "tokens_estimated": 2378,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/layout.ts",
+          "tokens_estimated": 407,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddMenuItemScreen.tsx",
+          "tokens_estimated": 10528,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 1436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSurface.tsx",
+          "tokens_estimated": 464,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 621,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 5207,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5576,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2174,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 6556,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 1941,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 3289,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 1627,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1224,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 3220,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 3948,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1963,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 2249,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 13639,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 1722,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 3843,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2725,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/ServiceTableCard.tsx",
+          "tokens_estimated": 2913,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 90809,
+        "output_tokens_estimated": 0,
+        "reads_count": 27,
+        "writes_count": 0,
+        "repeated_reads_blocked": 2,
+        "anatomy_lookups": 24
+      }
+    },
+    {
+      "id": "session-2026-08-06-1404",
+      "started": "2026-08-06T11:04:37.953Z",
+      "ended": "2026-08-06T11:11:50.170Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 3436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7262,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/tokens.ts",
+          "tokens_estimated": 2378,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/layout.ts",
+          "tokens_estimated": 407,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddMenuItemScreen.tsx",
+          "tokens_estimated": 10528,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 1436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSurface.tsx",
+          "tokens_estimated": 464,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 621,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 5207,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5576,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2174,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 6556,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 1941,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 3289,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 1627,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1224,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 3220,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 3948,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1963,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 461,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 2249,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 13639,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 1722,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 3843,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2725,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/ServiceTableCard.tsx",
+          "tokens_estimated": 2913,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 1484,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 1806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/ShiftBoardQuickActions.tsx",
+          "tokens_estimated": 754,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceScreenHeader.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 7236,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 1166,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 1311,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 5924,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 1897,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 2144,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 8419,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 3324,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 126274,
+        "output_tokens_estimated": 0,
+        "reads_count": 39,
+        "writes_count": 0,
+        "repeated_reads_blocked": 7,
+        "anatomy_lookups": 35
+      }
+    },
+    {
+      "id": "session-2026-08-06-1638",
+      "started": "2026-08-06T13:38:51.073Z",
+      "ended": "2026-08-06T13:53:42.816Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 3294,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2174,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 1806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1963,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 18916,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 1484,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 844,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 626,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 6570,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1317,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 3903,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 66,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 167,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 249,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 266,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 241,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 388,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 250,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 156,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 144,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 77,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 424,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 79,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 482,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1766,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 42897,
+        "output_tokens_estimated": 5718,
+        "reads_count": 11,
+        "writes_count": 34,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 11
+      }
+    },
+    {
+      "id": "session-2026-08-06-1638",
+      "started": "2026-08-06T13:38:51.073Z",
+      "ended": "2026-08-06T14:48:51.523Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 3294,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2174,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 1895,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1963,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 19594,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 1484,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 844,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 626,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 6478,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1317,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 3878,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 1088,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 2160,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 2094,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/__tests__/settingsStore.test.ts",
+          "tokens_estimated": 449,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 1436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceIconButton.tsx",
+          "tokens_estimated": 558,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 3864,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 644,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 1311,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 1166,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 500,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 4641,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5136,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 3203,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceScreenHeader.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7900,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 3438,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 3288,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 7236,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 5920,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 66,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 167,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 249,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 266,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 241,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 388,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 250,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 156,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 144,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 77,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 424,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 79,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 482,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1766,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 288,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 116,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 7,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 126,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 518,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceIconButton.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 24,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 145,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 289,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 27,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 103,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 88,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 122,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 100,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceScreenHeader.tsx",
+          "tokens_estimated": 91,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 135,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 388,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 181,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 349,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 768,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 1118,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 101,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 141,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 113,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 138,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 378,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 368,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 4,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 152,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 69,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 128,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 100385,
+        "output_tokens_estimated": 15891,
+        "reads_count": 32,
+        "writes_count": 123,
+        "repeated_reads_blocked": 46,
+        "anatomy_lookups": 31
+      }
+    },
+    {
+      "id": "session-2026-08-06-1638",
+      "started": "2026-08-06T13:38:51.073Z",
+      "ended": "2026-08-06T15:01:29.366Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 3294,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2174,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 1895,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1963,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 19594,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 1484,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 844,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 626,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 6478,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1317,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 3878,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 1088,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 2160,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 2094,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/__tests__/settingsStore.test.ts",
+          "tokens_estimated": 449,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 1436,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceIconButton.tsx",
+          "tokens_estimated": 558,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 3864,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 644,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 1311,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 806,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 1166,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 500,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 4641,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5136,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 3203,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceScreenHeader.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7900,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 3438,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 3288,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 7236,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 5920,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/focusRing.ts",
+          "tokens_estimated": 297,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 2470,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 66,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 167,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 249,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 266,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 241,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 388,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 250,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 156,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/ApprovalsScreen.tsx",
+          "tokens_estimated": 144,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 77,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/SurfaceCard.tsx",
+          "tokens_estimated": 424,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/constants/branding.ts",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 79,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 482,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 1766,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/EditTableScreenModern.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 288,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/ThemeContext.tsx",
+          "tokens_estimated": 116,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 7,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 126,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceButton.tsx",
+          "tokens_estimated": 518,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceIconButton.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/receipt-archive/ReceiptDetailSheet.tsx",
+          "tokens_estimated": 24,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 145,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceQuickAction.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 289,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceChoiceCard.tsx",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 27,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceMetricTile.tsx",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 103,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceEmptyState.tsx",
+          "tokens_estimated": 88,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 122,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 100,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesScreenModern.tsx",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceScreenHeader.tsx",
+          "tokens_estimated": 91,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceListRow.tsx",
+          "tokens_estimated": 74,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 135,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 388,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSectionHeader.tsx",
+          "tokens_estimated": 181,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 349,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 768,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 1118,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 101,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 141,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HallTablesScreenModern.tsx",
+          "tokens_estimated": 113,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 138,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 378,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 368,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 4,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TablesHomeScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 152,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 69,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 128,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 169,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/focusRing.ts",
+          "tokens_estimated": 524,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 913,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 24,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+          "tokens_estimated": 45,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 103152,
+        "output_tokens_estimated": 17397,
+        "reads_count": 34,
+        "writes_count": 127,
+        "repeated_reads_blocked": 48,
+        "anatomy_lookups": 33
+      }
+    },
+    {
+      "id": "session-2026-08-06-1839",
+      "started": "2026-08-06T15:39:09.200Z",
+      "ended": "2026-08-06T15:43:15.083Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/config/environment.ts",
+          "tokens_estimated": 255,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 4878,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 1524,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/.env.example",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/config.toml",
+          "tokens_estimated": 4604,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 884,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 114,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 11261,
+        "output_tokens_estimated": 1184,
+        "reads_count": 5,
+        "writes_count": 5,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-08-06-1839",
+      "started": "2026-08-06T15:39:09.200Z",
+      "ended": "2026-08-06T15:45:22.269Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/config/environment.ts",
+          "tokens_estimated": 255,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 4878,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 1524,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/.env.example",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/config.toml",
+          "tokens_estimated": 4604,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 884,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 114,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 11261,
+        "output_tokens_estimated": 1184,
+        "reads_count": 5,
+        "writes_count": 5,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    }
+  ],
+  "daemon_usage": [],
+  "waste_flags": [],
+  "optimization_report": {
+    "last_generated": null,
+    "patterns": []
+  }
+}

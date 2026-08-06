@@ -1,7 +1,6 @@
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
 
 interface QRConfig {
   tableId: string;
@@ -260,7 +259,9 @@ class QRService {
           dialogTitle: 'Share Table QR Codes',
         });
       } else {
-        Alert.alert('Export Complete', `QR codes exported to: ${textFilePath}`, [{ text: 'OK' }]);
+        // Servis katmanı kullanıcıya doğrudan konuşmaz: sonucu döndürür, mesajı
+        // ekran gösterir. Paylaşım penceresi yoksa dosya yolu çağırana bırakılır.
+        console.info('QR codes exported to:', textFilePath);
       }
     } catch (error) {
       console.error('Error sharing QR codes:', error);

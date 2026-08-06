@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
-import { DayHistory, Ticket, TicketLine, MenuItem, PaymentInfo } from '../types';
+import { DayHistory, Ticket, TicketLine } from '../types';
 import { Translation } from '../i18n/languages';
 
 export interface ExportData {

@@ -2,11 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SurfaceCard } from '../../components';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useOrderiaData } from '../../data/runtime';
+import { haptic, ServiceConfirmSheet, useSnackbar } from '../../design-system';
 import { DeviceId, toDomainId } from '../../domain';
 import { useLocalization } from '../../i18n';
 import {
@@ -32,6 +33,8 @@ export function LegacyMigrationCard() {
   const [serverReport, setServerReport] = useState<LegacyMigrationReport>();
   const [busy, setBusy] = useState<'inspect' | 'apply'>();
   const [completed, setCompleted] = useState(false);
+  const [applyPending, setApplyPending] = useState(false);
+  const { show } = useSnackbar();
 
   const inspectFile = async () => {
     setBusy('inspect');
@@ -59,8 +62,9 @@ export function LegacyMigrationCard() {
         setServerReport(remote.report);
         setCompleted(remote.status === 'completed');
       }
-    } catch (error) {
-      Alert.alert(copy.invalidTitle, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      haptic('error');
+      show({ message: copy.invalidTitle, tone: 'error' });
     } finally {
       setBusy(undefined);
     }
@@ -78,15 +82,7 @@ export function LegacyMigrationCard() {
 
   const applyMigration = () => {
     if (!selected || !auth.currentDeviceId || !effectiveReport?.reconciled) return;
-    Alert.alert(copy.confirmTitle, copy.confirmBody, [
-      { text: copy.cancel, style: 'cancel' },
-      {
-        text: copy.apply,
-        onPress: () => {
-          void performApply(selected);
-        },
-      },
-    ]);
+    setApplyPending(true);
   };
 
   const performApply = async (migration: SelectedMigration) => {
@@ -103,9 +99,14 @@ export function LegacyMigrationCard() {
       );
       setServerReport(result.report);
       setCompleted(true);
-      Alert.alert(copy.doneTitle, result.idempotentReplay ? copy.alreadyDone : copy.doneBody);
-    } catch (error) {
-      Alert.alert(copy.failedTitle, error instanceof Error ? error.message : copy.tryAgain);
+      haptic('success');
+      show({
+        message: result.idempotentReplay ? copy.alreadyDone : copy.doneBody,
+        tone: 'success',
+      });
+    } catch {
+      haptic('error');
+      show({ message: copy.failedTitle, tone: 'error' });
     } finally {
       setBusy(undefined);
     }
@@ -239,6 +240,20 @@ export function LegacyMigrationCard() {
       <Text style={{ color: colors.textSubtle, fontSize: 12, lineHeight: 18, marginTop: 8 }}>
         {data.mode !== 'cloud' ? copy.cloudRequired : copy.guardrail}
       </Text>
+      <ServiceConfirmSheet
+        body={copy.confirmBody}
+        busy={busy === 'apply'}
+        cancelLabel={copy.cancel}
+        confirmLabel={copy.apply}
+        destructive
+        onClose={() => setApplyPending(false)}
+        onConfirm={() => {
+          setApplyPending(false);
+          if (selected) void performApply(selected);
+        }}
+        title={copy.confirmTitle}
+        visible={applyPending}
+      />
     </SurfaceCard>
   );
 }

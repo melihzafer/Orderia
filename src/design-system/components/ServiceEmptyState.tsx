@@ -12,7 +12,7 @@ export interface ServiceEmptyStateProps {
 }
 
 export function ServiceEmptyState({ icon, title, body, action }: ServiceEmptyStateProps) {
-  const { tokens } = useTheme();
+  const { tokens, density } = useTheme();
 
   return (
     <View
@@ -20,7 +20,7 @@ export function ServiceEmptyState({ icon, title, body, action }: ServiceEmptySta
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        padding: tokens.space.xl,
+        padding: density === 'compact' ? tokens.space.lg : tokens.space.xl,
       }}
     >
       <View
@@ -43,6 +43,7 @@ export function ServiceEmptyState({ icon, title, body, action }: ServiceEmptySta
         {title}
       </Text>
       <Text
+        numberOfLines={3}
         style={[
           tokens.typography.body,
           {

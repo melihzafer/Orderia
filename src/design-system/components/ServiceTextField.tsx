@@ -16,6 +16,10 @@ export interface ServiceTextFieldProps extends Omit<TextInputProps, 'style'> {
   readonly helperText?: string;
   readonly containerStyle?: StyleProp<ViewStyle>;
   readonly inputStyle?: StyleProp<TextStyle>;
+  /** Alanı dışarıdan odaklamak için; örneğin ana ekrandaki "isimle ara" kısayolu. */
+  readonly inputRef?: React.Ref<TextInput>;
+  /** Etiketi görsel olarak gizler ama ekran okuyucuya bırakır. */
+  readonly hideLabel?: boolean;
 }
 
 export function ServiceTextField({
@@ -24,6 +28,8 @@ export function ServiceTextField({
   helperText,
   containerStyle,
   inputStyle,
+  inputRef,
+  hideLabel = false,
   onFocus,
   onBlur,
   editable = true,
@@ -37,21 +43,24 @@ export function ServiceTextField({
 
   return (
     <View style={containerStyle}>
-      <Text
-        nativeID={`${inputId}-label`}
-        style={[
-          tokens.typography.label,
-          {
-            color: tokens.colors.text,
-            marginBottom: tokens.space.xs,
-          },
-        ]}
-      >
-        {label}
-      </Text>
+      {hideLabel ? null : (
+        <Text
+          nativeID={`${inputId}-label`}
+          style={[
+            tokens.typography.label,
+            {
+              color: tokens.colors.text,
+              marginBottom: tokens.space.xs,
+            },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
       <TextInput
         {...props}
         accessibilityLabel={label}
+        ref={inputRef}
         accessibilityState={{ disabled: !editable }}
         editable={editable}
         nativeID={inputId}

@@ -45,6 +45,8 @@ export interface ShiftBoardTable {
   readonly remainingMinor: number;
   readonly currencyCode: string;
   readonly checkCount: number;
+  /** Customer/order names are searchable from the open-order board. */
+  readonly checkNames?: readonly string[];
   readonly waiterNames: readonly string[];
   readonly waiterInitials: readonly string[];
   readonly isMine: boolean;
@@ -75,7 +77,12 @@ export interface DomainShiftBoardSource {
   readonly unknownWaiterName: string;
 }
 
-export type ShiftBoardScopeFilter = 'all' | 'mine' | 'alerts';
+/**
+ * Ana ekranın hızlı işlemleri de aynı filtreyi kullanır: "Açık hesaplar" ve
+ * "Ödeme al" ayrı bir ekran açmak yerine listeyi daraltır, böylece garson
+ * bulunduğu yerde kalır.
+ */
+export type ShiftBoardScopeFilter = 'all' | 'mine' | 'alerts' | 'open' | 'payment' | 'available';
 
 export interface ShiftBoardFilters {
   readonly scope: ShiftBoardScopeFilter;
@@ -192,9 +199,18 @@ export function filterShiftBoardTables(
     if (filters.hallId && table.hallId !== filters.hallId) return false;
     if (filters.scope === 'mine' && !table.isMine) return false;
     if (filters.scope === 'alerts' && !table.needsAttention) return false;
+    if (filters.scope === 'open' && table.state === 'available') return false;
+    if (filters.scope === 'payment' && table.state !== 'payment_pending') return false;
+    if (filters.scope === 'available' && table.state !== 'available') return false;
 
     return matches(
-      [table.label, table.hallName, ...table.waiterNames, ...table.waiterInitials].join(' '),
+      [
+        table.label,
+        table.hallName,
+        ...(table.checkNames ?? []),
+        ...table.waiterNames,
+        ...table.waiterInitials,
+      ].join(' '),
     );
   });
 }
@@ -227,6 +243,7 @@ function buildTable(
       remainingMinor: 0,
       currencyCode: source.fallbackCurrencyCode,
       checkCount: 0,
+      checkNames: [],
       waiterNames: [],
       waiterInitials: [],
       isMine: false,
@@ -301,6 +318,7 @@ function buildTable(
     ...totals,
     currencyCode: items[0]?.currencyCode ?? source.fallbackCurrencyCode,
     checkCount: checks.length,
+    checkNames: checks.map((check) => check.name),
     waiterNames,
     waiterInitials: waiterNames.map(initials),
     isMine: source.currentUserId !== undefined && participantIds.includes(source.currentUserId),

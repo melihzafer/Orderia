@@ -18,6 +18,8 @@ import {
   PaymentAllocation,
 } from '../../domain';
 import { Language } from '../../i18n';
+// Aynı klasördeki paylaşılan biçimlendirici; buradaki özel kopya birebir aynıydı.
+import { formatMoney } from './workspaceFormat';
 import {
   CheckSplitPlan,
   CheckSplitValidationError,
@@ -100,6 +102,13 @@ export function CheckSplitSheet({
     0,
   );
   const movedCount = Object.values(moves).reduce((total, quantity) => total + quantity, 0);
+  const activeStep =
+    !targetCheck && targetId === NEW_CHECK && guestName.trim().length === 0
+      ? 1
+      : movedCount === 0
+        ? 2
+        : 3;
+  const targetLabel = (targetCheck?.name ?? guestName.trim()) || copy.newCheck;
 
   const changeMove = (orderItemId: OrderItemId, delta: number, maximum: number) => {
     setError(undefined);
@@ -190,6 +199,11 @@ export function CheckSplitSheet({
             </Pressable>
           </View>
 
+          <SplitStepIndicator
+            activeStep={activeStep}
+            steps={[copy.stepTarget, copy.stepItems, copy.stepReview]}
+          />
+
           <View
             accessibilityLiveRegion="polite"
             style={{ flexDirection: 'row', gap: tokens.space.sm, marginBottom: tokens.space.md }}
@@ -215,6 +229,35 @@ export function CheckSplitSheet({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            <ServiceSurface padding="small" variant="outlined">
+              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                {copy.targetLabel}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                <TargetChip
+                  label={copy.newCheck}
+                  onPress={() => setTargetId(NEW_CHECK)}
+                  selected={targetId === NEW_CHECK}
+                />
+                {targets.map((check) => (
+                  <TargetChip
+                    key={check.id}
+                    label={check.name}
+                    onPress={() => setTargetId(check.id)}
+                    selected={targetId === check.id}
+                  />
+                ))}
+              </View>
+              {targetId === NEW_CHECK ? (
+                <ServiceTextField
+                  label={copy.guestNameLabel}
+                  onChangeText={setGuestName}
+                  placeholder={copy.guestNameHint}
+                  value={guestName}
+                />
+              ) : null}
+            </ServiceSurface>
+
             {movable.length === 0 ? (
               <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
                 {copy.empty}
@@ -369,35 +412,6 @@ export function CheckSplitSheet({
               </View>
             ) : null}
 
-            <View style={{ gap: tokens.space.sm }}>
-              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
-                {copy.targetLabel}
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
-                <TargetChip
-                  label={copy.newCheck}
-                  onPress={() => setTargetId(NEW_CHECK)}
-                  selected={targetId === NEW_CHECK}
-                />
-                {targets.map((check) => (
-                  <TargetChip
-                    key={check.id}
-                    label={check.name}
-                    onPress={() => setTargetId(check.id)}
-                    selected={targetId === check.id}
-                  />
-                ))}
-              </View>
-              {targetId === NEW_CHECK ? (
-                <ServiceTextField
-                  label={copy.guestNameLabel}
-                  onChangeText={setGuestName}
-                  placeholder={copy.guestNameHint}
-                  value={guestName}
-                />
-              ) : null}
-            </View>
-
             {error ? (
               <Text
                 accessibilityLiveRegion="assertive"
@@ -405,6 +419,24 @@ export function CheckSplitSheet({
               >
                 {error}
               </Text>
+            ) : null}
+
+            {movedCount > 0 ? (
+              <ServiceSurface
+                style={{
+                  backgroundColor: tokens.colors.accentSoft,
+                  borderColor: tokens.colors.accent,
+                }}
+                variant="outlined"
+              >
+                <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                  {copy.reviewTitle}
+                </Text>
+                <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
+                  {movedCount} · {copy.movesTo}: {targetLabel} ·{' '}
+                  {formatMoney(movedTotalMinor, currencyCode, language)}
+                </Text>
+              </ServiceSurface>
             ) : null}
           </ScrollView>
 
@@ -427,6 +459,59 @@ export function CheckSplitSheet({
         </View>
       </View>
     </Modal>
+  );
+}
+
+function SplitStepIndicator({
+  activeStep,
+  steps,
+}: {
+  readonly activeStep: number;
+  readonly steps: readonly string[];
+}) {
+  const { tokens } = useTheme();
+
+  return (
+    <View
+      accessibilityLabel={steps[activeStep - 1]}
+      accessibilityRole="progressbar"
+      style={{ flexDirection: 'row', gap: tokens.space.xs, marginBottom: tokens.space.md }}
+    >
+      {steps.map((step, index) => {
+        const number = index + 1;
+        const complete = number < activeStep;
+        const active = number === activeStep;
+        return (
+          <View
+            key={step}
+            style={{
+              backgroundColor:
+                active || complete ? tokens.colors.accentSoft : tokens.colors.surfaceAlt,
+              borderColor: active ? tokens.colors.accent : tokens.colors.borderLight,
+              borderRadius: tokens.radius.medium,
+              borderWidth: active ? 2 : 1,
+              flex: 1,
+              minHeight: 48,
+              justifyContent: 'center',
+              paddingHorizontal: tokens.space.xs,
+            }}
+          >
+            <Text
+              numberOfLines={2}
+              style={[
+                tokens.typography.caption,
+                {
+                  color: active || complete ? tokens.colors.accent : tokens.colors.textMuted,
+                  textAlign: 'center',
+                },
+              ]}
+            >
+              {step}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -520,14 +605,6 @@ function TargetChip({
   );
 }
 
-function formatMoney(amountMinor: number, currencyCode: string, language: Language): string {
-  const locale = language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-GB';
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currencyCode,
-  }).format(amountMinor / 100);
-}
-
 function splitCopy(language: Language) {
   const translations = {
     tr: {
@@ -540,6 +617,10 @@ function splitCopy(language: Language) {
       moveBack: 'Bir adet geri al',
       moveAll: 'Hepsini ayır',
       clear: 'Seçimi temizle',
+      stepTarget: '1 · Hedefi seç',
+      stepItems: '2 · Ürünleri ayır',
+      stepReview: '3 · Kontrol et',
+      reviewTitle: 'Bölme özeti',
       empty: 'Bu hesapta taşınabilecek ürün yok.',
       lockedTitle: 'Ödendiği için taşınamaz',
       paidLocked: 'Ödendi',
@@ -574,6 +655,10 @@ function splitCopy(language: Language) {
       moveBack: 'Върни една бройка',
       moveAll: 'Отдели всичко',
       clear: 'Изчисти избора',
+      stepTarget: '1 · Изберете цел',
+      stepItems: '2 · Разделете продуктите',
+      stepReview: '3 · Проверете',
+      reviewTitle: 'Обобщение на разделянето',
       empty: 'Няма продукти за местене в тази сметка.',
       lockedTitle: 'Платено, не може да се мести',
       paidLocked: 'Платено',
@@ -608,6 +693,10 @@ function splitCopy(language: Language) {
       moveBack: 'Put one back',
       moveAll: 'Split off everything',
       clear: 'Clear selection',
+      stepTarget: '1 · Choose target',
+      stepItems: '2 · Split products',
+      stepReview: '3 · Review',
+      reviewTitle: 'Split summary',
       empty: 'Nothing on this check can be moved.',
       lockedTitle: 'Paid, cannot be moved',
       paidLocked: 'Paid',

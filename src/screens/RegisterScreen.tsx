@@ -3,19 +3,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LanguageSelector from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLocalization } from '../i18n';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function RegisterScreen({ onBackToLogin }: { readonly onBackToLogin: () => void }) {
+export default function RegisterScreen({
+  onBackToLogin,
+  onBackToWelcome,
+}: {
+  readonly onBackToLogin: () => void;
+  readonly onBackToWelcome?: () => void;
+}) {
   const { colors } = useTheme();
   const { t } = useLocalization();
   const { errorMessage, signUp } = useAuth();
@@ -50,8 +58,6 @@ export default function RegisterScreen({ onBackToLogin }: { readonly onBackToLog
     setSubmitting(true);
     try {
       await signUp(email, password, displayName);
-      // Başarılı kayıtta AuthContext 'pending_approval' durumuna geçer
-      // ve AuthGate otomatik olarak bekleme ekranını gösterir.
     } catch {
       // errorMessage AuthContext tarafından set edildi
     } finally {
@@ -67,121 +73,146 @@ export default function RegisterScreen({ onBackToLogin }: { readonly onBackToLog
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.centered}
       >
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={[styles.brand, { color: colors.primary }]}>Orderia</Text>
-          <Text style={[styles.title, { color: colors.text }]}>{t.registerTitle}</Text>
-          <Text style={[styles.subtitle, { color: colors.textSubtle }]}>{t.registerSubtitle}</Text>
+          <View style={styles.content}>
+            <LanguageSelector style={styles.languageSelector} />
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.brand, { color: colors.primary }]}>Orderia</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{t.registerTitle}</Text>
+              <Text style={[styles.subtitle, { color: colors.textSubtle }]}>
+                {t.registerSubtitle}
+              </Text>
 
-          <Text style={[styles.label, { color: colors.text }]}>{t.displayNameLabel}</Text>
-          <TextInput
-            accessibilityLabel={t.displayNameLabel}
-            autoComplete="name"
-            onChangeText={setDisplayName}
-            placeholder="Ayşe Yılmaz"
-            placeholderTextColor={colors.textMuted}
-            returnKeyType="next"
-            style={[
-              styles.input,
-              { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
-            ]}
-            value={displayName}
-          />
+              <Text style={[styles.label, { color: colors.text }]}>{t.displayNameLabel}</Text>
+              <TextInput
+                accessibilityLabel={t.displayNameLabel}
+                autoComplete="name"
+                onChangeText={setDisplayName}
+                placeholder={t.displayNamePlaceholder}
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="next"
+                style={[
+                  styles.input,
+                  { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
+                ]}
+                value={displayName}
+              />
 
-          <Text style={[styles.label, { color: colors.text }]}>{t.emailLabel}</Text>
-          <TextInput
-            accessibilityLabel={t.emailLabel}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            onChangeText={setEmail}
-            placeholder="garson@restoran.com"
-            placeholderTextColor={colors.textMuted}
-            returnKeyType="next"
-            style={[
-              styles.input,
-              { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
-            ]}
-            value={email}
-          />
+              <Text style={[styles.label, { color: colors.text }]}>{t.emailLabel}</Text>
+              <TextInput
+                accessibilityLabel={t.emailLabel}
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                onChangeText={setEmail}
+                placeholder={t.emailPlaceholder}
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="next"
+                style={[
+                  styles.input,
+                  { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
+                ]}
+                value={email}
+              />
 
-          <Text style={[styles.label, { color: colors.text }]}>{t.passwordLabel}</Text>
-          <TextInput
-            accessibilityLabel={t.passwordLabel}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            onChangeText={setPassword}
-            placeholderTextColor={colors.textMuted}
-            returnKeyType="next"
-            secureTextEntry
-            style={[
-              styles.input,
-              { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
-            ]}
-            value={password}
-          />
+              <Text style={[styles.label, { color: colors.text }]}>{t.passwordLabel}</Text>
+              <TextInput
+                accessibilityLabel={t.passwordLabel}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                onChangeText={setPassword}
+                placeholder={t.passwordPlaceholder}
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="next"
+                secureTextEntry
+                style={[
+                  styles.input,
+                  { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
+                ]}
+                value={password}
+              />
 
-          <Text style={[styles.label, { color: colors.text }]}>{t.confirmPasswordLabel}</Text>
-          <TextInput
-            accessibilityLabel={t.confirmPasswordLabel}
-            autoCapitalize="none"
-            autoComplete="new-password"
-            onChangeText={setConfirmPassword}
-            onSubmitEditing={() => {
-              void handleSubmit();
-            }}
-            placeholderTextColor={colors.textMuted}
-            returnKeyType="go"
-            secureTextEntry
-            style={[
-              styles.input,
-              { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
-            ]}
-            value={confirmPassword}
-          />
+              <Text style={[styles.label, { color: colors.text }]}>{t.confirmPasswordLabel}</Text>
+              <TextInput
+                accessibilityLabel={t.confirmPasswordLabel}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                onChangeText={setConfirmPassword}
+                onSubmitEditing={() => {
+                  void handleSubmit();
+                }}
+                placeholder={t.passwordPlaceholder}
+                placeholderTextColor={colors.textMuted}
+                returnKeyType="go"
+                secureTextEntry
+                style={[
+                  styles.input,
+                  { borderColor: colors.border, color: colors.text, backgroundColor: colors.bg },
+                ]}
+                value={confirmPassword}
+              />
 
-          {shownError ? (
-            <Text accessibilityRole="alert" style={[styles.error, { color: colors.error }]}>
-              {shownError}
-            </Text>
-          ) : null}
+              {shownError ? (
+                <Text accessibilityRole="alert" style={[styles.error, { color: colors.error }]}>
+                  {shownError}
+                </Text>
+              ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            disabled={!canSubmit}
-            onPress={() => {
-              void handleSubmit();
-            }}
-            style={({ pressed }) => [
-              styles.button,
-              {
-                backgroundColor: colors.primary,
-                opacity: !canSubmit ? 0.45 : pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Text style={[styles.buttonText, { color: colors.primaryContrast }]}>
-              {submitting ? t.registering : t.register}
-            </Text>
-          </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={!canSubmit}
+                onPress={() => {
+                  void handleSubmit();
+                }}
+                style={({ pressed }) => [
+                  styles.button,
+                  {
+                    backgroundColor: colors.primary,
+                    opacity: !canSubmit ? 0.45 : pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text style={[styles.buttonText, { color: colors.primaryContrast }]}>
+                  {submitting ? t.registering : t.register}
+                </Text>
+              </Pressable>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={onBackToLogin}
-            style={styles.secondaryAction}
-          >
-            <Text style={[styles.secondaryText, { color: colors.textSubtle }]}>
-              {t.haveAccount}
-            </Text>
-          </Pressable>
-        </View>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onBackToLogin}
+                style={styles.secondaryAction}
+              >
+                <Text style={[styles.secondaryText, { color: colors.textSubtle }]}>
+                  {t.haveAccount}
+                </Text>
+              </Pressable>
+
+              {onBackToWelcome ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={onBackToWelcome}
+                  style={styles.secondaryAction}
+                >
+                  <Text style={[styles.secondaryText, { color: colors.textSubtle }]}>
+                    {t.backToWelcome}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -193,14 +224,24 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
+  },
+  content: {
+    alignSelf: 'center',
+    maxWidth: 420,
+    width: '100%',
+  },
+  languageSelector: {
+    marginBottom: 16,
   },
   card: {
     alignSelf: 'center',
     borderRadius: 20,
     borderWidth: 1,
-    maxWidth: 420,
     padding: 24,
     width: '100%',
   },

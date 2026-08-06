@@ -2,25 +2,30 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
+  haptic,
   ServiceButton,
   ServiceEmptyState,
+  ServiceProductThumb,
+  ServiceScreenHeader,
   ServiceSkeleton,
   ServiceStatusPill,
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
 import { CurrencyCode, MenuCategoryId, MenuItemId, toDomainId } from '../domain';
 import { CatalogItem, CatalogSnapshot } from '../features/menu-management';
 import { useLocalization } from '../i18n';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useMenuStore } from '../stores';
+import { RootStackParamList } from '../navigation/routes';
+import { useMenuStore, useProductPhotoStore } from '../stores';
+import { useSettingsStore } from '../stores/settingsStore';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,10 +33,12 @@ export default function MenuScreen() {
   const navigation = useNavigation<Navigation>();
   const auth = useAuth();
   const { tokens } = useTheme();
-  const { language } = useLocalization();
+  const { language, t } = useLocalization();
   const layout = useAdaptiveLayout();
   const { loadCatalog, mode, revision, setCatalogAvailability, sync } = useOrderiaData();
   const legacy = useMenuStore();
+  const showItemPhotos = useSettingsStore((state) => state.showItemPhotos);
+  const photoUris = useProductPhotoStore((state) => state.photoUris);
   const copy = menuCopy(language);
   const [catalog, setCatalog] = useState<CatalogSnapshot>();
   const [selectedCategoryId, setSelectedCategoryId] = useState<MenuCategoryId>();
@@ -41,6 +48,8 @@ export default function MenuScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const { show } = useSnackbar();
+  const menuColumns = layout.mode === 'expanded' ? 3 : layout.mode === 'medium' ? 2 : 1;
   const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
 
   const localCatalog = useMemo(
@@ -121,11 +130,15 @@ export default function MenuScreen() {
       await setCatalogAvailability(selectedItemIds, isAvailable);
       setSelectedItemIds([]);
       await refreshCatalog();
+      // Başarıda snackbar yok: satırların durum rozeti zaten yerinde değişiyor,
+      // üstüne bir de mesaj basmak ekranın altını gereksiz meşgul ederdi.
+      haptic('success');
     } catch (saveError) {
-      Alert.alert(
-        copy.updateFailed,
-        saveError instanceof Error ? saveError.message : copy.tryAgain,
-      );
+      haptic('error');
+      show({
+        message: saveError instanceof Error ? saveError.message : copy.tryAgain,
+        tone: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -136,16 +149,177 @@ export default function MenuScreen() {
       edges={['top', 'left', 'right']}
       style={{ backgroundColor: tokens.colors.bg, flex: 1 }}
     >
-      <ScrollView
+      {/*
+        Menü sanallaştırıldı: yüzlerce ürünlü bir katalogda hepsini birden çizmek
+        açılışı ve kaydırmayı gözle görülür biçimde yavaşlatıyordu. Başlık ve alt
+        bölüm listenin kendi header/footer alanlarına taşındı.
+      */}
+      <FlatList
+        columnWrapperStyle={menuColumns > 1 ? { gap: tokens.space.sm } : undefined}
         contentContainerStyle={{
           alignSelf: 'center',
-          gap: tokens.space.lg,
+          gap: tokens.space.sm,
           maxWidth: tokens.sizing.contentMaximumWidth,
-          paddingBottom: tokens.space.xxl,
+          paddingBottom: tokens.space.md,
           paddingHorizontal: layout.horizontalPadding,
           paddingTop: tokens.space.lg,
           width: '100%',
         }}
+        data={visibleItems}
+        // numColumns değişince FlatList yeniden kurulmak zorunda; anahtar bunu sağlar.
+        key={`menu-${menuColumns}`}
+        keyExtractor={(item) => String(item.id)}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          loading && !catalog ? (
+            <View style={{ gap: tokens.space.sm }}>
+              {[0, 1, 2].map((index) => (
+                <ServiceSkeleton key={index} height={112} />
+              ))}
+            </View>
+          ) : (
+            <ServiceEmptyState
+              action={
+                isManager
+                  ? {
+                      label: copy.addManually,
+                      onPress: () => navigation.navigate('AddMenuItem', {}),
+                    }
+                  : undefined
+              }
+              body={query ? copy.noSearchResult : copy.emptyBody}
+              icon="restaurant-outline"
+              title={query ? copy.noResult : copy.emptyTitle}
+            />
+          )
+        }
+        ListFooterComponent={
+          isManager && visibleItems.length > 0 ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: tokens.space.sm,
+                marginTop: tokens.space.lg,
+              }}
+            >
+              <ServiceButton
+                icon="add-outline"
+                label={copy.addManually}
+                onPress={() => navigation.navigate('AddMenuItem', {})}
+                size="large"
+                variant="outline"
+              />
+            </View>
+          ) : null
+        }
+        ListHeaderComponent={
+          <View style={{ gap: tokens.space.md, marginBottom: tokens.space.md }}>
+            <ServiceScreenHeader
+              subtitle={isManager ? copy.managerSubtitle : copy.waiterSubtitle}
+              title={t.menu}
+            />
+            <View
+              style={{
+                alignItems: 'center',
+                flexDirection: 'row',
+                gap: tokens.space.sm,
+                justifyContent: 'space-between',
+              }}
+            >
+              <ServiceStatusPill
+                icon={sync.online ? 'cloud-done-outline' : 'cloud-offline-outline'}
+                label={mode === 'cloud' ? copy.cloudCatalog : copy.deviceCatalog}
+                tone={mode === 'cloud' && sync.online ? 'success' : 'neutral'}
+              />
+              {isManager ? (
+                <ServiceButton
+                  icon="sparkles"
+                  label={copy.aiAssistant}
+                  onPress={() => navigation.navigate('MenuAssistant')}
+                  variant="accent"
+                />
+              ) : null}
+            </View>
+
+            <ServiceTextField
+              label={copy.search}
+              onChangeText={setQuery}
+              placeholder={copy.searchPlaceholder}
+              value={query}
+            />
+
+            <ScrollView
+              horizontal
+              accessibilityLabel={copy.all}
+              accessibilityRole="tablist"
+              contentContainerStyle={{ gap: tokens.space.xs }}
+              showsHorizontalScrollIndicator={false}
+            >
+              <CategoryChip
+                active={!selectedCategoryId}
+                label={`${copy.all} · ${displayedCatalog.items.length}`}
+                onPress={() => setSelectedCategoryId(undefined)}
+              />
+              {displayedCatalog.categories.map((category) => (
+                <CategoryChip
+                  key={category.id}
+                  active={selectedCategoryId === category.id}
+                  label={`${category.name} · ${
+                    displayedCatalog.items.filter((item) => item.categoryId === category.id).length
+                  }`}
+                  onPress={() => setSelectedCategoryId(category.id)}
+                />
+              ))}
+            </ScrollView>
+
+            {selectedItemIds.length > 0 ? (
+              <ServiceSurface
+                style={{
+                  alignItems: layout.mode === 'compact' ? 'stretch' : 'center',
+                  flexDirection: layout.mode === 'compact' ? 'column' : 'row',
+                  gap: tokens.space.sm,
+                }}
+                variant="raised"
+              >
+                <Text
+                  style={[tokens.typography.bodyStrong, { color: tokens.colors.text, flex: 1 }]}
+                >
+                  {selectedItemIds.length} {copy.selected}
+                </Text>
+                <ServiceButton
+                  disabled={saving}
+                  icon="eye-outline"
+                  label={copy.makeAvailable}
+                  onPress={() => void applyAvailability(true)}
+                  variant="outline"
+                />
+                <ServiceButton
+                  disabled={saving}
+                  icon="eye-off-outline"
+                  label={copy.markSoldOut}
+                  onPress={() => void applyAvailability(false)}
+                  variant="danger"
+                />
+              </ServiceSurface>
+            ) : null}
+
+            {error ? (
+              <ServiceSurface
+                style={{ borderColor: tokens.colors.warning, gap: tokens.space.xs }}
+                variant="outlined"
+              >
+                <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.warning }]}>
+                  {copy.cachedCatalog}
+                </Text>
+                <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                  {error}
+                </Text>
+              </ServiceSurface>
+            ) : null}
+          </View>
+        }
+        numColumns={menuColumns}
         refreshControl={
           <RefreshControl
             onRefresh={() => {
@@ -156,197 +330,33 @@ export default function MenuScreen() {
             tintColor={tokens.colors.primary}
           />
         }
-      >
-        <View
-          style={{
-            alignItems: layout.mode === 'compact' ? 'stretch' : 'center',
-            flexDirection: layout.mode === 'compact' ? 'column' : 'row',
-            gap: tokens.space.md,
-            justifyContent: 'space-between',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>
-              {copy.title}
-            </Text>
-            <Text
-              style={[
-                tokens.typography.body,
-                { color: tokens.colors.textSubtle, marginTop: tokens.space.xs },
-              ]}
-            >
-              {isManager ? copy.managerSubtitle : copy.waiterSubtitle}
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
-            <ServiceStatusPill
-              icon={sync.online ? 'cloud-done-outline' : 'cloud-offline-outline'}
-              label={mode === 'cloud' ? copy.cloudCatalog : copy.deviceCatalog}
-              tone={mode === 'cloud' && sync.online ? 'success' : 'neutral'}
-            />
-            {isManager ? (
-              <ServiceButton
-                disabled={mode !== 'cloud' || !sync.online}
-                icon="sparkles"
-                label={copy.aiAssistant}
-                onPress={() => navigation.navigate('MenuAssistant')}
-                variant="accent"
-              />
-            ) : null}
-          </View>
-        </View>
-
-        <ServiceTextField
-          label={copy.search}
-          onChangeText={setQuery}
-          placeholder={copy.searchPlaceholder}
-          value={query}
-        />
-
-        <ScrollView
-          horizontal
-          accessibilityLabel={copy.all}
-          accessibilityRole="tablist"
-          contentContainerStyle={{ gap: tokens.space.xs }}
-          showsHorizontalScrollIndicator={false}
-        >
-          <CategoryChip
-            active={!selectedCategoryId}
-            label={`${copy.all} · ${displayedCatalog.items.length}`}
-            onPress={() => setSelectedCategoryId(undefined)}
-          />
-          {displayedCatalog.categories.map((category) => (
-            <CategoryChip
-              key={category.id}
-              active={selectedCategoryId === category.id}
-              label={`${category.name} · ${
-                displayedCatalog.items.filter((item) => item.categoryId === category.id).length
-              }`}
-              onPress={() => setSelectedCategoryId(category.id)}
-            />
-          ))}
-        </ScrollView>
-
-        {selectedItemIds.length > 0 ? (
-          <ServiceSurface
-            style={{
-              alignItems: layout.mode === 'compact' ? 'stretch' : 'center',
-              flexDirection: layout.mode === 'compact' ? 'column' : 'row',
-              gap: tokens.space.sm,
+        renderItem={({ item }) => (
+          <CatalogItemCard
+            duplicate={duplicateIds.has(item.id)}
+            editable={isManager && !item.isOrganizationWide}
+            item={item}
+            imageUri={showItemPhotos ? photoUris[String(item.id)] : undefined}
+            managerSelectable={isManager && mode === 'cloud' && !item.isOrganizationWide}
+            onLongPress={() => {
+              haptic('activate');
+              navigation.navigate('AddMenuItem', {
+                categoryId: item.categoryId,
+                itemId: item.id,
+              });
             }}
-            variant="raised"
-          >
-            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text, flex: 1 }]}>
-              {selectedItemIds.length} {copy.selected}
-            </Text>
-            <ServiceButton
-              disabled={saving}
-              icon="eye-outline"
-              label={copy.makeAvailable}
-              onPress={() => void applyAvailability(true)}
-              variant="outline"
-            />
-            <ServiceButton
-              disabled={saving}
-              icon="eye-off-outline"
-              label={copy.markSoldOut}
-              onPress={() => void applyAvailability(false)}
-              variant="danger"
-            />
-          </ServiceSurface>
-        ) : null}
-
-        {error ? (
-          <ServiceSurface
-            style={{ borderColor: tokens.colors.warning, gap: tokens.space.xs }}
-            variant="outlined"
-          >
-            <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.warning }]}>
-              {copy.cachedCatalog}
-            </Text>
-            <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
-              {error}
-            </Text>
-          </ServiceSurface>
-        ) : null}
-
-        {loading && !catalog ? (
-          <View style={{ gap: tokens.space.sm }}>
-            {[0, 1, 2].map((index) => (
-              <ServiceSkeleton key={index} height={112} />
-            ))}
-          </View>
-        ) : visibleItems.length === 0 ? (
-          <ServiceEmptyState
-            action={
-              isManager
-                ? {
-                    label: copy.addManually,
-                    onPress: () => navigation.navigate('AddMenuItem', {}),
-                  }
-                : undefined
-            }
-            body={query ? copy.noSearchResult : copy.emptyBody}
-            icon="restaurant-outline"
-            title={query ? copy.noResult : copy.emptyTitle}
+            onPress={() => toggleSelection(item.id)}
+            selected={selectedItemIds.includes(item.id)}
+            width="100%"
           />
-        ) : (
-          <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: tokens.space.sm,
-            }}
-          >
-            {visibleItems.map((item) => (
-              <CatalogItemCard
-                key={item.id}
-                duplicate={duplicateIds.has(item.id)}
-                editable={isManager && !item.isOrganizationWide}
-                item={item}
-                managerSelectable={isManager && mode === 'cloud' && !item.isOrganizationWide}
-                onLongPress={() =>
-                  navigation.navigate('AddMenuItem', {
-                    categoryId: item.categoryId,
-                    itemId: item.id,
-                  })
-                }
-                onPress={() => toggleSelection(item.id)}
-                selected={selectedItemIds.includes(item.id)}
-                width={
-                  layout.mode === 'expanded' ? '32%' : layout.mode === 'medium' ? '48%' : '100%'
-                }
-              />
-            ))}
-          </View>
         )}
-
-        {isManager ? (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.sm }}>
-            <ServiceButton
-              icon="add-outline"
-              label={copy.addManually}
-              onPress={() => navigation.navigate('AddMenuItem', {})}
-              size="large"
-              variant="outline"
-            />
-            <Text
-              style={[
-                tokens.typography.caption,
-                { color: tokens.colors.textSubtle, flexBasis: 260, flexGrow: 1 },
-              ]}
-            >
-              {copy.aiBoundary}
-            </Text>
-          </View>
-        ) : null}
-      </ScrollView>
+      />
     </SafeAreaView>
   );
 }
 
 function CatalogItemCard({
   duplicate,
+  imageUri,
   editable,
   item,
   managerSelectable,
@@ -356,6 +366,7 @@ function CatalogItemCard({
   width,
 }: {
   readonly duplicate: boolean;
+  readonly imageUri?: string;
   readonly editable: boolean;
   readonly item: CatalogItem;
   readonly managerSelectable: boolean;
@@ -381,11 +392,19 @@ function CatalogItemCard({
           borderColor: selected ? tokens.colors.primary : tokens.colors.border,
           borderWidth: selected ? 2 : 1,
           gap: tokens.space.sm,
-          minHeight: tokens.sizing.tableCardMinimumHeight,
+          minHeight: tokens.sizing.productTileMinimumHeight,
         }}
         variant="outlined"
       >
         <View style={{ alignItems: 'flex-start', flexDirection: 'row', gap: tokens.space.sm }}>
+          {imageUri ? (
+            <ServiceProductThumb
+              fallbackIcon="restaurant-outline"
+              imageUri={imageUri}
+              name={item.name}
+              size={56}
+            />
+          ) : null}
           <View style={{ flex: 1 }}>
             <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
               {item.name}
@@ -477,6 +496,7 @@ function legacySnapshot(
     description?: string;
     price: number;
     isActive: boolean;
+    fulfillmentGroup?: 'kitchen' | 'drinks';
   }[],
   organizationId?: string,
   branchId?: string,
@@ -501,6 +521,7 @@ function legacySnapshot(
       taxRateBasisPoints: 0,
       isActive: item.isActive,
       isAvailable: item.isActive,
+      fulfillmentGroup: item.fulfillmentGroup ?? 'kitchen',
       isOrganizationWide: false,
       version: 1,
       translations: [],
@@ -538,6 +559,7 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       cloudCatalog: 'Bulut menü',
       deviceCatalog: 'Cihaz menüsü',
       aiAssistant: 'AI ile ürün ekle',
+      aiDisabled: 'AI ile ürün ekleme geçici olarak devre dışı.',
       search: 'Menüde ara',
       searchPlaceholder: 'Ürün veya açıklama…',
       all: 'Tümü',
@@ -558,8 +580,7 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       optionGroup: 'seçenek grubu',
       possibleDuplicate: 'Olası tekrar',
       sharedItem: 'Tüm şubeler',
-      aiBoundary:
-        'AI yalnız taslak hazırlar. Yönetici kontrol edip onaylamadan hiçbir ürün yayınlanmaz.',
+      aiBoundary: 'AI ile ürün ekleme şimdilik devre dışı. Ürünü elle ekleyebilirsin.',
     } as const;
   }
   if (language === 'bg') {
@@ -570,6 +591,7 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       cloudCatalog: 'Облачно меню',
       deviceCatalog: 'Меню на устройството',
       aiAssistant: 'Добави с AI',
+      aiDisabled: 'Добавянето на артикули с AI временно е деактивирано.',
       search: 'Търсене в менюто',
       searchPlaceholder: 'Артикул или описание…',
       all: 'Всички',
@@ -590,7 +612,7 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       optionGroup: 'групи опции',
       possibleDuplicate: 'Възможен дубликат',
       sharedItem: 'Всички обекти',
-      aiBoundary: 'AI създава само чернова. Нищо не се публикува без преглед от мениджър.',
+      aiBoundary: 'Добавянето с AI временно е деактивирано. Добавете артикула ръчно.',
     } as const;
   }
   return {
@@ -600,6 +622,7 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
     cloudCatalog: 'Cloud catalog',
     deviceCatalog: 'Device catalog',
     aiAssistant: 'Add with AI',
+    aiDisabled: 'Adding items with AI is temporarily disabled.',
     search: 'Search menu',
     searchPlaceholder: 'Item or description…',
     all: 'All',
@@ -620,6 +643,6 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
     optionGroup: 'option groups',
     possibleDuplicate: 'Possible duplicate',
     sharedItem: 'All branches',
-    aiBoundary: 'AI creates a draft only. Nothing is published without manager review.',
+    aiBoundary: 'Adding items with AI is temporarily disabled. Add the item manually.',
   } as const;
 }

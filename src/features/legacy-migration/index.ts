@@ -1,3 +1,5 @@
 export * from './legacyMigration';
 export * from './legacyMigrationGateway';
-export * from './LegacyMigrationCard';
+
+// LegacyMigrationCard kasıtlı olarak burada yok: `useOrderiaData` çağırıyor ve
+// OrderiaDataContext bu barrel'ı içe aktarıyor. Tek tüketicisi SettingsScreen.

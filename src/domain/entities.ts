@@ -44,6 +44,7 @@ export type PaymentMethod = 'cash' | 'card' | 'mixed_adjustment';
 export type PaymentStatus = 'pending' | 'confirmed' | 'failed' | 'voided';
 export type ReceiptStatus = 'issued' | 'adjusted' | 'voided';
 export type ModifierSelectionType = 'single' | 'multiple';
+export type FulfillmentGroup = 'kitchen' | 'drinks';
 
 export interface VersionedMetadata {
   readonly version: number;
@@ -150,6 +151,8 @@ export interface MenuItem extends TenantScope, VersionedMetadata, SyncMetadata {
   readonly isActive: boolean;
   readonly isAvailable: boolean;
   readonly prepTimeMinutes?: number;
+  /** The default service handoff for this product; legacy rows default to kitchen. */
+  readonly fulfillmentGroup?: FulfillmentGroup;
   readonly createdBy: UserId;
 }
 
@@ -189,6 +192,8 @@ export interface TableSession extends TenantScope, VersionedMetadata, SyncMetada
   readonly openedAt: IsoTimestamp;
   readonly closedBy?: UserId;
   readonly closedAt?: IsoTimestamp;
+  /** Preserves the last close timestamp when a manager reopens the session. */
+  readonly previousClosedAt?: IsoTimestamp;
   readonly guestCount?: number;
   readonly note?: string;
   readonly transferredFromTableId?: RestaurantTableId;
@@ -290,6 +295,8 @@ export interface ReceiptSnapshotItem {
   readonly unitPriceMinor: number;
   readonly quantity: number;
   readonly lineTotalMinor: number;
+  readonly createdByDisplayName?: string;
+  readonly createdAt?: IsoTimestamp;
 }
 
 export interface ReceiptSnapshotCheck {
@@ -304,6 +311,8 @@ export interface ReceiptSnapshotPayment {
   readonly paymentId: PaymentId;
   readonly method: PaymentMethod;
   readonly amountMinor: number;
+  readonly tenderedMinor?: number;
+  readonly changeMinor?: number;
   readonly confirmedAt: IsoTimestamp;
   readonly createdByDisplayName: string;
 }

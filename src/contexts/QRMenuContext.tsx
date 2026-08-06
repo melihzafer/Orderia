@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { useLayoutStore, useMenuStore, useOrderStore } from '../stores';
-import { Table, MenuItem, Category } from '../types';
+import { MenuItem, Category } from '../types';
 
 export interface QRMenuSettings {
   enabled: boolean;

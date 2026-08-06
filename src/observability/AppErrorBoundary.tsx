@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#0F766E',
+    // Tema context'i hata sınırının içinde güvenilir değil; açık tema primary'si sabit yazılı.
+    backgroundColor: '#BE4A26',
     borderRadius: 12,
     minHeight: 52,
     justifyContent: 'center',

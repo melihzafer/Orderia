@@ -4,11 +4,11 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '../AuthContext';
-import { AuthWorkspace } from '../authTypes';
+import { AuthWorkspace, OnboardingRole } from '../authTypes';
 import {
   AuthGateway,
-  GoogleSignInHandoff,
   RegisterDeviceInput,
+  RestaurantOnboardingResult,
 } from '../../services/supabase/authGateway';
 import {
   BranchRow,
@@ -100,11 +100,9 @@ describe('AuthProvider session restore', () => {
     expect(screen.getByTestId('error').props.children).toMatch(/revoked/);
   });
 
-  it('hands Google sign-in the callback address this build can be reached at', async () => {
-    const gateway = new FakeAuthGateway(
-      null,
-      createWorkspace([createMembership('membership-waiter', 'branch-1', 'waiter')]),
-    );
+  it('shows a recoverable error when the initial session lookup fails', async () => {
+    const gateway = new FakeAuthGateway(null, createWorkspace([]));
+    gateway.sessionError = new Error('network unavailable');
     const screen = await render(
       <AuthProvider gateway={gateway}>
         <AuthProbe />
@@ -112,14 +110,70 @@ describe('AuthProvider session restore', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('status').props.children).toBe('signed_out');
+      expect(screen.getByTestId('status').props.children).toBe('error');
     });
-    await fireEvent.press(screen.getByText('google'));
+    expect(screen.getByTestId('error').props.children).toMatch(/saved session/i);
+  });
+
+  it('surfaces a signup-request lookup failure instead of routing to onboarding', async () => {
+    const gateway = new FakeAuthGateway(session, createWorkspace([]));
+    gateway.signupRequestError = new Error('network unavailable');
+    const screen = await render(
+      <AuthProvider gateway={gateway}>
+        <AuthProbe />
+      </AuthProvider>,
+    );
 
     await waitFor(() => {
-      expect(gateway.googleRedirects).toEqual(['orderia://auth-callback']);
+      expect(screen.getByTestId('status').props.children).toBe('error');
     });
-    expect(screen.getByTestId('error').props.children).toBe('');
+    expect(screen.getByTestId('error').props.children).toMatch(/workspace could not be loaded/i);
+
+    gateway.signupRequestError = undefined;
+    await fireEvent.press(screen.getByText('retry'));
+    await waitFor(() => {
+      expect(screen.getByTestId('status').props.children).toBe('onboarding_role');
+    });
+  });
+
+  it('routes an account without membership into role onboarding', async () => {
+    const gateway = new FakeAuthGateway(session, createWorkspace([]));
+    const screen = await render(
+      <AuthProvider gateway={gateway}>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status').props.children).toBe('onboarding_role');
+    });
+
+    await fireEvent.press(screen.getByText('choose-manager'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status').props.children).toBe('onboarding_restaurant');
+      expect(screen.getByTestId('onboarding-role').props.children).toBe('manager');
+    });
+  });
+
+  it('keeps the manager on onboarding after creating a restaurant until they continue', async () => {
+    const gateway = new FakeAuthGateway(session, createWorkspace([]));
+    const screen = await render(
+      <AuthProvider gateway={gateway}>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('status').props.children).toBe('onboarding_role');
+    });
+    await fireEvent.press(screen.getByText('choose-manager'));
+    await fireEvent.press(screen.getByText('create-restaurant'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('created-code').props.children).toBe('A1B2C3D4');
+    });
+    expect(screen.getByTestId('status').props.children).toBe('onboarding_restaurant');
   });
 });
 
@@ -130,12 +184,16 @@ function AuthProbe() {
       <Text testID="status">{auth.status}</Text>
       <Text testID="active-branch">{auth.activeBranch?.id ?? 'none'}</Text>
       <Text testID="error">{auth.errorMessage ?? ''}</Text>
-      <Pressable
-        onPress={() => {
-          void auth.signInWithGoogle();
-        }}
-      >
-        <Text>google</Text>
+      <Text testID="onboarding-role">{auth.onboardingRole ?? 'none'}</Text>
+      <Text testID="created-code">{auth.createdRestaurantCode ?? 'none'}</Text>
+      <Pressable onPress={() => auth.selectOnboardingRole('manager')}>
+        <Text>choose-manager</Text>
+      </Pressable>
+      <Pressable onPress={() => void auth.createRestaurant('Restaurant')}>
+        <Text>create-restaurant</Text>
+      </Pressable>
+      <Pressable onPress={() => void auth.retry()}>
+        <Text>retry</Text>
       </Pressable>
       {auth.workspace?.branches.map((branch) => (
         <Pressable
@@ -154,8 +212,9 @@ function AuthProbe() {
 class FakeAuthGateway implements AuthGateway {
   readonly registeredDevices: RegisterDeviceInput[] = [];
   registrationError?: Error;
+  sessionError?: Error;
+  signupRequestError?: Error;
   signOutCount = 0;
-  readonly googleRedirects: string[] = [];
   pendingSignup: SignupRequestRow | null = null;
 
   constructor(
@@ -167,6 +226,7 @@ class FakeAuthGateway implements AuthGateway {
   }
 
   async getSession(): Promise<Session | null> {
+    if (this.sessionError) throw this.sessionError;
     return this.session;
   }
 
@@ -177,19 +237,6 @@ class FakeAuthGateway implements AuthGateway {
   }
 
   async signIn(_email: string, _password: string): Promise<Session> {
-    if (!this.session) throw new Error('No fixture session');
-    return this.session;
-  }
-
-  async startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff> {
-    this.googleRedirects.push(redirectTo);
-    return {
-      authorizationUrl: `https://accounts.google.test/o?redirect=${redirectTo}`,
-      redirected: false,
-    };
-  }
-
-  async completeOAuthRedirect(_url: string): Promise<Session> {
     if (!this.session) throw new Error('No fixture session');
     return this.session;
   }
@@ -237,12 +284,21 @@ class FakeAuthGateway implements AuthGateway {
     return this.session;
   }
 
+  async joinRestaurant(_code: string, role: OnboardingRole): Promise<RestaurantOnboardingResult> {
+    return createOnboardingResult(role);
+  }
+
+  async createRestaurant(_name: string, _branchName?: string): Promise<RestaurantOnboardingResult> {
+    return createOnboardingResult('manager');
+  }
+
   async requestSignup(_displayName: string): Promise<SignupRequestRow> {
     if (!this.pendingSignup) throw new Error('No pending signup fixture');
     return this.pendingSignup;
   }
 
   async getMySignupRequest(): Promise<SignupRequestRow | null> {
+    if (this.signupRequestError) throw this.signupRequestError;
     return this.pendingSignup;
   }
 
@@ -310,6 +366,11 @@ function createBranch(id: string): BranchRow {
     id,
     organization_id: 'organization-1',
     name: id,
+    restaurant_code: id
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .padEnd(8, '0')
+      .slice(0, 8),
     timezone: 'Europe/Sofia',
     currency_code: 'EUR',
     business_day_cutoff: '04:00:00',
@@ -320,6 +381,16 @@ function createBranch(id: string): BranchRow {
     created_at: '2026-07-26T13:00:00.000Z',
     updated_at: '2026-07-26T13:00:00.000Z',
     deleted_at: null,
+  };
+}
+
+function createOnboardingResult(role: OnboardingRole): RestaurantOnboardingResult {
+  return {
+    organizationId: 'organization-1',
+    branchId: 'branch-1',
+    restaurantCode: 'A1B2C3D4',
+    restaurantName: 'Restaurant',
+    role,
   };
 }
 

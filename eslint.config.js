@@ -12,6 +12,9 @@ module.exports = defineConfig([
     'node_modules/**',
     'playwright-report/**',
     'test-results/**',
+    // OpenWolf tarafından üretilir ve güncellenir; projenin biçim/lint
+    // kurallarına tabi değil.
+    '.wolf/**',
   ]),
   expoConfig,
   eslintPluginPrettierRecommended,

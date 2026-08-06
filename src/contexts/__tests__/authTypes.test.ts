@@ -84,6 +84,11 @@ function createBranch(id: string, organizationId: string): BranchRow {
     id,
     organization_id: organizationId,
     name: id,
+    restaurant_code: id
+      .replace(/[^A-Za-z0-9]/g, '')
+      .toUpperCase()
+      .padEnd(8, '0')
+      .slice(0, 8),
     timezone: 'Europe/Sofia',
     currency_code: 'EUR',
     business_day_cutoff: '04:00:00',

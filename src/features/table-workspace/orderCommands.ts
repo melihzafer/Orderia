@@ -352,6 +352,122 @@ export async function updateOrderItemQuantity(
   });
 }
 
+export interface MarkOrderItemsServedInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly items: readonly OrderItem[];
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+/** Marks ordered lines as served while leaving one idempotent outbox command per line. */
+export async function markOrderItemsServed(
+  input: MarkOrderItemsServedInput,
+): Promise<readonly OrderItem[]> {
+  const itemsToServe = input.items.filter((item) => item.status === 'ordered');
+  if (itemsToServe.length === 0) return input.items;
+
+  const occurredAt = (input.now ?? new Date()).toISOString();
+  const createUuid = input.createUuid ?? defaultUuid;
+  const updates = itemsToServe.map((item) => {
+    const mutationId = toDomainId<MutationId>(createUuid());
+    const updated: OrderItem = {
+      ...item,
+      status: 'served',
+      updatedBy: input.actorUserId,
+      updatedAt: occurredAt,
+      version: item.version + 1,
+      syncStatus: 'pending',
+      clientMutationId: mutationId,
+    };
+    const mutation: OutboxMutation = {
+      id: mutationId,
+      ...input.scope,
+      deviceId: input.deviceId,
+      clientMutationId: mutationId,
+      idempotencyKey: `${input.deviceId}:${mutationId}`,
+      repository: 'orderItems',
+      entityId: item.id,
+      operation: 'command',
+      payload: { served: true },
+      baseVersion: item.serverVersion ?? item.version,
+      status: 'pending',
+      attemptCount: 0,
+      createdAt: occurredAt,
+    };
+    return { item, mutation, updated };
+  });
+
+  await input.database.transaction(async (transaction) => {
+    for (const update of updates) {
+      await transaction.repository('orderItems').put(input.scope, update.updated, {
+        expectedVersion: update.item.version,
+      });
+      await transaction.outbox.enqueue(update.mutation);
+    }
+  });
+
+  const updatedById = new Map(updates.map((update) => [update.updated.id, update.updated]));
+  return input.items.map((item) => updatedById.get(item.id) ?? item);
+}
+
+export interface UpdateTableSessionNoteInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly session: TableSession;
+  readonly note?: string;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+/** Saves the table's physical-location hint without coupling it to an item note. */
+export async function updateTableSessionNote(
+  input: UpdateTableSessionNoteInput,
+): Promise<TableSession> {
+  if (input.session.status !== 'open' && input.session.status !== 'payment_pending') {
+    throw new Error('Only an active table session note can be edited');
+  }
+  const note = input.note?.trim() || undefined;
+  if (note && note.length > 500) throw new Error('Table session note is too long');
+  const updatedAt = (input.now ?? new Date()).toISOString();
+  const mutationId = toDomainId<MutationId>((input.createUuid ?? defaultUuid)());
+  const updated: TableSession = {
+    ...input.session,
+    ...(note ? { note } : { note: undefined }),
+    updatedAt,
+    version: input.session.version + 1,
+    syncStatus: 'pending',
+    clientMutationId: mutationId,
+  };
+  const mutation: OutboxMutation = {
+    id: mutationId,
+    ...input.scope,
+    deviceId: input.deviceId,
+    clientMutationId: mutationId,
+    idempotencyKey: `${input.deviceId}:${mutationId}`,
+    repository: 'tableSessions',
+    entityId: input.session.id,
+    operation: 'command',
+    payload: { note: note ?? null },
+    baseVersion: input.session.serverVersion ?? input.session.version,
+    status: 'pending',
+    attemptCount: 0,
+    createdAt: updatedAt,
+  };
+
+  return input.database.transaction(async (transaction) => {
+    const stored = await transaction.repository('tableSessions').put(input.scope, updated, {
+      expectedVersion: input.session.version,
+    });
+    await transaction.outbox.enqueue(mutation);
+    return stored;
+  });
+}
+
 export interface VoidOrderItemQuantityInput {
   readonly database: LocalDatabase;
   readonly scope: Required<RepositoryScope>;

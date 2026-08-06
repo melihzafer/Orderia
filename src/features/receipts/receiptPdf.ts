@@ -108,7 +108,14 @@ function receiptDocument(receipt: Receipt): DocumentDefinition {
     ]),
   );
   const paymentRows = snapshot.payments.map((payment) => [
-    payment.method === 'cash' ? 'Cash / Nakit' : 'Card / Kart',
+    `${payment.method === 'cash' ? 'Cash / Nakit' : 'Card / Kart'}${
+      payment.tenderedMinor === undefined
+        ? ''
+        : ` · Received ${money(payment.tenderedMinor, receipt.currencyCode)} · Change ${money(
+            payment.changeMinor ?? 0,
+            receipt.currencyCode,
+          )}`
+    }`,
     payment.createdByDisplayName,
     money(payment.amountMinor, receipt.currencyCode),
   ]);
@@ -197,8 +204,9 @@ function receiptDocument(receipt: Receipt): DocumentDefinition {
       },
     ],
     styles: {
-      title: { fontSize: 18, bold: true, alignment: 'center', color: '#0F766E' },
-      subtitle: { fontSize: 11, alignment: 'center', color: '#475467' },
+      // Fiş her zaman beyaz kâğıda basılır: açık tema renkleri sabit yazılı.
+      title: { fontSize: 18, bold: true, alignment: 'center', color: '#BE4A26' },
+      subtitle: { fontSize: 11, alignment: 'center', color: '#57524A' },
       section: { fontSize: 10, bold: true, margin: [0, 0, 0, 4] },
     },
   };

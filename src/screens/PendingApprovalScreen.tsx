@@ -44,7 +44,7 @@ export default function PendingApprovalScreen() {
         }}
         style={styles.secondaryAction}
       >
-        <Text style={[styles.secondaryText, { color: colors.textSubtle }]}>Sign out</Text>
+        <Text style={[styles.secondaryText, { color: colors.textSubtle }]}>{t.signOut}</Text>
       </Pressable>
       <ActivityIndicator color={colors.textMuted} style={styles.spinner} />
     </View>

@@ -5,9 +5,10 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAdaptiveLayout } from '../design-system';
+import { focusRing, useAdaptiveLayout } from '../design-system';
 import { useLocalization } from '../i18n';
-import type { TabParamList } from './AppNavigator';
+import { useOrderStore } from '../stores';
+import type { TabParamList } from './routes';
 
 export function AdaptiveTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { tokens } = useTheme();
@@ -18,6 +19,7 @@ export function AdaptiveTabBar({ state, descriptors, navigation }: BottomTabBarP
   const isManager = status === 'unconfigured' || activeMembership?.role === 'manager';
   const expanded = layout.mode === 'expanded' && isManager;
   const profileName = workspace?.profile.display_name;
+  const openCheckCount = useOrderStore((store) => Object.keys(store.openTickets).length);
 
   return (
     <View
@@ -73,6 +75,7 @@ export function AdaptiveTabBar({ state, descriptors, navigation }: BottomTabBarP
         return (
           <AdaptiveTabItem
             key={route.key}
+            badge={route.name === 'Orders' ? openCheckCount : undefined}
             expanded={expanded}
             icon={tabIcon(route.name as keyof TabParamList, selected)}
             label={label}
@@ -119,6 +122,7 @@ export function AdaptiveTabBar({ state, descriptors, navigation }: BottomTabBarP
 }
 
 function AdaptiveTabItem({
+  badge,
   expanded,
   icon,
   label,
@@ -126,6 +130,7 @@ function AdaptiveTabItem({
   onPress,
   selected,
 }: {
+  readonly badge?: number;
   readonly expanded: boolean;
   readonly icon: keyof typeof Ionicons.glyphMap;
   readonly label: string;
@@ -147,14 +152,6 @@ function AdaptiveTabItem({
       onPress={onPress}
       style={({ pressed }) => ({
         alignItems: 'center',
-        backgroundColor: selected ? tokens.colors.surfaceAlt : 'transparent',
-        borderColor: focused
-          ? tokens.colors.focus
-          : selected
-            ? tokens.colors.primary
-            : 'transparent',
-        borderRadius: tokens.radius.medium,
-        borderWidth: focused ? 3 : expanded && selected ? 1 : 0,
         flex: expanded ? undefined : 1,
         flexDirection: expanded ? 'row' : 'column',
         justifyContent: expanded ? 'flex-start' : 'center',
@@ -162,26 +159,78 @@ function AdaptiveTabItem({
         minHeight: expanded ? tokens.sizing.primaryTarget : tokens.sizing.minimumTarget,
         opacity: pressed ? 0.76 : 1,
         paddingHorizontal: expanded ? tokens.space.md : tokens.space.xs,
+        // Ana gezinme klavyeyle dolaşılabilir olmalı ve odak halkası düzeni
+        // oynatmamalı; kenarlık yerine outline. Halka dokunma alanının tamamını
+        // sarar, altındaki dolgu hapı değil — odak göstergesi her zaman gerçek
+        // hedefi işaret etmeli.
+        ...focusRing(tokens.colors.focus, focused),
       })}
     >
-      <Ionicons
-        color={selected ? tokens.colors.primary : tokens.colors.textSubtle}
-        name={icon}
-        size={expanded ? 24 : 22}
-      />
-      <Text
-        numberOfLines={1}
-        style={[
-          tokens.typography.caption,
-          {
-            color: selected ? tokens.colors.primary : tokens.colors.textSubtle,
-            marginLeft: expanded ? tokens.space.sm : 0,
-            marginTop: expanded ? 0 : 2,
-          },
-        ]}
+      {/*
+        Seçili sekmeyi ayıran dolgu hap. İçeriğe sarılır (tüm segmenti değil),
+        böylece "aktif" göze tek, kendi içinde kapanan bir odak noktası olarak
+        çarpar; önceden yalnızca ikon/metin rengi değişiyordu ve klavye odak
+        halkası yanlışlıkla bu işi üstleniyordu.
+      */}
+      <View
+        style={{
+          alignItems: 'center',
+          backgroundColor: selected ? tokens.colors.accentSoft : 'transparent',
+          borderRadius: tokens.radius.full,
+          flexDirection: expanded ? 'row' : 'column',
+          paddingHorizontal: tokens.space.sm,
+          paddingVertical: tokens.space.xxs,
+        }}
       >
-        {label}
-      </Text>
+        <View>
+          <Ionicons
+            color={selected ? tokens.colors.primary : tokens.colors.textSubtle}
+            name={icon}
+            size={expanded ? 24 : 22}
+          />
+          {badge != null && badge > 0 ? (
+            <View
+              style={{
+                alignItems: 'center',
+                backgroundColor: tokens.colors.accent,
+                borderRadius: 999,
+                justifyContent: 'center',
+                minHeight: 17,
+                minWidth: 17,
+                paddingHorizontal: 4,
+                position: 'absolute',
+                right: -8,
+                top: -4,
+              }}
+            >
+              <Text
+                style={{
+                  color: tokens.colors.primaryContrast,
+                  fontSize: 10,
+                  fontWeight: '700',
+                  lineHeight: 14,
+                }}
+              >
+                {badge > 99 ? '99+' : badge}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        <Text
+          numberOfLines={1}
+          style={[
+            tokens.typography.caption,
+            {
+              color: selected ? tokens.colors.primary : tokens.colors.textSubtle,
+              fontWeight: selected ? '700' : '500',
+              marginLeft: expanded ? tokens.space.sm : 0,
+              marginTop: expanded ? 0 : 2,
+            },
+          ]}
+        >
+          {label}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -191,12 +240,11 @@ function tabIcon(route: keyof TabParamList, focused: boolean): keyof typeof Ioni
     keyof TabParamList,
     readonly [keyof typeof Ionicons.glyphMap, keyof typeof Ionicons.glyphMap]
   > = {
-    Service: ['restaurant-outline', 'restaurant'],
-    Receipts: ['receipt-outline', 'receipt'],
-    Profile: ['person-outline', 'person'],
+    Masalar: ['restaurant-outline', 'restaurant'],
+    Home: ['home-outline', 'home'],
+    Orders: ['receipt-outline', 'receipt'],
+    Receipts: ['time-outline', 'time'],
     Menu: ['book-outline', 'book'],
-    Reports: ['bar-chart-outline', 'bar-chart'],
-    More: ['grid-outline', 'grid'],
   };
   return icons[route][focused ? 1 : 0];
 }

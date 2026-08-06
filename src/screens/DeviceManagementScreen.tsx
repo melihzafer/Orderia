@@ -1,22 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { haptic, ServiceConfirmSheet } from '../design-system';
+import { useLocalization } from '../i18n';
 
 export default function DeviceManagementScreen() {
   const { colors } = useTheme();
+  const { t, formatDateTime } = useLocalization();
   const { devices, currentDeviceId, activeMembership, refreshDevices, revokeDevice } = useAuth();
   const isManager = activeMembership?.role === 'manager';
+  // Hook'lar yönetici olmayan için verilen erken dönüşün üstünde durmalı.
+  const [pendingRevokeId, setPendingRevokeId] = useState<string>();
 
   useEffect(() => {
     if (isManager) {
@@ -28,28 +25,19 @@ export default function DeviceManagementScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.bg }]}>
         <Ionicons name="lock-closed-outline" size={34} color={colors.textSubtle} />
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>Manager access required</Text>
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>
+          {t.deviceManagerAccessRequired}
+        </Text>
       </View>
     );
   }
 
-  const confirmRevocation = (deviceId: string, isCurrent: boolean) => {
-    Alert.alert(
-      'Revoke device?',
-      isCurrent
-        ? 'This is your current device. Revoking it will sign you out.'
-        : 'The device will be rejected the next time it connects to Orderia.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Revoke',
-          style: 'destructive',
-          onPress: () => {
-            void revokeDevice(deviceId);
-          },
-        },
-      ],
-    );
+  const pendingRevoke = devices.find((device) => device.id === pendingRevokeId);
+  const revokingCurrentDevice = pendingRevoke?.id === currentDeviceId;
+
+  const confirmRevocation = (deviceId: string) => {
+    haptic('warning');
+    setPendingRevokeId(deviceId);
   };
 
   return (
@@ -62,7 +50,7 @@ export default function DeviceManagementScreen() {
           <View style={styles.centered}>
             <ActivityIndicator color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSubtle }]}>
-              Loading authorized devices…
+              {t.deviceLoadingAuthorized}
             </Text>
           </View>
         ) : (
@@ -90,30 +78,25 @@ export default function DeviceManagementScreen() {
                   />
                   <View style={styles.deviceInfo}>
                     <Text style={[styles.deviceName, { color: colors.text }]}>
-                      {platformLabel(device.platform)}
-                      {isCurrent ? ' · This device' : ''}
+                      {platformLabel(device.platform, t)}
+                      {isCurrent ? ` · ${t.deviceThisDevice}` : ''}
                     </Text>
                     <Text style={[styles.meta, { color: colors.textSubtle }]}>
-                      App {device.app_version} · Last seen{' '}
-                      {new Date(device.last_seen_at).toLocaleString()}
+                      {t.deviceAppVersion} {device.app_version} · {t.deviceLastSeen}{' '}
+                      {formatDateTime(Date.parse(device.last_seen_at))}
                     </Text>
-                    <Text
-                      style={[
-                        styles.status,
-                        {
-                          color: isRevoked ? colors.error : colors.success,
-                        },
-                      ]}
-                    >
-                      {isRevoked ? 'Revoked' : 'Authorized'}
-                    </Text>
+                    {isRevoked ? (
+                      <Text style={[styles.status, { color: colors.error }]}>
+                        {t.deviceRevoked}
+                      </Text>
+                    ) : null}
                   </View>
                 </View>
 
                 {!isRevoked ? (
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => confirmRevocation(device.id, isCurrent)}
+                    onPress={() => confirmRevocation(device.id)}
                     style={({ pressed }) => [
                       styles.revokeButton,
                       {
@@ -122,7 +105,9 @@ export default function DeviceManagementScreen() {
                       },
                     ]}
                   >
-                    <Text style={[styles.revokeText, { color: colors.error }]}>Revoke</Text>
+                    <Text style={[styles.revokeText, { color: colors.error }]}>
+                      {t.deviceRevoke}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -130,14 +115,32 @@ export default function DeviceManagementScreen() {
           })
         )}
       </ScrollView>
+
+      <ServiceConfirmSheet
+        body={revokingCurrentDevice ? t.deviceRevokeConfirmCurrent : t.deviceRevokeConfirmOther}
+        cancelLabel={t.deviceKeepDevice}
+        confirmLabel={t.deviceRevoke}
+        destructive
+        onClose={() => setPendingRevokeId(undefined)}
+        onConfirm={() => {
+          const target = pendingRevokeId;
+          setPendingRevokeId(undefined);
+          if (target) void revokeDevice(target);
+        }}
+        title={t.deviceRevokeConfirmTitle}
+        visible={pendingRevoke !== undefined}
+      />
     </SafeAreaView>
   );
 }
 
-function platformLabel(platform: 'android' | 'ios_web' | 'web'): string {
-  if (platform === 'android') return 'Android';
-  if (platform === 'ios_web') return 'iPhone / iPad Safari';
-  return 'Web browser';
+function platformLabel(
+  platform: 'android' | 'ios_web' | 'web',
+  t: { devicePlatformAndroid: string; devicePlatformIosWeb: string; devicePlatformWeb: string },
+): string {
+  if (platform === 'android') return t.devicePlatformAndroid;
+  if (platform === 'ios_web') return t.devicePlatformIosWeb;
+  return t.devicePlatformWeb;
 }
 
 const styles = StyleSheet.create({
@@ -195,8 +198,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     borderWidth: 1,
+    justifyContent: 'center',
     marginTop: 14,
-    padding: 10,
+    minHeight: 48,
+    paddingHorizontal: 10,
   },
   revokeText: {
     fontSize: 14,

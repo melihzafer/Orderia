@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 test('ships install metadata and iPhone safe-area markup', async ({ page, request }) => {
   const manifestResponse = await request.get('/manifest.webmanifest');
@@ -37,7 +38,7 @@ test('keeps the app shell and IndexedDB data after an offline reload', async ({
   page,
 }) => {
   await page.goto('/');
-  await expect(page.getByText(/Servis|Обслужване|Service/i).last()).toBeVisible();
+  await expectAppEntryVisible(page);
 
   await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;
@@ -73,7 +74,7 @@ test('keeps the app shell and IndexedDB data after an offline reload', async ({
   // Chromium proves the service-worker offline reload; WebKit proves Safari persistence.
   if (browserName === 'chromium') await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.getByText(/Servis|Обслужване|Service/i).last()).toBeVisible();
+  await expectAppEntryVisible(page);
   await expect
     .poll(() =>
       page.evaluate(
@@ -96,6 +97,14 @@ test('keeps the app shell and IndexedDB data after an offline reload', async ({
     )
     .toBe('retained');
 });
+
+async function expectAppEntryVisible(page: Page) {
+  await expect(
+    page
+      .getByRole('heading', { name: /^(?:Masalar|Маси|Tables)$/i })
+      .or(page.getByRole('button', { name: /^(?:Giriş yap|Вход|Sign in)$/i })),
+  ).toBeVisible();
+}
 
 test('never stores Supabase API or mutation responses in service-worker caches', async ({
   page,

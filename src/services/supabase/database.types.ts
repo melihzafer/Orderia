@@ -19,6 +19,7 @@ export type BranchRow = {
   id: string;
   organization_id: string;
   name: string;
+  restaurant_code: string;
   timezone: string;
   currency_code: string;
   business_day_cutoff: string;
@@ -64,6 +65,42 @@ export type DeviceRow = {
   revoked_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type HallRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  name: string;
+  sort_order: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type RestaurantTableRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  hall_id: string;
+  label: string;
+  sequence_number: number;
+  capacity: number | null;
+  sort_order: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type TableSessionRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  table_id: string;
+  status: 'open' | 'payment_pending' | 'closed' | 'voided';
+  deleted_at: string | null;
 };
 
 export type SyncEventRow = {
@@ -152,6 +189,7 @@ export type MenuItemRow = {
   is_active: boolean;
   is_available: boolean;
   prep_time_minutes: number | null;
+  fulfillment_group: 'kitchen' | 'drinks';
   version: number;
   created_by: string;
   created_at: string;
@@ -240,6 +278,9 @@ export type Database = {
       profiles: TableDefinition<ProfileRow>;
       memberships: TableDefinition<MembershipRow>;
       devices: TableDefinition<DeviceRow>;
+      halls: TableDefinition<HallRow>;
+      restaurant_tables: TableDefinition<RestaurantTableRow>;
+      table_sessions: TableDefinition<TableSessionRow>;
       sync_events: TableDefinition<SyncEventRow>;
       menu_categories: TableDefinition<MenuCategoryRow>;
       menu_items: TableDefinition<MenuItemRow>;
@@ -323,6 +364,30 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_order_item_served_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      apply_table_session_note_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
       apply_order_item_void_command: {
         Args: {
           requested_organization_id: string;
@@ -395,7 +460,27 @@ export type Database = {
         };
         Returns: Json;
       };
+      publish_menu_ai_draft_with_fulfillment: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_request_id: string;
+          requested_expected_version: number;
+          requested_reviewed_payload: Json;
+        };
+        Returns: Json;
+      };
       save_catalog_item: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_item_id: string | null;
+          requested_expected_version: number | null;
+          requested_payload: Json;
+        };
+        Returns: Json;
+      };
+      save_catalog_item_with_fulfillment: {
         Args: {
           requested_organization_id: string;
           requested_branch_id: string;
@@ -434,6 +519,14 @@ export type Database = {
         };
         Returns: ReceiptArchiveRow[];
       };
+      get_receipt_timeline: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_receipt_id: string;
+        };
+        Returns: Json;
+      };
       transfer_or_merge_table_session: {
         Args: {
           requested_organization_id: string;
@@ -441,6 +534,28 @@ export type Database = {
           requested_device_id: string;
           requested_client_mutation_id: string;
           requested_payload: Json;
+        };
+        Returns: Json;
+      };
+      reopen_closed_table_session: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_table_session_id: string;
+          requested_reason: string;
+          requested_pin: string;
+        };
+        Returns: Json;
+      };
+      set_manager_action_pin: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_pin: string;
         };
         Returns: Json;
       };
@@ -475,6 +590,20 @@ export type Database = {
           requested_display_name: string;
         };
         Returns: SignupRequestRow;
+      };
+      join_restaurant: {
+        Args: {
+          requested_code: string;
+          requested_role: MembershipRole;
+        };
+        Returns: Json;
+      };
+      create_restaurant: {
+        Args: {
+          requested_name: string;
+          requested_branch_name?: string | null;
+        };
+        Returns: Json;
       };
       my_signup_request: {
         Args: Record<string, never>;

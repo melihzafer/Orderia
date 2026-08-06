@@ -36,19 +36,23 @@ import {
 } from '../../features/menu-management';
 import {
   LegacyMigrationGateway,
-  LegacyMigrationServerResult,
-  LegacyMigrationSnapshot,
+  type LegacyMigrationServerResult,
+  type LegacyMigrationSnapshot,
 } from '../../features/legacy-migration';
 import {
   ReceiptArchiveCursor,
   ReceiptArchiveFilters,
   ReceiptArchiveGateway,
   ReceiptArchivePage,
+  ReceiptTimelineEntry,
+  ReceiptTimelineGateway,
 } from '../../features/receipt-archive';
 import {
   SupabaseTableOperationGateway,
+  SupabaseReopenTableSessionGateway,
   TransferTableSessionCommand,
   TransferTableSessionResult,
+  ReopenTableSessionResult,
 } from '../../features/table-operations';
 import { PreparedReceiptPdf, ReceiptPdfGateway } from '../../features/receipts';
 import { captureOperationalError, recordOperationalEvent } from '../../observability';
@@ -93,12 +97,21 @@ export interface OrderiaDataContextValue {
     clientMutationId: MutationId,
     command: TransferTableSessionCommand,
   ): Promise<TransferTableSessionResult>;
+  reopenTableSession(
+    deviceId: DeviceId,
+    clientMutationId: MutationId,
+    tableSessionId: string,
+    reason: string,
+    pin: string,
+  ): Promise<ReopenTableSessionResult>;
+  setManagerActionPin(deviceId: DeviceId, clientMutationId: MutationId, pin: string): Promise<void>;
   prepareReceiptPdf(receipt: Receipt): Promise<PreparedReceiptPdf>;
   searchReceiptArchive(
     filters: ReceiptArchiveFilters,
     cursor?: ReceiptArchiveCursor,
     pageSize?: number,
   ): Promise<ReceiptArchivePage>;
+  loadReceiptTimeline(receiptId: string): Promise<readonly ReceiptTimelineEntry[]>;
   loadManagerReport(dateFrom: string, dateTo: string, waiterId?: UserId): Promise<ManagerReport>;
   loadCatalog(): Promise<CatalogSnapshot>;
   generateMenuAiDraft(
@@ -152,7 +165,8 @@ export function OrderiaDataProvider({
   const [revision, setRevision] = useState(0);
   const [lastSuccessfulSyncAt, setLastSuccessfulSyncAt] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
-  const refreshInFlight = useRef<Promise<void> | null>(null);
+  const refreshesInFlight = useRef(new Map<string, Promise<void>>());
+  const activeScopeKey = useRef<string>('local');
   const mounted = useRef(true);
 
   const client = useMemo(() => {
@@ -172,7 +186,11 @@ export function OrderiaDataProvider({
     };
   }, [activeBranch]);
 
+  const scopeKey = scope ? `${String(scope.organizationId)}::${String(scope.branchId)}` : 'local';
+  activeScopeKey.current = scopeKey;
+
   useEffect(() => {
+    const inFlightRefreshes = refreshesInFlight.current;
     mounted.current = true;
     let openedDatabase: LocalDatabase | null = null;
     let active = true;
@@ -202,7 +220,7 @@ export function OrderiaDataProvider({
     return () => {
       active = false;
       mounted.current = false;
-      refreshInFlight.current = null;
+      inFlightRefreshes.clear();
       if (openedDatabase) {
         void openedDatabase.close();
       }
@@ -210,26 +228,31 @@ export function OrderiaDataProvider({
   }, [openDatabase]);
 
   const refresh = useCallback(async () => {
-    if (refreshInFlight.current) return refreshInFlight.current;
+    const existing = refreshesInFlight.current.get(scopeKey);
+    if (existing) return existing;
+
+    const isCurrentScope = () => mounted.current && activeScopeKey.current === scopeKey;
 
     const job = (async () => {
       const startedAt = Date.now();
       if (!database || !scope || !client) {
-        if (mounted.current) {
+        if (isCurrentScope()) {
           setRevision((current) => current + 1);
         }
         return;
       }
 
       const online = browserIsOnline();
-      setSync((current) =>
-        deriveSyncStatus({
-          ...syncCounts(current),
-          online,
-          syncing: online,
-          hasError: false,
-        }),
-      );
+      if (isCurrentScope()) {
+        setSync((current) =>
+          deriveSyncStatus({
+            ...syncCounts(current),
+            online,
+            syncing: online,
+            hasError: false,
+          }),
+        );
+      }
 
       try {
         if (online) {
@@ -253,7 +276,7 @@ export function OrderiaDataProvider({
           { operation: 'outbox_after_refresh' },
           next.pendingCount,
         );
-        if (!mounted.current) return;
+        if (!isCurrentScope()) return;
         setSync(next);
         setRevision((current) => current + 1);
         setErrorMessage(undefined);
@@ -274,22 +297,22 @@ export function OrderiaDataProvider({
             hasError: true,
           }),
         );
-        if (!mounted.current) return;
+        if (!isCurrentScope()) return;
         setSync(next);
         setRevision((current) => current + 1);
         setErrorMessage('Cloud refresh failed. Saved local orders remain available.');
       }
     })();
 
-    refreshInFlight.current = job;
+    refreshesInFlight.current.set(scopeKey, job);
     try {
       await job;
     } finally {
-      if (refreshInFlight.current === job) {
-        refreshInFlight.current = null;
+      if (refreshesInFlight.current.get(scopeKey) === job) {
+        refreshesInFlight.current.delete(scopeKey);
       }
     }
-  }, [client, database, scope]);
+  }, [client, database, scope, scopeKey]);
 
   const resolveProfileNames = useCallback(
     async (userIds: readonly string[]): Promise<Readonly<Record<string, string>>> => {
@@ -383,6 +406,51 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const reopenTableSession = useCallback(
+    async (
+      deviceId: DeviceId,
+      clientMutationId: MutationId,
+      tableSessionId: string,
+      reason: string,
+      pin: string,
+    ): Promise<ReopenTableSessionResult> => {
+      if (!client || !scope) throw new Error('Cloud table operation service is unavailable');
+      try {
+        const result = await new SupabaseReopenTableSessionGateway(client).reopen({
+          ...scope,
+          deviceId,
+          clientMutationId,
+          tableSessionId: toDomainId(tableSessionId),
+          reason,
+          pin,
+        });
+        await refresh();
+        return result;
+      } catch (error) {
+        captureOperationalError(error, 'mutation_rejected', {
+          operation: 'reopen_table_session',
+          mutationType: 'orders.reopen',
+          errorClass: error instanceof Error ? error.name : 'UnknownError',
+        });
+        throw error;
+      }
+    },
+    [client, refresh, scope],
+  );
+
+  const setManagerActionPin = useCallback(
+    async (deviceId: DeviceId, clientMutationId: MutationId, pin: string): Promise<void> => {
+      if (!client || !scope) throw new Error('Cloud table operation service is unavailable');
+      await new SupabaseReopenTableSessionGateway(client).setManagerPin({
+        ...scope,
+        deviceId,
+        clientMutationId,
+        pin,
+      });
+    },
+    [client, scope],
+  );
+
   const prepareReceiptPdf = useCallback(
     async (receipt: Receipt): Promise<PreparedReceiptPdf> => {
       if (!client || !scope) throw new Error('Cloud receipt PDF service is unavailable');
@@ -416,6 +484,17 @@ export function OrderiaDataProvider({
         filters,
         ...(cursor ? { cursor } : {}),
         ...(pageSize ? { pageSize } : {}),
+      });
+    },
+    [client, scope],
+  );
+
+  const loadReceiptTimeline = useCallback(
+    async (receiptId: string): Promise<readonly ReceiptTimelineEntry[]> => {
+      if (!client || !scope) throw new Error('Cloud receipt archive is unavailable');
+      return new ReceiptTimelineGateway(client).load({
+        ...scope,
+        receiptId: toDomainId(receiptId),
       });
     },
     [client, scope],
@@ -633,8 +712,11 @@ export function OrderiaDataProvider({
       resolveActiveParticipants,
       confirmCheckPayments,
       transferOrMergeTableSession,
+      reopenTableSession,
+      setManagerActionPin,
       prepareReceiptPdf,
       searchReceiptArchive,
+      loadReceiptTimeline,
       loadManagerReport,
       loadCatalog,
       generateMenuAiDraft,
@@ -661,6 +743,7 @@ export function OrderiaDataProvider({
       resolveProfileNames,
       revision,
       searchReceiptArchive,
+      loadReceiptTimeline,
       saveCatalogItem,
       setCatalogAvailability,
       inspectLegacyMigration,
@@ -668,6 +751,8 @@ export function OrderiaDataProvider({
       scope,
       sync,
       transferOrMergeTableSession,
+      reopenTableSession,
+      setManagerActionPin,
     ],
   );
 

@@ -1,4 +1,6 @@
 export * from './AppErrorBoundary';
 export * from './redaction';
 export * from './telemetry';
-export * from './TelemetryIdentityBridge';
+
+// TelemetryIdentityBridge kasıtlı olarak burada yok: `useAuth` çağırıyor ve
+// AuthContext bu barrel'ı içe aktarıyor. Tek tüketicisi App.tsx, doğrudan alıyor.

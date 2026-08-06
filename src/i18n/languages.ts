@@ -19,6 +19,8 @@ export interface Translation {
   genericError: string;
   all: string;
   close: string;
+  or: string;
+  signOut: string;
 
   // Navigation
   tables: string;
@@ -26,6 +28,9 @@ export interface Translation {
   orders: string;
   history: string;
   settings: string;
+  homeNav: string;
+  ordersNav: string;
+  tablesNav: string;
   serviceNav: string;
   receiptsNav: string;
   profileNav: string;
@@ -57,6 +62,24 @@ export interface Translation {
   askManagerForTables: string;
   configureTables: string;
   configureTablesDescription: string;
+  devicesTitle: string;
+  deviceManagerAccessRequired: string;
+  deviceLoadingAuthorized: string;
+  deviceThisDevice: string;
+  deviceAppVersion: string;
+  deviceLastSeen: string;
+  deviceRevoked: string;
+  deviceAuthorized: string;
+  deviceRevoke: string;
+  deviceRevokeConfirmTitle: string;
+  deviceRevokeConfirmCurrent: string;
+  deviceRevokeConfirmOther: string;
+  deviceKeepDevice: string;
+  devicePlatformAndroid: string;
+  devicePlatformIosWeb: string;
+  devicePlatformWeb: string;
+  showDescriptions: string;
+  hideDescriptions: string;
   openTablesSummary: string;
   attentionSummary: string;
   moreTableActions: string;
@@ -83,10 +106,13 @@ export interface Translation {
   addTableConfirm: string;
   editHall: string;
   editTable: string;
+  moreActions: string;
   deleteTable: string;
   deleteTableConfirm: string;
+  tableDeleteBlocked: string;
   deleteHall: string;
   deleteHallConfirm: string;
+  hallDeleteBlocked: string;
   hallDeleted: string;
   hallName: string;
   hallNameHint: string;
@@ -107,6 +133,13 @@ export interface Translation {
   tableUpdated: string;
   tableNameHint: string;
   tableDeleted: string;
+  newOrderSubtitle: string;
+  selectHall: string;
+  selectTableForOrder: string;
+  noTablesInSelectedHall: string;
+  noAvailableTables: string;
+  occupiedTable: string;
+  newOrderLoadFailed: string;
 
   // Menu & Categories
   addCategory: string;
@@ -161,6 +194,12 @@ export interface Translation {
   total: string;
   note: string;
   orderNote: string;
+  splitOrder: string;
+  paidOrders: string;
+  editPayment: string;
+  moveToOrder: string;
+  newAccount: string;
+  paymentUpdated: string;
 
   // Status
   open: string;
@@ -375,6 +414,25 @@ export interface Translation {
   presetSauceSide: string;
 
   // Auth & account approval
+  welcomeSubtitle: string;
+  welcomeSignIn: string;
+  welcomeSignUp: string;
+  welcomeFootnote: string;
+  signInTitle: string;
+  signInSubtitle: string;
+  signInAction: string;
+  signingIn: string;
+  emailPlaceholder: string;
+  passwordPlaceholder: string;
+  displayNamePlaceholder: string;
+  backToWelcome: string;
+  restoringWorkspace: string;
+  workspaceUnavailable: string;
+  workspaceUnavailableBody: string;
+  tryAgain: string;
+  selectBranchTitle: string;
+  selectBranchSubtitle: string;
+  defaultOrganization: string;
   emailLabel: string;
   passwordLabel: string;
   displayNameLabel: string;
@@ -397,6 +455,33 @@ export interface Translation {
   noPendingApprovals: string;
   approve: string;
   reject: string;
+  chooseRoleTitle: string;
+  chooseRoleBody: string;
+  waiterRole: string;
+  waiterRoleBody: string;
+  managerRoleBody: string;
+  managerRestaurantCodeTitle: string;
+  managerRestaurantCodeBody: string;
+  restaurantCodeTitle: string;
+  restaurantCodeBody: string;
+  restaurantCodeLabel: string;
+  restaurantCodePlaceholder: string;
+  invalidRestaurantCode: string;
+  continueWithCode: string;
+  createRestaurant: string;
+  createRestaurantTitle: string;
+  createRestaurantBody: string;
+  restaurantNameLabel: string;
+  restaurantNamePlaceholder: string;
+  invalidRestaurantName: string;
+  branchNameLabel: string;
+  branchNamePlaceholder: string;
+  createRestaurantConfirm: string;
+  restaurantCodeCreatedTitle: string;
+  restaurantCodeCreatedBody: string;
+  restaurantCodeShareHint: string;
+  finishOnboarding: string;
+  contactManager: string;
 }
 
 export const translations: Record<string, Translation> = {
@@ -421,6 +506,8 @@ export const translations: Record<string, Translation> = {
     genericError: 'Bir hata oluştu',
     all: 'Tümü',
     close: 'Kapat',
+    or: 'veya',
+    signOut: 'Çıkış yap',
 
     // Navigation
     tables: 'Masalar',
@@ -428,6 +515,9 @@ export const translations: Record<string, Translation> = {
     orders: 'Siparişler',
     history: 'Geçmiş',
     settings: 'Ayarlar',
+    homeNav: 'Ana ekran',
+    ordersNav: 'Sipariş',
+    tablesNav: 'Masalar',
     serviceNav: 'Servis',
     receiptsNav: 'Fişler',
     profileNav: 'Profil',
@@ -459,6 +549,25 @@ export const translations: Record<string, Translation> = {
     askManagerForTables: 'Yöneticinizden masa düzenini oluşturmasını isteyin.',
     configureTables: 'Masaları ayarla',
     configureTablesDescription: 'Servise başlamak için ilk salonu ve masaları oluşturun.',
+    devicesTitle: 'Yetkili cihazlar',
+    deviceManagerAccessRequired: 'Yönetici yetkisi gerekli',
+    deviceLoadingAuthorized: 'Yetkili cihazlar yükleniyor…',
+    deviceThisDevice: 'Bu cihaz',
+    deviceAppVersion: 'Uygulama',
+    deviceLastSeen: 'Son görülme',
+    deviceRevoked: 'İptal edildi',
+    deviceAuthorized: 'Yetkili',
+    deviceRevoke: 'Yetkiyi iptal et',
+    deviceRevokeConfirmTitle: 'Cihazın yetkisi iptal edilsin mi?',
+    deviceRevokeConfirmCurrent:
+      'Bu, şu an kullandığınız cihaz. İptal ederseniz oturumunuz kapanır.',
+    deviceRevokeConfirmOther: 'Cihaz bir sonraki bağlantısında reddedilir.',
+    deviceKeepDevice: 'Cihazı koru',
+    devicePlatformAndroid: 'Android',
+    devicePlatformIosWeb: 'iPhone / iPad Safari',
+    devicePlatformWeb: 'Web tarayıcı',
+    showDescriptions: 'Açıklamaları göster',
+    hideDescriptions: 'Açıklamaları gizle',
     openTablesSummary: 'açık masa',
     attentionSummary: 'dikkat gerekiyor',
     moreTableActions: 'Masa işlemleri',
@@ -485,11 +594,14 @@ export const translations: Record<string, Translation> = {
     addTableConfirm: 'Yeni masa eklensin mi?',
     editHall: 'Salon Düzenle',
     editTable: 'Masayı Düzenle',
+    moreActions: 'Diğer işlemler',
     deleteTable: 'Masa Sil',
     deleteTableConfirm: 'Bu masayı silmek istediğinizden emin misiniz?',
+    tableDeleteBlocked: 'Açık masa silinemez. Önce hesabı kapatın.',
     deleteHall: 'Salon Sil',
     deleteHallConfirm:
       'Bu salonu silmek istediğinizden emin misiniz? Salondaki tüm masalar da silinecektir.',
+    hallDeleteBlocked: 'Açık masası olan salon silinemez. Önce hesapları kapatın.',
     hallDeleted: 'Salon silindi',
     hallName: 'Salon Adı',
     hallNameHint: 'Salon oluşturduktan sonra masalar ekleyebilirsiniz.',
@@ -510,6 +622,13 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Masa başarıyla güncellendi',
     tableNameHint: 'Boş bırakırsanız "Masa {seq}" kullanılır',
     tableDeleted: 'Masa başarıyla silindi',
+    newOrderSubtitle: 'Önce salonu, sonra müsait masayı seçin.',
+    selectHall: 'Salon seçin',
+    selectTableForOrder: 'Sipariş için masa seçin',
+    noTablesInSelectedHall: 'Bu salonda henüz masa yok.',
+    noAvailableTables: 'Yeni sipariş için müsait masa yok.',
+    occupiedTable: 'Açık sipariş var',
+    newOrderLoadFailed: 'Salon ve masalar yüklenemedi. Tekrar deneyin.',
 
     // Menu & Categories
     addCategory: 'Kategori Ekle',
@@ -563,6 +682,12 @@ export const translations: Record<string, Translation> = {
     total: 'Toplam',
     note: 'Not',
     orderNote: 'Sipariş notu (opsiyonel)...',
+    splitOrder: 'Hesabı böl',
+    paidOrders: 'Ödenen hesaplar',
+    editPayment: 'Ödemeyi düzenle',
+    moveToOrder: 'Başka hesaba aktar',
+    newAccount: 'Yeni hesap',
+    paymentUpdated: 'Ödeme güncellendi',
     addNote: 'Not Ekle',
     addNoteHint: 'Özel talimatlar veya notlar ekleyin...',
 
@@ -782,13 +907,32 @@ export const translations: Record<string, Translation> = {
     presetSauceSide: 'Sos ayrıda',
 
     // Auth & account approval
+    welcomeSubtitle: 'Restoran ekibinizi yönetin ve siparişleri kolayca takip edin.',
+    welcomeSignIn: 'Giriş yap',
+    welcomeSignUp: 'Kayıt ol',
+    welcomeFootnote: 'Garsonlar ve yöneticiler için sade servis yönetimi.',
+    signInTitle: 'Giriş yap',
+    signInSubtitle: 'Restoranınızın size verdiği hesapla devam edin.',
+    signInAction: 'Giriş yap',
+    signingIn: 'Giriş yapılıyor…',
+    emailPlaceholder: 'garson@restoran.com',
+    passwordPlaceholder: 'Şifreniz',
+    displayNamePlaceholder: 'Ayşe Yılmaz',
+    backToWelcome: 'Karşılama ekranına dön',
+    restoringWorkspace: 'Orderia çalışma alanınız geri yükleniyor…',
+    workspaceUnavailable: 'Çalışma alanı kullanılamıyor',
+    workspaceUnavailableBody: 'Orderia bu hesabı yükleyemedi.',
+    tryAgain: 'Tekrar dene',
+    selectBranchTitle: 'Şube seçin',
+    selectBranchSubtitle: 'Aktif masa ve raporlarınız bu seçime göre gösterilecek.',
+    defaultOrganization: 'Orderia',
     emailLabel: 'E-posta',
     passwordLabel: 'Şifre',
     displayNameLabel: 'Ad Soyad',
     confirmPasswordLabel: 'Şifre (tekrar)',
     createAccount: 'Hesap Oluştur',
     registerTitle: 'Yeni Hesap',
-    registerSubtitle: 'Hesabınız yönetici onayından sonra aktif olur.',
+    registerSubtitle: 'Kayıttan sonra rolünüzü seçip restoranınıza bağlanacaksınız.',
     register: 'Kaydol',
     registering: 'Kaydediliyor…',
     haveAccount: 'Zaten hesabınız var mı? Giriş yapın',
@@ -805,6 +949,35 @@ export const translations: Record<string, Translation> = {
     noPendingApprovals: 'Bekleyen başvuru yok',
     approve: 'Onayla',
     reject: 'Reddet',
+    chooseRoleTitle: 'Orderia’da nasıl çalışıyorsunuz?',
+    chooseRoleBody: 'Rolünüzü seçin; restoran bağlantısını bir sonraki adımda tamamlayın.',
+    waiterRole: 'Garson',
+    waiterRoleBody: 'Restoran koduyla ekibinize katılın ve sipariş almaya başlayın.',
+    managerRoleBody: 'Restoranınızı oluşturun veya mevcut restoranınıza bağlanın.',
+    managerRestaurantCodeTitle: 'Orderia’da bir restoranınız var mı?',
+    managerRestaurantCodeBody: 'Mevcut restoran kodunu girin veya yeni bir restoran oluşturun.',
+    restaurantCodeTitle: 'Restoranınız Orderia’da mı?',
+    restaurantCodeBody: 'Restoran kodunu girin. Kodunuz yoksa yöneticinizden isteyin.',
+    restaurantCodeLabel: 'Restoran kodu',
+    restaurantCodePlaceholder: 'Örn. A1B2C3D4',
+    invalidRestaurantCode: '8 karakterlik restoran kodunu girin.',
+    continueWithCode: 'Kodla devam et',
+    createRestaurant: 'Restoran oluştur / yönet',
+    createRestaurantTitle: 'Restoranınızı oluşturun',
+    createRestaurantBody:
+      'Restoranı oluşturduğunuzda ekibinizle paylaşmanız için bir kod vereceğiz.',
+    restaurantNameLabel: 'Restoran adı',
+    restaurantNamePlaceholder: 'Örn. Güneş Restoran',
+    invalidRestaurantName: 'Restoran adını girin.',
+    branchNameLabel: 'Şube adı',
+    branchNamePlaceholder: 'Örn. Merkez',
+    createRestaurantConfirm: 'Restoranı oluştur',
+    restaurantCodeCreatedTitle: 'Restoran hazır',
+    restaurantCodeCreatedBody:
+      'Bu kodu garsonlarınızla paylaşın. Restorana katılmak için kullanacaklar.',
+    restaurantCodeShareHint: 'Restoran kodunuz',
+    finishOnboarding: 'Ana ekrana geç',
+    contactManager: 'Kodunuz yoksa restoran yöneticinizden bir kod oluşturmasını isteyin.',
   },
 
   bg: {
@@ -828,6 +1001,8 @@ export const translations: Record<string, Translation> = {
     genericError: 'Възникна грешка',
     all: 'Всички',
     close: 'Затвори',
+    or: 'или',
+    signOut: 'Изход',
 
     // Navigation
     tables: 'Маси',
@@ -835,6 +1010,9 @@ export const translations: Record<string, Translation> = {
     orders: 'Поръчки',
     history: 'История',
     settings: 'Настройки',
+    homeNav: 'Начало',
+    ordersNav: 'Поръчки',
+    tablesNav: 'Маси',
     serviceNav: 'Обслужване',
     receiptsNav: 'Касови бележки',
     profileNav: 'Профил',
@@ -866,6 +1044,24 @@ export const translations: Record<string, Translation> = {
     askManagerForTables: 'Помолете управителя да настрои масите.',
     configureTables: 'Настрой масите',
     configureTablesDescription: 'Създайте първата зала и масите, за да започнете обслужване.',
+    devicesTitle: 'Оторизирани устройства',
+    deviceManagerAccessRequired: 'Изисква се достъп на управител',
+    deviceLoadingAuthorized: 'Зареждане на оторизирани устройства…',
+    deviceThisDevice: 'Това устройство',
+    deviceAppVersion: 'Приложение',
+    deviceLastSeen: 'Последно видяно',
+    deviceRevoked: 'Отменено',
+    deviceAuthorized: 'Оторизирано',
+    deviceRevoke: 'Отмени достъпа',
+    deviceRevokeConfirmTitle: 'Да се отмени ли достъпът на устройството?',
+    deviceRevokeConfirmCurrent: 'Това е текущото ви устройство. Отмяната ще ви излезе от сесията.',
+    deviceRevokeConfirmOther: 'Устройството ще бъде отхвърлено при следващото свързване.',
+    deviceKeepDevice: 'Запази устройството',
+    devicePlatformAndroid: 'Android',
+    devicePlatformIosWeb: 'iPhone / iPad Safari',
+    devicePlatformWeb: 'Уеб браузър',
+    showDescriptions: 'Покажи описанията',
+    hideDescriptions: 'Скрий описанията',
     openTablesSummary: 'отворени маси',
     attentionSummary: 'изискват внимание',
     moreTableActions: 'Действия за масата',
@@ -892,11 +1088,14 @@ export const translations: Record<string, Translation> = {
     addTableConfirm: 'Искате ли да добавите нова маса?',
     editHall: 'Редактирай Зала',
     editTable: 'Редактирай Маса',
+    moreActions: 'Още действия',
     deleteTable: 'Изтрий Маса',
     deleteTableConfirm: 'Сигурни ли сте, че искате да изтриете тази маса?',
+    tableDeleteBlocked: 'Отворена маса не може да бъде изтрита. Първо затворете сметката.',
     deleteHall: 'Изтрий Зала',
     deleteHallConfirm:
       'Сигурни ли сте, че искате да изтриете тази зала? Всички маси в залата също ще бъдат изтрити.',
+    hallDeleteBlocked: 'Зала с отворени маси не може да бъде изтрита. Първо затворете сметките.',
     hallDeleted: 'Залата е изтрита',
     hallName: 'Име на Залата',
     hallNameHint: 'След създаване на залата можете да добавите маси.',
@@ -917,6 +1116,13 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Масата е успешно обновена',
     tableNameHint: 'Ако оставите празно ще се използва "Маса {seq}"',
     tableDeleted: 'Масата е успешно изтрита',
+    newOrderSubtitle: 'Първо изберете зала, след това свободна маса.',
+    selectHall: 'Изберете зала',
+    selectTableForOrder: 'Изберете маса за поръчката',
+    noTablesInSelectedHall: 'В тази зала все още няма маси.',
+    noAvailableTables: 'Няма свободна маса за нова поръчка.',
+    occupiedTable: 'Има отворена поръчка',
+    newOrderLoadFailed: 'Залите и масите не могат да бъдат заредени. Опитайте отново.',
 
     // Menu & Categories
     addCategory: 'Добави Категория',
@@ -970,6 +1176,12 @@ export const translations: Record<string, Translation> = {
     total: 'Общо',
     note: 'Бележка',
     orderNote: 'Бележка за поръчката (незадължително)...',
+    splitOrder: 'Раздели сметката',
+    paidOrders: 'Платени сметки',
+    editPayment: 'Редактирай плащането',
+    moveToOrder: 'Премести в друга сметка',
+    newAccount: 'Нова сметка',
+    paymentUpdated: 'Плащането е обновено',
     addNote: 'Добави Бележка',
     addNoteHint: 'Добавете специални инструкции или бележки...',
 
@@ -1190,13 +1402,32 @@ export const translations: Record<string, Translation> = {
     presetSauceSide: 'Сосът отделно',
 
     // Auth & account approval
+    welcomeSubtitle: 'Управлявайте екипа си и следете поръчките с лекота.',
+    welcomeSignIn: 'Вход',
+    welcomeSignUp: 'Регистрация',
+    welcomeFootnote: 'Просто управление на обслужването за сервитьори и управители.',
+    signInTitle: 'Вход',
+    signInSubtitle: 'Продължете с акаунта, предоставен от вашия ресторант.',
+    signInAction: 'Вход',
+    signingIn: 'Влизане…',
+    emailPlaceholder: 'servizior@restorant.bg',
+    passwordPlaceholder: 'Вашата парола',
+    displayNamePlaceholder: 'Иван Иванов',
+    backToWelcome: 'Към началния екран',
+    restoringWorkspace: 'Възстановяване на вашето Orderia работно пространство…',
+    workspaceUnavailable: 'Работното пространство не е достъпно',
+    workspaceUnavailableBody: 'Orderia не успя да зареди този акаунт.',
+    tryAgain: 'Опитай отново',
+    selectBranchTitle: 'Изберете обект',
+    selectBranchSubtitle: 'Активните ви маси и отчети ще следват този избор.',
+    defaultOrganization: 'Orderia',
     emailLabel: 'Имейл',
     passwordLabel: 'Парола',
     displayNameLabel: 'Име и фамилия',
     confirmPasswordLabel: 'Парола (отново)',
     createAccount: 'Създай акаунт',
     registerTitle: 'Нов акаунт',
-    registerSubtitle: 'Акаунтът се активира след одобрение от управител.',
+    registerSubtitle: 'След регистрацията изберете роля и свържете ресторанта си.',
     register: 'Регистрация',
     registering: 'Регистриране…',
     haveAccount: 'Вече имате акаунт? Влезте',
@@ -1212,6 +1443,33 @@ export const translations: Record<string, Translation> = {
     noPendingApprovals: 'Няма чакащи заявки',
     approve: 'Одобри',
     reject: 'Отхвърли',
+    chooseRoleTitle: 'Как работите в Orderia?',
+    chooseRoleBody: 'Изберете роля и свържете ресторанта си в следващата стъпка.',
+    waiterRole: 'Сервитьор',
+    waiterRoleBody: 'Присъединете се към екипа с код на ресторанта.',
+    managerRoleBody: 'Създайте ресторант или се свържете със съществуващ.',
+    managerRestaurantCodeTitle: 'Имате ли ресторант в Orderia?',
+    managerRestaurantCodeBody: 'Въведете съществуващ код или създайте нов ресторант.',
+    restaurantCodeTitle: 'Вашият ресторант в Orderia ли е?',
+    restaurantCodeBody: 'Въведете кода на ресторанта. Ако нямате код, поискайте го от управителя.',
+    restaurantCodeLabel: 'Код на ресторанта',
+    restaurantCodePlaceholder: 'Напр. A1B2C3D4',
+    invalidRestaurantCode: 'Въведете код на ресторанта с 8 знака.',
+    continueWithCode: 'Продължи с код',
+    createRestaurant: 'Създай / управлявай ресторант',
+    createRestaurantTitle: 'Създайте своя ресторант',
+    createRestaurantBody: 'След създаването ще получите код за споделяне с екипа.',
+    restaurantNameLabel: 'Име на ресторанта',
+    restaurantNamePlaceholder: 'Напр. Слънце',
+    invalidRestaurantName: 'Въведете име на ресторанта.',
+    branchNameLabel: 'Име на обекта',
+    branchNamePlaceholder: 'Напр. Център',
+    createRestaurantConfirm: 'Създай ресторанта',
+    restaurantCodeCreatedTitle: 'Ресторантът е готов',
+    restaurantCodeCreatedBody: 'Споделете този код със сервитьорите, за да се присъединят.',
+    restaurantCodeShareHint: 'Код на ресторанта',
+    finishOnboarding: 'Към началния екран',
+    contactManager: 'Ако нямате код, поискайте управителят на ресторанта да ви го даде.',
   },
 
   en: {
@@ -1235,6 +1493,8 @@ export const translations: Record<string, Translation> = {
     genericError: 'An error occurred',
     all: 'All',
     close: 'Close',
+    or: 'or',
+    signOut: 'Sign out',
 
     // Navigation
     tables: 'Tables',
@@ -1242,6 +1502,9 @@ export const translations: Record<string, Translation> = {
     orders: 'Orders',
     history: 'History',
     settings: 'Settings',
+    homeNav: 'Home',
+    ordersNav: 'Orders',
+    tablesNav: 'Tables',
     serviceNav: 'Service',
     receiptsNav: 'Receipts',
     profileNav: 'Profile',
@@ -1273,6 +1536,24 @@ export const translations: Record<string, Translation> = {
     askManagerForTables: 'Ask your manager to configure the table layout.',
     configureTables: 'Configure tables',
     configureTablesDescription: 'Create the first hall and tables to start service.',
+    devicesTitle: 'Authorized devices',
+    deviceManagerAccessRequired: 'Manager access required',
+    deviceLoadingAuthorized: 'Loading authorized devices…',
+    deviceThisDevice: 'This device',
+    deviceAppVersion: 'App',
+    deviceLastSeen: 'Last seen',
+    deviceRevoked: 'Revoked',
+    deviceAuthorized: 'Authorized',
+    deviceRevoke: 'Revoke',
+    deviceRevokeConfirmTitle: 'Revoke device?',
+    deviceRevokeConfirmCurrent: 'This is your current device. Revoking it will sign you out.',
+    deviceRevokeConfirmOther: 'The device will be rejected the next time it connects to Orderia.',
+    deviceKeepDevice: 'Keep device',
+    devicePlatformAndroid: 'Android',
+    devicePlatformIosWeb: 'iPhone / iPad Safari',
+    devicePlatformWeb: 'Web browser',
+    showDescriptions: 'Show descriptions',
+    hideDescriptions: 'Hide descriptions',
     openTablesSummary: 'open tables',
     attentionSummary: 'need attention',
     moreTableActions: 'Table actions',
@@ -1299,11 +1580,14 @@ export const translations: Record<string, Translation> = {
     addTableConfirm: 'Do you want to add a new table?',
     editHall: 'Edit Hall',
     editTable: 'Edit Table',
+    moreActions: 'More actions',
     deleteTable: 'Delete Table',
     deleteTableConfirm: 'Are you sure you want to delete this table?',
+    tableDeleteBlocked: 'An open table cannot be deleted. Close its check first.',
     deleteHall: 'Delete Hall',
     deleteHallConfirm:
       'Are you sure you want to delete this hall? All tables in the hall will also be deleted.',
+    hallDeleteBlocked: 'A hall with open tables cannot be deleted. Close the checks first.',
     hallDeleted: 'Hall deleted',
     hallName: 'Hall Name',
     hallNameHint: 'After creating the hall, you can add tables.',
@@ -1324,6 +1608,13 @@ export const translations: Record<string, Translation> = {
     tableUpdated: 'Table updated successfully',
     tableNameHint: 'If left empty, "Table {seq}" will be used',
     tableDeleted: 'Table deleted successfully',
+    newOrderSubtitle: 'Choose a hall first, then choose an available table.',
+    selectHall: 'Choose a hall',
+    selectTableForOrder: 'Choose a table for the order',
+    noTablesInSelectedHall: 'There are no tables in this hall yet.',
+    noAvailableTables: 'There are no available tables for a new order.',
+    occupiedTable: 'Open order in progress',
+    newOrderLoadFailed: 'Halls and tables could not be loaded. Try again.',
 
     // Menu & Categories
     addCategory: 'Add Category',
@@ -1376,6 +1667,12 @@ export const translations: Record<string, Translation> = {
     total: 'Total',
     note: 'Note',
     orderNote: 'Order note (optional)...',
+    splitOrder: 'Split check',
+    paidOrders: 'Paid checks',
+    editPayment: 'Edit payment',
+    moveToOrder: 'Move to another check',
+    newAccount: 'New check',
+    paymentUpdated: 'Payment updated',
     addNote: 'Add Note',
     addNoteHint: 'Add special instructions or notes...',
 
@@ -1594,13 +1891,32 @@ export const translations: Record<string, Translation> = {
     presetSauceSide: 'Sauce on the side',
 
     // Auth & account approval
+    welcomeSubtitle: 'Manage your restaurant team and keep every order moving.',
+    welcomeSignIn: 'Sign in',
+    welcomeSignUp: 'Sign up',
+    welcomeFootnote: 'Simple service management for waiters and managers.',
+    signInTitle: 'Sign in',
+    signInSubtitle: 'Continue with the account provided by your restaurant.',
+    signInAction: 'Sign in',
+    signingIn: 'Signing in…',
+    emailPlaceholder: 'waiter@restaurant.com',
+    passwordPlaceholder: 'Your password',
+    displayNamePlaceholder: 'Alex Morgan',
+    backToWelcome: 'Back to welcome',
+    restoringWorkspace: 'Restoring your Orderia workspace…',
+    workspaceUnavailable: 'Workspace unavailable',
+    workspaceUnavailableBody: 'Orderia could not load this account.',
+    tryAgain: 'Try again',
+    selectBranchTitle: 'Select a branch',
+    selectBranchSubtitle: 'Your active tables and reports will follow this selection.',
+    defaultOrganization: 'Orderia',
     emailLabel: 'Email',
     passwordLabel: 'Password',
     displayNameLabel: 'Full name',
     confirmPasswordLabel: 'Password (again)',
     createAccount: 'Create account',
     registerTitle: 'New Account',
-    registerSubtitle: 'Your account becomes active after manager approval.',
+    registerSubtitle: 'After signing up, choose your role and connect your restaurant.',
     register: 'Sign up',
     registering: 'Signing up…',
     haveAccount: 'Already have an account? Sign in',
@@ -1616,5 +1932,32 @@ export const translations: Record<string, Translation> = {
     noPendingApprovals: 'No pending requests',
     approve: 'Approve',
     reject: 'Reject',
+    chooseRoleTitle: 'How do you work in Orderia?',
+    chooseRoleBody: 'Choose your role, then connect your restaurant in the next step.',
+    waiterRole: 'Waiter',
+    waiterRoleBody: 'Join your team with the restaurant code and start taking orders.',
+    managerRoleBody: 'Create your restaurant or connect to an existing one.',
+    managerRestaurantCodeTitle: 'Do you have a restaurant in Orderia?',
+    managerRestaurantCodeBody: 'Enter an existing restaurant code or create a new restaurant.',
+    restaurantCodeTitle: 'Is your restaurant in Orderia?',
+    restaurantCodeBody: 'Enter the restaurant code. If you do not have one, ask your manager.',
+    restaurantCodeLabel: 'Restaurant code',
+    restaurantCodePlaceholder: 'E.g. A1B2C3D4',
+    invalidRestaurantCode: 'Enter an 8-character restaurant code.',
+    continueWithCode: 'Continue with code',
+    createRestaurant: 'Create / manage a restaurant',
+    createRestaurantTitle: 'Create your restaurant',
+    createRestaurantBody: 'After creation, we will give you a code to share with your team.',
+    restaurantNameLabel: 'Restaurant name',
+    restaurantNamePlaceholder: 'E.g. Sunrise Restaurant',
+    invalidRestaurantName: 'Enter a restaurant name.',
+    branchNameLabel: 'Branch name',
+    branchNamePlaceholder: 'E.g. Main branch',
+    createRestaurantConfirm: 'Create restaurant',
+    restaurantCodeCreatedTitle: 'Restaurant ready',
+    restaurantCodeCreatedBody: 'Share this code with your waiters so they can join.',
+    restaurantCodeShareHint: 'Restaurant code',
+    finishOnboarding: 'Go to home',
+    contactManager: 'If you do not have a code, ask your restaurant manager to provide one.',
   },
 };

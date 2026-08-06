@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { accessibleBranches } from '../contexts/authTypes';
@@ -7,6 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import { UserId } from '../domain';
 import {
+  haptic,
   ServiceButton,
   ServiceEmptyState,
   ServiceSkeleton,
@@ -14,6 +15,7 @@ import {
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
 import {
   DailyRevenueBars,
@@ -33,12 +35,13 @@ import { useLocalization } from '../i18n';
 export default function AnalyticsScreen() {
   const auth = useAuth();
   const { tokens } = useTheme();
-  const { language } = useLocalization();
+  const { language, t } = useLocalization();
   const layout = useAdaptiveLayout();
   const { loadManagerReport, mode, sync } = useOrderiaData();
   const copy = reportCopy(language);
   const timezone = auth.activeBranch?.timezone ?? 'UTC';
   const initialRange = useMemo(() => managerReportRange(timezone, 7), [timezone]);
+  const { show } = useSnackbar();
   const [range, setRange] = useState<ManagerReportRange>(initialRange);
   const [rangeDraft, setRangeDraft] = useState<ManagerReportRange>(initialRange);
   const [report, setReport] = useState<ManagerReport>();
@@ -48,7 +51,9 @@ export default function AnalyticsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [definitionsVisible, setDefinitionsVisible] = useState(false);
   const branchSwitchInFlight = useRef(false);
+  const loadRevision = useRef(0);
   const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
   const cloudReady = mode === 'cloud' && sync.online && isManager;
 
@@ -63,25 +68,34 @@ export default function AnalyticsScreen() {
   );
 
   const load = useCallback(async () => {
+    const requestRevision = ++loadRevision.current;
+    const isLatestRequest = () => loadRevision.current === requestRevision;
     if (branchSwitchInFlight.current) return;
     if (!cloudReady) {
-      setLoading(false);
-      setRefreshing(false);
-      setErrorMessage(isManager ? copy.onlineRequired : copy.managerRequired);
+      if (isLatestRequest()) {
+        setLoading(false);
+        setRefreshing(false);
+        setErrorMessage(isManager ? copy.onlineRequired : copy.managerRequired);
+      }
       return;
     }
     setLoading(true);
     try {
       assertManagerReportRange(range);
       const next = await loadManagerReport(range.dateFrom, range.dateTo, selectedWaiterId);
+      if (!isLatestRequest()) return;
       setReport(next);
       if (!selectedWaiterId) setWaiterOptions(next.waiters);
       setErrorMessage(undefined);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : copy.loadFailed);
+      if (isLatestRequest()) {
+        setErrorMessage(error instanceof Error ? error.message : copy.loadFailed);
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (isLatestRequest()) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [
     cloudReady,
@@ -96,6 +110,9 @@ export default function AnalyticsScreen() {
 
   useEffect(() => {
     void load();
+    return () => {
+      loadRevision.current += 1;
+    };
   }, [auth.activeBranch?.id, load]);
 
   const applyPreset = (days: number) => {
@@ -112,14 +129,19 @@ export default function AnalyticsScreen() {
       } else {
         setRange(rangeDraft);
       }
-    } catch (error) {
-      Alert.alert(copy.invalidRange, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      haptic('error');
+      show({ message: copy.invalidRange, tone: 'error' });
     }
   };
 
   const switchBranch = async (branchId: string) => {
     if (branchId === auth.activeBranch?.id) return;
     branchSwitchInFlight.current = true;
+    loadRevision.current += 1;
+    setReport(undefined);
+    setErrorMessage(undefined);
+    setLoading(true);
     try {
       setSelectedWaiterId(undefined);
       setWaiterOptions([]);
@@ -128,8 +150,10 @@ export default function AnalyticsScreen() {
       const nextRange = managerReportRange(nextBranch?.timezone ?? 'UTC', 7);
       setRangeDraft(nextRange);
       setRange(nextRange);
-    } catch (error) {
-      Alert.alert(copy.branchFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      setLoading(false);
+      haptic('error');
+      show({ message: copy.branchFailed, tone: 'error' });
     } finally {
       branchSwitchInFlight.current = false;
     }
@@ -140,8 +164,9 @@ export default function AnalyticsScreen() {
     setExporting(true);
     try {
       await presentManagerReportCsv(report);
-    } catch (error) {
-      Alert.alert(copy.exportFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      haptic('error');
+      show({ message: copy.exportFailed, tone: 'error' });
     } finally {
       setExporting(false);
     }
@@ -178,27 +203,7 @@ export default function AnalyticsScreen() {
           />
         }
       >
-        <View
-          style={{
-            alignItems: 'flex-start',
-            flexDirection: layout.mode === 'compact' ? 'column' : 'row',
-            gap: tokens.space.sm,
-            justifyContent: 'space-between',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>
-              {copy.title}
-            </Text>
-            <Text
-              style={[
-                tokens.typography.body,
-                { color: tokens.colors.textSubtle, marginTop: tokens.space.xs },
-              ]}
-            >
-              {copy.subtitle}
-            </Text>
-          </View>
+        <View style={{ alignItems: 'flex-end' }}>
           <ServiceStatusPill
             icon={cloudReady ? 'shield-checkmark-outline' : 'cloud-offline-outline'}
             label={cloudReady ? copy.serverConfirmed : copy.unavailable}
@@ -410,13 +415,32 @@ export default function AnalyticsScreen() {
             </ServiceSurface>
 
             <ServiceSurface style={{ gap: tokens.space.xs }} variant="outlined">
-              <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
-                {copy.definitions}
-              </Text>
-              <Definition label={copy.revenueDefinition} />
-              <Definition label={copy.contributionDefinition} />
-              <Definition label={copy.paymentDefinition} />
-              <Definition label={copy.activeTimeDefinition} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: definitionsVisible }}
+                onPress={() => setDefinitionsVisible((visible) => !visible)}
+                style={({ pressed }) => ({
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+                  {copy.definitions}
+                </Text>
+                <Text style={[tokens.typography.label, { color: tokens.colors.primary }]}>
+                  {definitionsVisible ? t.hideDescriptions : t.showDescriptions}
+                </Text>
+              </Pressable>
+              {definitionsVisible ? (
+                <>
+                  <Definition label={copy.revenueDefinition} />
+                  <Definition label={copy.contributionDefinition} />
+                  <Definition label={copy.paymentDefinition} />
+                  <Definition label={copy.activeTimeDefinition} />
+                </>
+              ) : null}
             </ServiceSurface>
           </>
         ) : null}

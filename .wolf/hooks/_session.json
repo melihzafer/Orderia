@@ -1,0 +1,72 @@
+{
+  "session_id": "session-2026-08-06-1839",
+  "started": "2026-08-06T15:39:09.200Z",
+  "files_read": {
+    "D:/Projects/Orderia/src/config/environment.ts": {
+      "count": 1,
+      "tokens": 255,
+      "first_read": "2026-08-06T15:40:07.634Z"
+    },
+    "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts": {
+      "count": 1,
+      "tokens": 4878,
+      "first_read": "2026-08-06T15:40:16.093Z"
+    },
+    "D:/Projects/Orderia/supabase/functions/README.md": {
+      "count": 1,
+      "tokens": 1524,
+      "first_read": "2026-08-06T15:41:20.210Z"
+    },
+    "D:/Projects/Orderia/supabase/functions/.env.example": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-06T15:41:20.394Z"
+    },
+    "D:/Projects/Orderia/supabase/config.toml": {
+      "count": 1,
+      "tokens": 4604,
+      "first_read": "2026-08-06T15:42:17.779Z"
+    }
+  },
+  "files_written": [
+    {
+      "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+      "action": "edit",
+      "tokens": 28,
+      "at": "2026-08-06T15:41:32.100Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+      "action": "edit",
+      "tokens": 884,
+      "at": "2026-08-06T15:41:50.523Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+      "action": "edit",
+      "tokens": 114,
+      "at": "2026-08-06T15:41:58.817Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/supabase/functions/README.md",
+      "action": "edit",
+      "tokens": 44,
+      "at": "2026-08-06T15:42:08.371Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/supabase/functions/README.md",
+      "action": "edit",
+      "tokens": 114,
+      "at": "2026-08-06T15:42:14.525Z"
+    }
+  ],
+  "edit_counts": {
+    "supabase/functions/menu-ai-draft/index.ts": 3,
+    "supabase/functions/README.md": 2
+  },
+  "anatomy_hits": 4,
+  "anatomy_misses": 0,
+  "repeated_reads_warned": 0,
+  "cerebrum_warnings": 0,
+  "stop_count": 2
+}

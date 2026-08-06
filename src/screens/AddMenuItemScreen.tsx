@@ -1,28 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
+  haptic,
   ServiceButton,
+  ServiceProductThumb,
   ServiceStatusPill,
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
-import { CurrencyCode, MenuCategoryId, MenuItemId, toDomainId } from '../domain';
+import { CurrencyCode, FulfillmentGroup, MenuCategoryId, MenuItemId, toDomainId } from '../domain';
 import {
   CatalogSnapshot,
   EditableCatalogItem,
@@ -30,8 +27,9 @@ import {
   MenuTranslationDraft,
 } from '../features/menu-management';
 import { useLocalization } from '../i18n';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useMenuStore } from '../stores';
+import { RootStackParamList } from '../navigation/routes';
+import { useMenuStore, useProductPhotoStore } from '../stores';
+import { useSettingsStore } from '../stores/settingsStore';
 
 type ScreenRoute = RouteProp<RootStackParamList, 'AddMenuItem'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -45,11 +43,16 @@ export default function AddMenuItemScreen() {
   const layout = useAdaptiveLayout();
   const { loadCatalog, mode, saveCatalogItem, sync } = useOrderiaData();
   const legacy = useMenuStore();
+  const photoStore = useProductPhotoStore();
+  const allowPhotoUpload = useSettingsStore((state) => state.allowPhotoUpload);
+  const showItemPhotos = useSettingsStore((state) => state.showItemPhotos);
   const copy = editorCopy(language);
   const [catalog, setCatalog] = useState<CatalogSnapshot>();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
+  const [fulfillmentGroup, setFulfillmentGroup] = useState<FulfillmentGroup>('kitchen');
+  const [photoUri, setPhotoUri] = useState('');
   const [prepTime, setPrepTime] = useState('');
   const [categoryId, setCategoryId] = useState<MenuCategoryId | undefined>(
     route.params?.categoryId ? toDomainId<MenuCategoryId>(route.params.categoryId) : undefined,
@@ -63,11 +66,14 @@ export default function AddMenuItemScreen() {
   const [modifierGroups, setModifierGroups] = useState<MenuModifierGroupDraft[]>([]);
   const [loading, setLoading] = useState(mode === 'cloud');
   const [saving, setSaving] = useState(false);
+  const { show } = useSnackbar();
   const [error, setError] = useState<string>();
   const [initializedItemId, setInitializedItemId] = useState<string>();
+  const [showAdvanced, setShowAdvanced] = useState(Boolean(route.params?.itemId));
   const itemId = route.params?.itemId ? toDomainId<MenuItemId>(route.params.itemId) : undefined;
   const existingCloudItem = catalog?.items.find((item) => item.id === itemId);
   const existingLegacyItem = legacy.menuItems.find((item) => item.id === itemId);
+  const storedPhotoUri = itemId ? photoStore.photoUris[String(itemId)] : undefined;
   const currencyCode = (auth.activeBranch?.currency_code ?? 'EUR') as CurrencyCode;
   const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
 
@@ -110,6 +116,8 @@ export default function AddMenuItemScreen() {
     setName(existing.name);
     setPrice((existing.priceMinor / 100).toFixed(2));
     setDescription(existing.description ?? '');
+    setFulfillmentGroup(existing.fulfillmentGroup ?? 'kitchen');
+    setPhotoUri(storedPhotoUri ?? '');
     setPrepTime(existing.prepTimeMinutes?.toString() ?? '');
     setCategoryId(existing.categoryId);
     setTranslations(
@@ -139,7 +147,7 @@ export default function AddMenuItemScreen() {
       })),
     );
     setInitializedItemId(existing.id);
-  }, [existingCloudItem, initializedItemId]);
+  }, [existingCloudItem, initializedItemId, storedPhotoUri]);
 
   useEffect(() => {
     const existing = existingLegacyItem;
@@ -147,9 +155,25 @@ export default function AddMenuItemScreen() {
     setName(existing.name);
     setPrice((existing.price / 100).toFixed(2));
     setDescription(existing.description ?? '');
+    setFulfillmentGroup(existing.fulfillmentGroup ?? 'kitchen');
+    setPhotoUri(existing.photoUri ?? storedPhotoUri ?? '');
     setCategoryId(toDomainId<MenuCategoryId>(existing.categoryId));
     setInitializedItemId(existing.id);
-  }, [existingLegacyItem, initializedItemId, mode]);
+  }, [existingLegacyItem, initializedItemId, mode, storedPhotoUri]);
+
+  const choosePhoto = async () => {
+    if (!allowPhotoUpload) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        copyToCacheDirectory: true,
+        multiple: false,
+        type: 'image/*',
+      });
+      if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
+    } catch {
+      setError(copy.photoFailed);
+    }
+  };
 
   const save = async () => {
     const priceMinor = Math.round(Number(price.replace(',', '.')) * 100);
@@ -176,38 +200,44 @@ export default function AddMenuItemScreen() {
           isActive: existingCloudItem?.isActive ?? true,
           isAvailable: existingCloudItem?.isAvailable ?? true,
           prepTimeMinutes: prepTime ? Math.min(1440, Number(prepTime) || 0) : null,
+          fulfillmentGroup,
           translations: translations.filter((translation) => translation.name.trim()),
           modifierGroups,
           confirmedAllergens: [],
         };
-        await saveCatalogItem(
+        const savedId = await saveCatalogItem(
           payload,
           existingCloudItem
             ? { id: existingCloudItem.id, version: existingCloudItem.version }
             : undefined,
         );
+        await persistPhotoSelection(savedId, photoUri, photoStore);
       } else if (existingLegacyItem) {
         legacy.updateMenuItem(existingLegacyItem.id, {
           categoryId: categoryId as string,
           name: name.trim(),
           description: description.trim() || undefined,
+          fulfillmentGroup,
           price: priceMinor,
         });
+        await persistPhotoSelection(existingLegacyItem.id, photoUri, photoStore);
       } else {
         let resolvedCategoryId = categoryId as string | undefined;
         if (!resolvedCategoryId) {
           resolvedCategoryId = legacy.addCategory({ name: newCategoryName.trim() }).id;
         }
-        legacy.addMenuItem({
+        const created = legacy.addMenuItem({
           categoryId: resolvedCategoryId,
           name: name.trim(),
           description: description.trim() || undefined,
+          fulfillmentGroup,
           price: priceMinor,
         });
+        await persistPhotoSelection(created.id, photoUri, photoStore);
       }
-      Alert.alert(copy.saved, copy.savedBody, [
-        { text: copy.done, onPress: () => navigation.goBack() },
-      ]);
+      haptic('success');
+      show({ message: copy.savedBody, tone: 'success' });
+      navigation.goBack();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : copy.saveFailed);
     } finally {
@@ -247,33 +277,7 @@ export default function AddMenuItemScreen() {
           }}
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            style={{
-              alignItems: 'center',
-              flexDirection: 'row',
-              gap: tokens.space.sm,
-            }}
-          >
-            <Pressable
-              accessibilityLabel={copy.close}
-              accessibilityRole="button"
-              hitSlop={12}
-              onPress={() => navigation.goBack()}
-              style={{ padding: tokens.space.xs }}
-            >
-              <Ionicons name="close" size={28} color={tokens.colors.text} />
-            </Pressable>
-            <View style={{ flex: 1 }}>
-              <Text
-                accessibilityRole="header"
-                style={[tokens.typography.title, { color: tokens.colors.text }]}
-              >
-                {itemId ? copy.editTitle : copy.addTitle}
-              </Text>
-              <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
-                {copy.subtitle}
-              </Text>
-            </View>
+          <View style={{ alignItems: 'flex-end' }}>
             <ServiceStatusPill
               label={mode === 'cloud' ? copy.cloud : copy.deviceOnly}
               tone={mode === 'cloud' ? 'success' : 'neutral'}
@@ -329,7 +333,63 @@ export default function AddMenuItemScreen() {
               onChangeText={setDescription}
               value={description}
             />
+            <View style={{ gap: tokens.space.xs }}>
+              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                {copy.fulfillment}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                <EditorChip
+                  active={fulfillmentGroup === 'kitchen'}
+                  label={copy.kitchen}
+                  onPress={() => setFulfillmentGroup('kitchen')}
+                />
+                <EditorChip
+                  active={fulfillmentGroup === 'drinks'}
+                  label={copy.drinks}
+                  onPress={() => setFulfillmentGroup('drinks')}
+                />
+              </View>
+            </View>
           </ServiceSurface>
+
+          {showAdvanced && (showItemPhotos || allowPhotoUpload) ? (
+            <ServiceSurface style={{ gap: tokens.space.sm }}>
+              <View style={{ alignItems: 'center', flexDirection: 'row', gap: tokens.space.sm }}>
+                <ServiceProductThumb
+                  fallbackIcon="restaurant-outline"
+                  imageUri={showItemPhotos ? photoUri || undefined : undefined}
+                  name={name || copy.photo}
+                  size={76}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
+                    {copy.photo}
+                  </Text>
+                  <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                    {copy.photoHelp}
+                  </Text>
+                </View>
+              </View>
+              {allowPhotoUpload ? (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                  <ServiceButton
+                    icon="image-outline"
+                    label={photoUri ? copy.changePhoto : copy.choosePhoto}
+                    onPress={() => void choosePhoto()}
+                    variant="outline"
+                  />
+                  {photoUri ? (
+                    <ServiceButton
+                      icon="trash-outline"
+                      label={copy.removePhoto}
+                      onPress={() => setPhotoUri('')}
+                      variant="ghost"
+                    />
+                  ) : null}
+                </View>
+              ) : null}
+            </ServiceSurface>
+          ) : null}
 
           <ServiceSurface style={{ gap: tokens.space.md }}>
             <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
@@ -359,208 +419,230 @@ export default function AddMenuItemScreen() {
             />
           </ServiceSurface>
 
-          <ServiceSurface style={{ gap: tokens.space.md }}>
-            <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
-              {copy.translations}
-            </Text>
-            {translations.map((translation, index) => (
-              <View key={translation.locale} style={{ gap: tokens.space.xs }}>
-                <ServiceStatusPill label={translation.locale.toUpperCase()} />
-                <ServiceTextField
-                  label={copy.localizedName}
-                  onChangeText={(value) =>
-                    setTranslations((current) =>
-                      current.map((entry, entryIndex) =>
-                        entryIndex === index ? { ...entry, name: value } : entry,
-                      ),
-                    )
-                  }
-                  value={translation.name}
-                />
-                <ServiceTextField
-                  label={copy.localizedDescription}
-                  onChangeText={(value) =>
-                    setTranslations((current) =>
-                      current.map((entry, entryIndex) =>
-                        entryIndex === index ? { ...entry, description: value || null } : entry,
-                      ),
-                    )
-                  }
-                  value={translation.description ?? ''}
-                />
-              </View>
-            ))}
-          </ServiceSurface>
+          <ServiceButton
+            icon={showAdvanced ? 'chevron-up-outline' : 'options-outline'}
+            label={showAdvanced ? copy.hideAdvanced : copy.showAdvanced}
+            onPress={() => setShowAdvanced((current) => !current)}
+            variant="outline"
+          />
 
-          <ServiceSurface style={{ gap: tokens.space.md }}>
-            <View
-              style={{
-                alignItems: 'center',
-                flexDirection: 'row',
-                gap: tokens.space.sm,
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flex: 1 }}>
+          {showAdvanced ? (
+            <>
+              <ServiceSurface style={{ gap: tokens.space.md }}>
                 <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
-                  {copy.options}
+                  {copy.translations}
                 </Text>
-                <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
-                  {copy.optionsHelp}
-                </Text>
-              </View>
-              <ServiceButton
-                icon="add-outline"
-                label={copy.addGroup}
-                onPress={() =>
-                  setModifierGroups((current) => [
-                    ...current,
-                    {
-                      name: '',
-                      selectionType: 'single',
-                      minimumChoices: 0,
-                      maximumChoices: 1,
-                      isRequired: false,
-                      sortOrder: current.length,
-                      options: [],
-                    },
-                  ])
-                }
-                variant="outline"
-              />
-            </View>
-            {modifierGroups.map((group, groupIndex) => (
-              <ServiceSurface key={groupIndex} style={{ gap: tokens.space.sm }} variant="muted">
-                <View style={{ flexDirection: 'row', gap: tokens.space.sm }}>
-                  <ServiceTextField
-                    containerStyle={{ flex: 1 }}
-                    label={copy.groupName}
-                    onChangeText={(value) =>
-                      setModifierGroups((current) =>
-                        current.map((entry, index) =>
-                          index === groupIndex ? { ...entry, name: value } : entry,
-                        ),
-                      )
-                    }
-                    value={group.name}
-                  />
-                  <Pressable
-                    accessibilityLabel={copy.removeGroup}
-                    accessibilityRole="button"
-                    onPress={() =>
-                      setModifierGroups((current) =>
-                        current.filter((_, index) => index !== groupIndex),
-                      )
-                    }
-                    style={{ alignSelf: 'flex-end', padding: tokens.space.sm }}
-                  >
-                    <Ionicons name="trash-outline" size={22} color={tokens.colors.error} />
-                  </Pressable>
-                </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
-                  <EditorChip
-                    active={group.selectionType === 'single'}
-                    label={copy.single}
-                    onPress={() =>
-                      updateGroup(setModifierGroups, groupIndex, {
-                        selectionType: 'single',
-                        maximumChoices: 1,
-                      })
-                    }
-                  />
-                  <EditorChip
-                    active={group.selectionType === 'multiple'}
-                    label={copy.multiple}
-                    onPress={() =>
-                      updateGroup(setModifierGroups, groupIndex, {
-                        selectionType: 'multiple',
-                        maximumChoices: null,
-                      })
-                    }
-                  />
-                  <EditorChip
-                    active={group.isRequired}
-                    label={copy.required}
-                    onPress={() =>
-                      updateGroup(setModifierGroups, groupIndex, {
-                        isRequired: !group.isRequired,
-                        minimumChoices: group.isRequired ? 0 : 1,
-                      })
-                    }
-                  />
-                </View>
-                {group.options.map((option, optionIndex) => (
-                  <View key={optionIndex} style={{ flexDirection: 'row', gap: tokens.space.xs }}>
+                {translations.map((translation, index) => (
+                  <View key={translation.locale} style={{ gap: tokens.space.xs }}>
+                    <ServiceStatusPill label={translation.locale.toUpperCase()} />
                     <ServiceTextField
-                      containerStyle={{ flex: 2 }}
-                      label={copy.optionName}
+                      label={copy.localizedName}
                       onChangeText={(value) =>
-                        updateOption(setModifierGroups, groupIndex, optionIndex, { name: value })
+                        setTranslations((current) =>
+                          current.map((entry, entryIndex) =>
+                            entryIndex === index ? { ...entry, name: value } : entry,
+                          ),
+                        )
                       }
-                      value={option.name}
+                      value={translation.name}
                     />
                     <ServiceTextField
-                      containerStyle={{ flex: 1 }}
-                      keyboardType="decimal-pad"
-                      label={copy.extraPrice}
+                      label={copy.localizedDescription}
                       onChangeText={(value) =>
-                        updateOption(setModifierGroups, groupIndex, optionIndex, {
-                          priceDeltaMinor: Math.round(Number(value.replace(',', '.')) * 100) || 0,
-                        })
+                        setTranslations((current) =>
+                          current.map((entry, entryIndex) =>
+                            entryIndex === index ? { ...entry, description: value || null } : entry,
+                          ),
+                        )
                       }
-                      value={(option.priceDeltaMinor / 100).toFixed(2)}
+                      value={translation.description ?? ''}
                     />
-                    <Pressable
-                      accessibilityLabel={copy.removeOption}
-                      accessibilityRole="button"
+                  </View>
+                ))}
+              </ServiceSurface>
+
+              <ServiceSurface style={{ gap: tokens.space.md }}>
+                <View
+                  style={{
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: tokens.space.sm,
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[tokens.typography.sectionTitle, { color: tokens.colors.text }]}>
+                      {copy.options}
+                    </Text>
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                      {copy.optionsHelp}
+                    </Text>
+                  </View>
+                  <ServiceButton
+                    icon="add-outline"
+                    label={copy.addGroup}
+                    onPress={() =>
+                      setModifierGroups((current) => [
+                        ...current,
+                        {
+                          name: '',
+                          selectionType: 'single',
+                          minimumChoices: 0,
+                          maximumChoices: 1,
+                          isRequired: false,
+                          sortOrder: current.length,
+                          options: [],
+                        },
+                      ])
+                    }
+                    variant="outline"
+                  />
+                </View>
+                {modifierGroups.map((group, groupIndex) => (
+                  <ServiceSurface key={groupIndex} style={{ gap: tokens.space.sm }} variant="muted">
+                    <View style={{ flexDirection: 'row', gap: tokens.space.sm }}>
+                      <ServiceTextField
+                        containerStyle={{ flex: 1 }}
+                        label={copy.groupName}
+                        onChangeText={(value) =>
+                          setModifierGroups((current) =>
+                            current.map((entry, index) =>
+                              index === groupIndex ? { ...entry, name: value } : entry,
+                            ),
+                          )
+                        }
+                        value={group.name}
+                      />
+                      <Pressable
+                        accessibilityLabel={copy.removeGroup}
+                        accessibilityRole="button"
+                        onPress={() =>
+                          setModifierGroups((current) =>
+                            current.filter((_, index) => index !== groupIndex),
+                          )
+                        }
+                        style={{ alignSelf: 'flex-end', padding: tokens.space.sm }}
+                      >
+                        <Ionicons name="trash-outline" size={22} color={tokens.colors.error} />
+                      </Pressable>
+                    </View>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+                      <EditorChip
+                        active={group.selectionType === 'single'}
+                        label={copy.single}
+                        onPress={() =>
+                          updateGroup(setModifierGroups, groupIndex, {
+                            selectionType: 'single',
+                            maximumChoices: 1,
+                          })
+                        }
+                      />
+                      <EditorChip
+                        active={group.selectionType === 'multiple'}
+                        label={copy.multiple}
+                        onPress={() =>
+                          updateGroup(setModifierGroups, groupIndex, {
+                            selectionType: 'multiple',
+                            maximumChoices: null,
+                          })
+                        }
+                      />
+                      <EditorChip
+                        active={group.isRequired}
+                        label={copy.required}
+                        onPress={() =>
+                          updateGroup(setModifierGroups, groupIndex, {
+                            isRequired: !group.isRequired,
+                            minimumChoices: group.isRequired ? 0 : 1,
+                          })
+                        }
+                      />
+                    </View>
+                    {group.options.map((option, optionIndex) => (
+                      <View
+                        key={optionIndex}
+                        style={{ flexDirection: 'row', gap: tokens.space.xs }}
+                      >
+                        <ServiceTextField
+                          containerStyle={{ flex: 2 }}
+                          label={copy.optionName}
+                          onChangeText={(value) =>
+                            updateOption(setModifierGroups, groupIndex, optionIndex, {
+                              name: value,
+                            })
+                          }
+                          value={option.name}
+                        />
+                        <ServiceTextField
+                          containerStyle={{ flex: 1 }}
+                          keyboardType="decimal-pad"
+                          label={copy.extraPrice}
+                          onChangeText={(value) =>
+                            updateOption(setModifierGroups, groupIndex, optionIndex, {
+                              priceDeltaMinor:
+                                Math.round(Number(value.replace(',', '.')) * 100) || 0,
+                            })
+                          }
+                          value={(option.priceDeltaMinor / 100).toFixed(2)}
+                        />
+                        <Pressable
+                          accessibilityLabel={copy.removeOption}
+                          accessibilityRole="button"
+                          onPress={() =>
+                            setModifierGroups((current) =>
+                              current.map((entry, index) =>
+                                index === groupIndex
+                                  ? {
+                                      ...entry,
+                                      options: entry.options.filter(
+                                        (_, currentOptionIndex) =>
+                                          currentOptionIndex !== optionIndex,
+                                      ),
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                          style={{ alignSelf: 'flex-end', padding: tokens.space.sm }}
+                        >
+                          <Ionicons
+                            name="close-circle-outline"
+                            size={24}
+                            color={tokens.colors.error}
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                    <ServiceButton
+                      icon="add-outline"
+                      label={copy.addOption}
                       onPress={() =>
                         setModifierGroups((current) =>
                           current.map((entry, index) =>
                             index === groupIndex
                               ? {
                                   ...entry,
-                                  options: entry.options.filter(
-                                    (_, currentOptionIndex) => currentOptionIndex !== optionIndex,
-                                  ),
+                                  options: [
+                                    ...entry.options,
+                                    {
+                                      name: '',
+                                      priceDeltaMinor: 0,
+                                      isDefault: false,
+                                      sortOrder: entry.options.length,
+                                    },
+                                  ],
                                 }
                               : entry,
                           ),
                         )
                       }
-                      style={{ alignSelf: 'flex-end', padding: tokens.space.sm }}
-                    >
-                      <Ionicons name="close-circle-outline" size={24} color={tokens.colors.error} />
-                    </Pressable>
-                  </View>
+                      variant="ghost"
+                    />
+                  </ServiceSurface>
                 ))}
-                <ServiceButton
-                  icon="add-outline"
-                  label={copy.addOption}
-                  onPress={() =>
-                    setModifierGroups((current) =>
-                      current.map((entry, index) =>
-                        index === groupIndex
-                          ? {
-                              ...entry,
-                              options: [
-                                ...entry.options,
-                                {
-                                  name: '',
-                                  priceDeltaMinor: 0,
-                                  isDefault: false,
-                                  sortOrder: entry.options.length,
-                                },
-                              ],
-                            }
-                          : entry,
-                      ),
-                    )
-                  }
-                  variant="ghost"
-                />
               </ServiceSurface>
-            ))}
-          </ServiceSurface>
+            </>
+          ) : null}
 
           <View
             style={{
@@ -606,6 +688,41 @@ function updateGroup(
   setGroups((current) =>
     current.map((group, groupIndex) => (groupIndex === index ? { ...group, ...patch } : group)),
   );
+}
+
+async function persistPhotoSelection(
+  productId: string,
+  selectedUri: string,
+  photoStore: {
+    setPhotoUri: (productId: string, uri: string) => void;
+    removePhotoUri: (productId: string) => void;
+  },
+) {
+  if (!selectedUri) {
+    photoStore.removePhotoUri(productId);
+    return;
+  }
+
+  const documentDirectory = FileSystem.documentDirectory;
+  if (!documentDirectory || selectedUri.startsWith(documentDirectory)) {
+    photoStore.setPhotoUri(productId, selectedUri);
+    return;
+  }
+
+  const directory = `${documentDirectory}orderia-menu-images/`;
+  const extension =
+    selectedUri
+      .split('?')[0]
+      .split('.')
+      .pop()
+      ?.replace(/[^a-z0-9]/gi, '') || 'jpg';
+  const target = `${directory}${productId}.${extension}`;
+  await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+  const existing = await FileSystem.getInfoAsync(target);
+  if (!existing.exists) {
+    await FileSystem.copyAsync({ from: selectedUri, to: target });
+  }
+  photoStore.setPhotoUri(productId, target);
 }
 
 function updateOption(
@@ -698,9 +815,20 @@ function editorCopy(language: 'tr' | 'bg' | 'en') {
       price: 'Fiyat',
       prep: 'Hazırlık (dk)',
       description: 'Açıklama',
+      fulfillment: 'Servis grubu',
+      kitchen: 'Mutfağa',
+      drinks: 'İçecek',
+      photo: 'Ürün fotoğrafı',
+      photoHelp: 'İstersen menüde ve sipariş ekranında küçük bir görsel kullan.',
+      choosePhoto: 'Fotoğraf seç',
+      changePhoto: 'Fotoğrafı değiştir',
+      removePhoto: 'Fotoğrafı kaldır',
+      photoFailed: 'Fotoğraf seçilemedi.',
       category: 'Kategori',
       newCategory: 'Yeni kategori',
       newCategoryHelp: 'Mevcut kategori seçmek yerine yeni bir ad yazabilirsin.',
+      showAdvanced: 'Gelişmiş alanları göster',
+      hideAdvanced: 'Gelişmiş alanları gizle',
       translations: 'Çeviriler',
       localizedName: 'Çevrilmiş ad',
       localizedDescription: 'Çevrilmiş açıklama',
@@ -744,9 +872,20 @@ function editorCopy(language: 'tr' | 'bg' | 'en') {
       price: 'Цена',
       prep: 'Приготвяне (мин)',
       description: 'Описание',
+      fulfillment: 'Група за сервиране',
+      kitchen: 'Кухня',
+      drinks: 'Напитки',
+      photo: 'Снимка на артикула',
+      photoHelp: 'По желание използвай малка снимка в менюто и екрана за поръчка.',
+      choosePhoto: 'Избери снимка',
+      changePhoto: 'Смени снимката',
+      removePhoto: 'Премахни снимката',
+      photoFailed: 'Снимката не можа да бъде избрана.',
       category: 'Категория',
       newCategory: 'Нова категория',
       newCategoryHelp: 'Може да въведете нова вместо да изберете съществуваща.',
+      showAdvanced: 'Покажи разширените полета',
+      hideAdvanced: 'Скрий разширените полета',
       translations: 'Преводи',
       localizedName: 'Преведено име',
       localizedDescription: 'Преведено описание',
@@ -789,9 +928,20 @@ function editorCopy(language: 'tr' | 'bg' | 'en') {
     price: 'Price',
     prep: 'Prep time (min)',
     description: 'Description',
+    fulfillment: 'Service group',
+    kitchen: 'Kitchen',
+    drinks: 'Drinks',
+    photo: 'Product photo',
+    photoHelp: 'Optionally use a small image in the menu and order screen.',
+    choosePhoto: 'Choose photo',
+    changePhoto: 'Change photo',
+    removePhoto: 'Remove photo',
+    photoFailed: 'The photo could not be selected.',
     category: 'Category',
     newCategory: 'New category',
     newCategoryHelp: 'Enter a new name instead of selecting an existing category.',
+    showAdvanced: 'Show advanced fields',
+    hideAdvanced: 'Hide advanced fields',
     translations: 'Translations',
     localizedName: 'Localized name',
     localizedDescription: 'Localized description',

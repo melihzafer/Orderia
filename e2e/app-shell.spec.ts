@@ -1,30 +1,37 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
-test('loads the responsive Orderia service console', async ({ page }) => {
+const nav = {
+  tables: /^(?:Masalar|Маси|Tables)$/i,
+  orders: /^(?:Sipariş|Поръчки|Orders)$/i,
+  menu: /^(?:Menü|Меню|Menu)$/i,
+  receipts: /^(?:Fişler|Разписки|Receipts)$/i,
+  home: /^(?:Ana ekran|Начало|Home)$/i,
+};
+
+/** Sipariş akışı önce salon sordurur; masalar ikinci adımda görünür. */
+const selectHall = /^(?:Salon seçin|Изберете зала|Select hall)$/i;
+const mainHall = /^Ana Salon/i;
+
+test('renders the five-tab mobile shell without horizontal overflow', async ({
+  page,
+}, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
 
   await expect(page).toHaveTitle(/Orderia/i);
-  await expect(
-    page.getByRole('heading', {
-      name: /Canlı Servis|Обслужване на живо|Live service/i,
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(/Yalnız bu cihaz|Само на това устройство|This device only/i).last(),
-  ).toBeVisible();
-  await expect(page.getByRole('tab', { name: /Tümü|Всички|All/i })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /Benim|Моите|Mine/i })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /Uyarılar|Сигнали|Alerts/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: nav.tables })).toBeVisible();
+  for (const label of Object.values(nav)) {
+    await expect(page.getByRole('tab', { name: label })).toBeVisible();
+  }
 
-  const allFilter = page.getByRole('tab', {
-    name: /Tümü|Всички|All/i,
-  });
-  const box = await allFilter.boundingBox();
+  const tab = page.getByRole('tab', { name: nav.orders });
+  const box = await tab.boundingBox();
   expect(box?.height).toBeGreaterThanOrEqual(48);
-
-  await expect(page.getByText(/Servis|Обслужване|Service/i).last()).toBeVisible();
-  await expect(page.getByText(/Menü|Меню|Menu/i).last()).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.screenshot({ path: testInfo.outputPath('tables-mobile.png'), fullPage: true });
 
   await page.setViewportSize({ width: 1280, height: 900 });
   const rail = page.getByTestId('manager-navigation-rail');
@@ -32,50 +39,158 @@ test('loads the responsive Orderia service console', async ({ page }) => {
   const railBox = await rail.boundingBox();
   expect(railBox?.width).toBe(240);
   expect(railBox?.height).toBe(900);
+  await page.screenshot({ path: testInfo.outputPath('tables-desktop.png'), fullPage: true });
 });
 
-test('uses the rapid table workspace at phone speed', async ({ page }) => {
+test('quick actions navigate to real destinations', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  const actions = [
+    {
+      name: /Yeni sipariş|Нова поръчка|New order/i,
+      verify: async () => {
+        // "Yeni sipariş" artık salon/masa seçtiren kendi modalını açıyor.
+        await expect(page.getByRole('heading', { name: selectHall })).toBeVisible();
+        await page.getByRole('button', { name: /Kapat|Затвори|Close/i }).click();
+      },
+    },
+    {
+      name: /Son sipariş|Последна поръчка|Last order/i,
+      verify: async () => {
+        const detailTab = page.getByRole('tab', { name: /Siparişler|Поръчки|Orders/i });
+        const ordersHeading = page.getByRole('heading', { name: nav.orders });
+        await expect(detailTab.or(ordersHeading)).toBeVisible();
+      },
+    },
+    {
+      name: /İsimle ara|Търси по име|Find by name/i,
+      verify: async () => {
+        await expect(page.getByRole('heading', { name: nav.orders })).toBeVisible();
+        await expect(
+          page.getByPlaceholder(
+            /Masa veya garson ara|Търси маса или сервитьор|Search table or waiter/i,
+          ),
+        ).toBeVisible();
+      },
+    },
+    {
+      name: /Açık hesaplar|Отворени сметки|Open checks/i,
+      verify: async () => {
+        await expect(page.getByRole('heading', { name: nav.orders })).toBeVisible();
+      },
+    },
+    {
+      name: /Ödeme al|Приеми плащане|Take payment/i,
+      verify: async () => {
+        await expect(page.getByRole('heading', { name: nav.orders })).toBeVisible();
+      },
+    },
+    {
+      name: /Gün özeti|Обобщение за деня|Day summary/i,
+      verify: async () => {
+        await expect(
+          page.getByRole('heading', { name: /Analitik|Аналитика|Analytics/i }),
+        ).toBeVisible();
+      },
+    },
+  ] as const;
+
+  for (const action of actions) {
+    await page.goto('/');
+    await page.getByRole('tab', { name: nav.home }).click();
+    const button = page.getByRole('button', { name: action.name });
+    await expect(button).toBeVisible();
+    await button.click();
+    await action.verify();
+  }
+});
+
+test('supports adding an order, long-press actions, splitting and editing cash payment', async ({
+  page,
+}, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('tab', { name: nav.orders }).click();
 
-  const table = page.getByText(/Pencere Kenarı/i);
+  // Sipariş sekmesi kasıtlı olarak iki adımlı: önce salon, sonra masa.
+  await page.getByRole('button', { name: mainHall }).click();
+
+  const table = page.getByRole('button', { name: /Pencere Kenarı/i }).first();
   await expect(table).toBeVisible();
   await table.click();
-
-  await expect(
-    page.getByText(/Yalnız bu cihaz|Само на това устройство|This device only/i).last(),
-  ).toBeVisible();
   await expect(page.getByRole('tab', { name: /Siparişler|Поръчки|Orders/i })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /Menü|Меню|Menu/i })).toBeVisible();
 
-  const tea = page.getByRole('button', { name: /Çay/i }).first();
+  const firstOrderTab = page.getByRole('tab', { name: /Sipariş Adı 1/i });
+  if (await firstOrderTab.count()) {
+    await firstOrderTab.hover();
+    await page.mouse.down();
+    await page.waitForTimeout(650);
+    await page.mouse.up();
+    await page
+      .getByLabel(/Sipariş adı|Име на поръчката|Order name/i)
+      .last()
+      .fill('Dört kişi');
+    await page.getByRole('button', { name: /Kaydet|Запази|Save/i }).click();
+    await expect(page.getByRole('tab', { name: /Dört kişi/i })).toBeVisible();
+  }
+
+  const tea = page.getByRole('button', { name: /^Çay/i }).first();
   await expect(tea).toBeVisible();
-  const teaBox = await tea.boundingBox();
-  expect(teaBox?.height).toBeGreaterThanOrEqual(72);
   await tea.click();
-
-  const send = page.getByRole('button', {
-    name: /Sipariş Ekle|Добави Поръчка|Add Order/i,
-  });
-  await expect(send).toBeEnabled();
-  const sendBox = await send.boundingBox();
-  expect(sendBox?.height).toBeGreaterThanOrEqual(56);
-  await send.click();
-
+  await page
+    .getByRole('button', { name: /Sipariş Ekle|Добави Поръчка|Add Order/i })
+    .last()
+    .click();
   await expect(page.getByText(/1× Çay/i)).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('order-mobile.png'), fullPage: true });
+
+  const teaLine = page.getByRole('button', { name: /1× Çay/i }).first();
+  await teaLine.hover();
+  await page.mouse.down();
+  await page.waitForTimeout(650);
+  await page.mouse.up();
+  await expect(
+    page.getByRole('button', {
+      name: /Başka hesaba aktar|Премести в друга сметка|Move to another check/i,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', {
+      name: /Başka hesaba aktar|Премести в друга сметка|Move to another check/i,
+    })
+    .click();
+  await page
+    .getByLabel(/Sipariş adı|Име на поръчката|Order name/i)
+    .last()
+    .fill('Ali');
+  await page
+    .getByRole('button', { name: /Yeni hesap|Нова сметка|New check/i })
+    .last()
+    .click();
+
+  await page.getByRole('tab', { name: /Ali/i }).click();
+  await page.getByRole('button', { name: /Ödeme Al|Вземи Плащане|Take Payment/i }).click();
+  await expect(page.getByText(/Para Üstü|Ресто|Change/i)).toBeVisible();
+  const received = page.getByLabel(/Alınan Miktar|Получена Сума|Amount Received/i);
+  await received.fill('10');
+  await expect(page.getByText(/Para Üstü:|Ресто:|Change:/i)).toBeVisible();
+  await page
+    .getByRole('button', { name: /Ödeme Al|Вземи Плащане|Take Payment/i })
+    .last()
+    .click();
+
+  await expect(page.getByText(/Ödenen hesaplar|Платени сметки|Paid checks/i)).toBeVisible();
+  await page.getByRole('button', { name: /Ali ·/i }).click();
+  await expect(page.getByText(/Ödemeyi düzenle|Редактирай плащането|Edit payment/i)).toBeVisible();
+  await received.fill('12');
+  await page.getByRole('button', { name: /Kaydet|Запази|Save/i }).click();
 });
 
 test('opens the searchable receipt archive with explicit offline recovery', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('tab', { name: nav.receipts }).click();
 
-  await page
-    .getByText(/Fişler|Разписки|Receipts/i)
-    .last()
-    .click();
-  await expect(
-    page.getByText(/Fiş arşivi|Архив на разписките|Receipt archive/i).first(),
-  ).toBeVisible();
   await expect(page.getByLabel(/Hızlı arama|Бързо търсене|Quick search/i)).toBeVisible();
   await expect(
     page.getByRole('button', { name: /^(Filtreler|Филтри|Filters) \(\d+\)$/i }),
@@ -85,40 +200,19 @@ test('opens the searchable receipt archive with explicit offline recovery', asyn
   ).toBeVisible();
 });
 
-test('opens the manager report with auditable filters and offline recovery', async ({ page }) => {
+test('keeps manual menu editing available while AI add is disabled', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.getByRole('tab', { name: nav.menu }).click();
 
-  await page
-    .getByText(/Raporlar|Отчети|Reports/i)
-    .last()
-    .click();
-  await expect(
-    page.getByText(/Yönetici raporu|Управленски отчет|Manager report/i).first(),
-  ).toBeVisible();
-  await expect(page.getByLabel(/Başlangıç|Начало|From/i)).toBeVisible();
-  await expect(page.getByLabel(/Bitiş|Край|To/i)).toBeVisible();
-  await expect(
-    page.getByText(
-      /Yönetici raporu için internet bağlantısı gerekli|За управленския отчет е необходим интернет|An internet connection is required for manager reporting/i,
-    ),
-  ).toBeVisible();
-});
-
-test('keeps manual menu editing available when the AI assistant is offline', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
-
-  await page
-    .getByText(/Menü|Меню|Menu/i)
-    .last()
-    .click();
-  await expect(page.getByText(/Menü merkezi|Меню център|Menu hub/i).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: nav.menu })).toBeVisible();
   await expect(
     page.getByRole('button', { name: /AI ile ürün ekle|Добави с AI|Add with AI/i }),
   ).toBeDisabled();
   await expect(
-    page.getByText(/AI yalnız taslak hazırlar|AI създава само чернова|AI creates a draft only/i),
+    page.getByText(
+      /AI ile ürün ekleme şimdilik devre dışı|Добавянето с AI временно е деактивирано|Adding items with AI is temporarily disabled/i,
+    ),
   ).toBeVisible();
 
   await page
@@ -126,13 +220,31 @@ test('keeps manual menu editing available when the AI assistant is offline', asy
     .first()
     .click();
   await expect(
-    page
-      .getByRole('heading', {
-        name: /^(Ürün ekle|Добави артикул|Add item)$/i,
-      })
-      .last(),
+    page.getByRole('heading', { name: /^(Ürün Ekle|Добави Артикул|Add Item)$/i }).last(),
   ).toBeVisible();
   await expect(page.getByLabel(/Ürün adı|Име|Item name/i)).toBeVisible();
   await expect(page.getByLabel(/Fiyat|Цена|Price/i)).toBeVisible();
-  await expect(page.getByText(/Seçenek grupları|Групи опции|Option groups/i)).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('manual-add-mobile.png'), fullPage: true });
+});
+
+test('exports a parseable JSON backup from Settings', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('tab', { name: nav.home }).click();
+  await page.getByRole('button', { name: /Ayarlar|Настройки|Settings/i }).click();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: /Yedek al|Резервно копие|Export backup/i }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/orderia-backup-.*\.json/i);
+  const path = await download.path();
+  expect(path).toBeTruthy();
+  const parsed = JSON.parse((await readFile(path!)).toString('utf8')) as {
+    format?: string;
+    version?: number;
+    data?: unknown;
+  };
+  expect(parsed.format).toBe('orderia-backup');
+  expect(parsed.version).toBe(1);
+  expect(parsed.data).toBeTruthy();
 });

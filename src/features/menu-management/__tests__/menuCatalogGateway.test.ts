@@ -75,7 +75,7 @@ describe('MenuCatalogGateway', () => {
     ).resolves.toEqual({ itemId: 'item-1', status: 'published' });
     expect(rpc).toHaveBeenNthCalledWith(
       1,
-      'publish_menu_ai_draft',
+      'publish_menu_ai_draft_with_fulfillment',
       expect.objectContaining({
         requested_request_id: 'draft-1',
         requested_expected_version: 2,
@@ -128,6 +128,7 @@ const reviewedItem: EditableCatalogItem = {
   categoryName: 'Atıştırmalık',
   name: 'Patates kızartması',
   description: 'Çıtır patates',
+  fulfillmentGroup: 'kitchen',
   priceMinor: 400,
   currencyCode: 'EUR' as never,
   taxRateBasisPoints: 0,

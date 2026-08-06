@@ -2,17 +2,22 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { ServiceIconButton, ServiceSurface } from '../../design-system';
+import { haptic, ServiceIconButton, ServiceSurface } from '../../design-system';
 import { Language, useLocalization } from '../../i18n';
 import { ShiftBoardTable, ShiftBoardTableState } from './shiftBoardModel';
 
 export interface ServiceTableCardProps {
   readonly table: ShiftBoardTable;
   readonly onPress: () => void;
+  /**
+   * Uzun basış, taşma düğmesiyle aynı eylem listesini açar. İkisi birlikte verilir:
+   * hızlı olan gizli, keşfedilebilir olan görünür kalsın.
+   */
+  readonly onLongPress?: () => void;
   readonly onMore?: () => void;
 }
 
-export function ServiceTableCard({ table, onPress, onMore }: ServiceTableCardProps) {
+export function ServiceTableCard({ table, onPress, onLongPress, onMore }: ServiceTableCardProps) {
   const { tokens } = useTheme();
   const { language, t } = useLocalization();
   const [focused, setFocused] = useState(false);
@@ -27,6 +32,7 @@ export function ServiceTableCard({ table, onPress, onMore }: ServiceTableCardPro
       ? formatMinorCurrency(table.remainingMinor, table.currencyCode, language)
       : undefined,
     table.checkCount > 0 ? `${table.checkCount} ${t.checksCount}` : undefined,
+    ...(table.checkNames ?? []),
   ]
     .filter(Boolean)
     .join(', ');
@@ -46,8 +52,17 @@ export function ServiceTableCard({ table, onPress, onMore }: ServiceTableCardPro
         accessibilityHint={`${table.hallName}${accessibleWaiters}`}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
+        delayLongPress={320}
         onBlur={() => setFocused(false)}
         onFocus={() => setFocused(true)}
+        onLongPress={
+          onLongPress
+            ? () => {
+                haptic('activate');
+                onLongPress();
+              }
+            : undefined
+        }
         onPress={onPress}
         style={({ pressed }) => ({
           minHeight: tokens.sizing.tableCardMinimumHeight,
@@ -78,6 +93,15 @@ export function ServiceTableCard({ table, onPress, onMore }: ServiceTableCardPro
             />
           ) : null}
         </View>
+
+        {table.checkNames && table.checkNames.length > 0 ? (
+          <Text
+            numberOfLines={1}
+            style={[tokens.typography.caption, { color: tokens.colors.textSubtle, marginTop: 2 }]}
+          >
+            {table.checkNames.join(' · ')}
+          </Text>
+        ) : null}
 
         <View
           style={{

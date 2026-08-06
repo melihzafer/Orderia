@@ -20,9 +20,13 @@ export type AuthStatus =
   | 'initializing'
   | 'signed_out'
   | 'pending_approval'
+  | 'onboarding_role'
+  | 'onboarding_restaurant'
   | 'select_branch'
   | 'ready'
   | 'error';
+
+export type OnboardingRole = 'waiter' | 'manager';
 
 export interface AuthContextValue {
   readonly status: AuthStatus;
@@ -32,15 +36,20 @@ export interface AuthContextValue {
   readonly activeBranch: BranchRow | null;
   readonly activeOrganization: OrganizationRow | null;
   readonly activeMembership: MembershipRow | null;
+  readonly onboardingRole: OnboardingRole | null;
+  readonly createdRestaurantCode?: string;
   readonly currentDeviceId: string | null;
   readonly devices: readonly DeviceRow[];
   readonly errorMessage?: string;
   readonly pendingSignupEmail?: string;
   readonly pendingApprovals: readonly SignupRequestRow[];
-  readonly googleSignInAvailable: boolean;
   signIn(email: string, password: string): Promise<void>;
-  signInWithGoogle(): Promise<void>;
   signUp(email: string, password: string, displayName: string): Promise<void>;
+  selectOnboardingRole(role: OnboardingRole): void;
+  resetOnboardingRole(): void;
+  joinRestaurant(code: string): Promise<void>;
+  createRestaurant(name: string, branchName?: string): Promise<void>;
+  finishOnboarding(): Promise<void>;
   signOut(): Promise<void>;
   refreshApprovals(): Promise<void>;
   approveSignup(signupId: string): Promise<void>;

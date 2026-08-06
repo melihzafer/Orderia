@@ -10,6 +10,8 @@ export interface ServiceStatusPillProps {
   readonly icon?: keyof typeof Ionicons.glyphMap;
   readonly announce?: boolean;
   readonly size?: 'small' | 'default' | 'large';
+  /** İkon yerine durumu renkli bir noktayla göster; masa haritası gibi yoğun listelerde daha sakin. */
+  readonly dot?: boolean;
 }
 
 export function ServiceStatusPill({
@@ -18,6 +20,7 @@ export function ServiceStatusPill({
   icon,
   announce = false,
   size = 'default',
+  dot = false,
 }: ServiceStatusPillProps) {
   const { tokens } = useTheme();
   const colors = statusPalette(tokens.colors, tone);
@@ -47,6 +50,16 @@ export function ServiceStatusPill({
           size={16}
           color={colors.content}
           style={{ marginRight: tokens.space.xxs }}
+        />
+      ) : dot ? (
+        <View
+          style={{
+            backgroundColor: colors.content,
+            borderRadius: tokens.radius.full,
+            height: 8,
+            marginRight: tokens.space.xxs,
+            width: 8,
+          }}
         />
       ) : null}
       <Text style={[typography, { color: colors.content }]}>{label}</Text>

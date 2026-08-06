@@ -2,25 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
+  haptic,
   ServiceButton,
   ServiceStatusPill,
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
 import { CurrencyCode } from '../domain';
 import {
@@ -30,7 +24,7 @@ import {
   editableItemFromSuggestion,
 } from '../features/menu-management';
 import { useLocalization } from '../i18n';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/routes';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -49,6 +43,7 @@ export default function MenuAssistantScreen() {
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const { show } = useSnackbar();
   const [error, setError] = useState<string>();
   const isManager = auth.activeMembership?.role === 'manager';
   const cloudReady = mode === 'cloud' && sync.online;
@@ -99,9 +94,9 @@ export default function MenuAssistantScreen() {
         ...item,
         confirmedAllergens,
       });
-      Alert.alert(copy.published, copy.publishedBody, [
-        { text: copy.done, onPress: () => navigation.goBack() },
-      ]);
+      haptic('success');
+      show({ message: copy.publishedBody, tone: 'success' });
+      navigation.goBack();
     } catch (publishError) {
       setError(publishError instanceof Error ? publishError.message : copy.publishFailed);
     } finally {

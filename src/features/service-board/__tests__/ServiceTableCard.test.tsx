@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { serviceSizing } from '../../../design-system';
 import { LocalizationProvider } from '../../../i18n';
 import { ShiftBoardTable } from '../shiftBoardModel';
 import { ServiceTableCard, formatMinorCurrency } from '../ServiceTableCard';
@@ -51,7 +52,27 @@ describe('ServiceTableCard', () => {
 
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onMore).toHaveBeenCalledTimes(1);
-    expect(tableAction.props.style.minHeight).toBe(104);
+    // Sabit sayı yerine token: kart yüksekliği dokunma hedefi ölçeğiyle birlikte
+    // büyüsün, testi güncellemek için ayrı bir hamle gerekmesin.
+    expect(tableAction.props.style.minHeight).toBe(serviceSizing.tableCardMinimumHeight);
+    expect(tableAction.props.style.minHeight).toBeGreaterThanOrEqual(
+      serviceSizing.primaryTarget * 2,
+    );
+  });
+
+  it('opens the same contextual actions from a long press as from the more button', async () => {
+    const onLongPress = jest.fn();
+    const screen = await render(
+      <LocalizationProvider>
+        <ThemeProvider>
+          <ServiceTableCard onLongPress={onLongPress} onPress={jest.fn()} table={table} />
+        </ThemeProvider>
+      </LocalizationProvider>,
+    );
+
+    fireEvent(screen.getByRole('button', { name: /Table 4.*32,50.*2 hesap/i }), 'longPress');
+
+    expect(onLongPress).toHaveBeenCalledTimes(1);
   });
 });
 

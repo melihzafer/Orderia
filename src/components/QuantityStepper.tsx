@@ -1,11 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { createHoldRepeat, haptic, type HoldRepeat } from '../design-system';
 
 /**
  * Garson dostu adet kontrolü: − sayaç +
  * Ebeveyn Pressable içinde kullanıldığında dokunuşu yukarı iletmez.
+ *
+ * Basılı tutmak adımları tekrarlar ve hızlanır: sekiz bira için sekiz kez dokunmak
+ * yerine parmağı basılı tutmak yeter. Bu, uygulamada en sık tekrarlanan hareket.
  */
 export function QuantityStepper({
   quantity,
@@ -27,8 +31,11 @@ export function QuantityStepper({
   readonly increaseDisabled?: boolean;
 }) {
   const { tokens } = useTheme();
-  const buttonSize = compact ? 36 : 44;
-  const iconSize = compact ? 18 : 22;
+  // Dar yerleşimde bile Android'in 48dp tabanının altına inmiyoruz; normal
+  // yerleşimde asıl eylem boyutuna çıkıyor ki tek elle nişan almak gerekmesin.
+  const buttonSize = compact ? tokens.sizing.minimumTarget : tokens.sizing.primaryTarget;
+  const iconSize = compact ? 22 : 26;
+
   return (
     <View
       style={{
@@ -38,60 +45,116 @@ export function QuantityStepper({
         marginTop: compact ? 0 : tokens.space.xxs,
       }}
     >
-      <Pressable
-        accessibilityLabel={decreaseLabel}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: decreaseDisabled }}
+      <StepButton
+        color={tokens.colors.error}
         disabled={decreaseDisabled}
-        hitSlop={6}
-        onPress={(event) => {
-          event.stopPropagation();
-          onDecrease();
-        }}
-        style={({ pressed }) => ({
-          alignItems: 'center',
-          backgroundColor: tokens.colors.surface,
-          borderColor: tokens.colors.border,
-          borderRadius: tokens.radius.full,
-          borderWidth: 1,
-          height: buttonSize,
-          justifyContent: 'center',
-          opacity: decreaseDisabled ? 0.35 : pressed ? 0.7 : 1,
-          width: buttonSize,
-        })}
-      >
-        <Ionicons color={tokens.colors.error} name="remove" size={iconSize} />
-      </Pressable>
+        icon="remove"
+        iconSize={iconSize}
+        label={decreaseLabel}
+        onStep={onDecrease}
+        size={buttonSize}
+        variant="outline"
+      />
       <Text
         style={[
           tokens.typography.bodyStrong,
-          { color: tokens.colors.text, minWidth: 28, textAlign: 'center' },
+          {
+            color: tokens.colors.text,
+            minWidth: compact ? 32 : 40,
+            textAlign: 'center',
+          },
         ]}
       >
         {quantity}
       </Text>
-      <Pressable
-        accessibilityLabel={increaseLabel}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: increaseDisabled }}
+      <StepButton
+        color={tokens.colors.primaryContrast}
         disabled={increaseDisabled}
-        hitSlop={6}
-        onPress={(event) => {
-          event.stopPropagation();
-          onIncrease();
-        }}
-        style={({ pressed }) => ({
-          alignItems: 'center',
-          backgroundColor: tokens.colors.accent,
-          borderRadius: tokens.radius.full,
-          height: buttonSize,
-          justifyContent: 'center',
-          opacity: increaseDisabled ? 0.35 : pressed ? 0.7 : 1,
-          width: buttonSize,
-        })}
-      >
-        <Ionicons color={tokens.colors.primaryContrast} name="add" size={iconSize} />
-      </Pressable>
+        icon="add"
+        iconSize={iconSize}
+        label={increaseLabel}
+        onStep={onIncrease}
+        size={buttonSize}
+        variant="solid"
+      />
     </View>
+  );
+}
+
+function StepButton({
+  icon,
+  label,
+  onStep,
+  disabled,
+  size,
+  iconSize,
+  color,
+  variant,
+}: {
+  readonly icon: keyof typeof Ionicons.glyphMap;
+  readonly label: string;
+  readonly onStep: () => void;
+  readonly disabled: boolean;
+  readonly size: number;
+  readonly iconSize: number;
+  readonly color: string;
+  readonly variant: 'solid' | 'outline';
+}) {
+  const { tokens } = useTheme();
+  // Tekrar sırasında sınıra dayanıldığında ebeveyn `disabled` gönderir; adım
+  // fonksiyonu bunu ref'ten okuyup `false` döndürerek tekrarı kendiliğinden bitirir.
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
+  const stepRef = useRef(onStep);
+  stepRef.current = onStep;
+
+  const repeater = useRef<HoldRepeat | undefined>(undefined);
+  if (!repeater.current) {
+    repeater.current = createHoldRepeat(
+      () => {
+        if (disabledRef.current) return false;
+        stepRef.current();
+        return true;
+      },
+      undefined,
+      () => haptic('activate'),
+    );
+  }
+
+  useEffect(() => {
+    const current = repeater.current;
+    return () => current?.stop();
+  }, []);
+
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      hitSlop={6}
+      onPress={(event) => {
+        event.stopPropagation();
+        // Basılı tutma zaten adımları attıysa bırakış bir adım daha eklemez.
+        if (repeater.current?.consumeRepeated()) return;
+        haptic('selection');
+        onStep();
+      }}
+      onPressIn={() => repeater.current?.start()}
+      onPressOut={() => repeater.current?.stop()}
+      style={({ pressed }) => ({
+        alignItems: 'center',
+        backgroundColor: variant === 'solid' ? tokens.colors.accent : tokens.colors.surface,
+        borderColor: tokens.colors.border,
+        borderRadius: tokens.radius.full,
+        borderWidth: variant === 'solid' ? 0 : 1,
+        height: size,
+        justifyContent: 'center',
+        opacity: disabled ? 0.35 : pressed ? 0.7 : 1,
+        width: size,
+      })}
+    >
+      <Ionicons color={color} name={icon} size={iconSize} />
+    </Pressable>
   );
 }

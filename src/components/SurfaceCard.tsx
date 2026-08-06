@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ViewStyle, ViewProps, TouchableOpacity, TouchableOpacityProps } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { brand, elevation, radius, spacing } from '../constants/branding';
+import { serviceElevation, serviceRadius, serviceSpace } from '../design-system/tokens';
 
 interface SurfaceCardProps extends ViewProps {
   variant?: 'default' | 'elevated' | 'outlined' | 'glass';
@@ -33,16 +33,16 @@ export function SurfaceCard({
     // Border radius
     switch (radiusSize) {
       case 'small':
-        baseStyle.borderRadius = radius.sm;
+        baseStyle.borderRadius = serviceRadius.small;
         break;
       case 'large':
-        baseStyle.borderRadius = radius.lg;
+        baseStyle.borderRadius = serviceRadius.large;
         break;
       case 'xl':
-        baseStyle.borderRadius = radius.lg; // xl doesn't exist, use lg
+        baseStyle.borderRadius = serviceRadius.large; // xl doesn't exist, use large
         break;
       default: // medium
-        baseStyle.borderRadius = radius.md;
+        baseStyle.borderRadius = serviceRadius.medium;
         break;
     }
 
@@ -51,23 +51,23 @@ export function SurfaceCard({
       case 'none':
         break;
       case 'small':
-        baseStyle.padding = spacing.sm;
+        baseStyle.padding = serviceSpace.xs;
         break;
       case 'large':
-        baseStyle.padding = spacing.xl;
+        baseStyle.padding = serviceSpace.lg;
         break;
       case 'xl':
-        baseStyle.padding = spacing.xl + spacing.sm;
+        baseStyle.padding = serviceSpace.lg + serviceSpace.xs;
         break;
       default: // medium
-        baseStyle.padding = spacing.md;
+        baseStyle.padding = serviceSpace.sm;
         break;
     }
 
     // Variant styles
     switch (variant) {
       case 'elevated':
-        Object.assign(baseStyle, elevation.md);
+        Object.assign(baseStyle, serviceElevation.sticky);
         break;
       case 'outlined':
         baseStyle.borderWidth = 1;
@@ -77,10 +77,10 @@ export function SurfaceCard({
         baseStyle.backgroundColor = colors.surface + 'E6'; // 90% opacity
         baseStyle.borderWidth = 1;
         baseStyle.borderColor = colors.borderLight;
-        Object.assign(baseStyle, elevation.sm);
+        Object.assign(baseStyle, serviceElevation.none);
         break;
       default: // default
-        Object.assign(baseStyle, elevation.sm);
+        Object.assign(baseStyle, serviceElevation.none);
         break;
     }
 

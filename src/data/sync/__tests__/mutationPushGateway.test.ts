@@ -128,10 +128,31 @@ describe('SupabaseMutationPushGateway collaboration routes', () => {
       expect.objectContaining({ requested_entity_id: 'item-1' }),
     );
   });
+
+  it('routes a physical table note through the session note command', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        status: 'applied',
+        repository: 'tableSessions',
+        entityId: 'session-1',
+        serverVersion: 2,
+        committedAt: createdAt,
+      },
+      error: null,
+    });
+    const gateway = new SupabaseMutationPushGateway({ rpc } as never);
+
+    await gateway.push(mutation('tableSessions', 'session-1', { note: 'Blue tent' }, 1));
+
+    expect(rpc).toHaveBeenCalledWith(
+      'apply_table_session_note_command',
+      expect.objectContaining({ requested_base_version: 1 }),
+    );
+  });
 });
 
 function mutation(
-  repository: 'orderBatches' | 'orderItems' | 'checks',
+  repository: 'orderBatches' | 'orderItems' | 'checks' | 'tableSessions',
   entityId: string,
   payload: OutboxMutation['payload'],
   baseVersion?: number,

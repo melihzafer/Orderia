@@ -1,0 +1,22 @@
+# Prettier is configured with `endOfLine: "lf"`. Without this file a Windows
+# checkout hands CRLF back to the format gate and every line reads as dirty.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.jar binary
+*.keystore binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+
+# Windows-only helper scripts stay CRLF so PowerShell reads them predictably.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

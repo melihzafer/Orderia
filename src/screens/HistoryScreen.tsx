@@ -1,18 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { FlatList, Platform, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import uuid from 'react-native-uuid';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { accessibleBranches } from '../contexts/authTypes';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
+  haptic,
   ServiceButton,
   ServiceEmptyState,
+  ServiceScreenHeader,
   ServiceSkeleton,
   ServiceStatusPill,
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
 import {
   ReceiptArchiveCard,
@@ -22,13 +30,18 @@ import {
   ReceiptArchiveFilterSheet,
   ReceiptArchiveFilters,
   ReceiptDetailSheet,
+  ReceiptTimelineEntry,
   activeReceiptFilterCount,
   buildReceiptArchiveFilters,
   defaultReceiptArchiveFilters,
   withDateRange,
+  receiptArchiveCsv,
 } from '../features/receipt-archive';
 import { presentReceiptPdf } from '../features/receipts';
+import { captureOperationalError } from '../observability';
 import { useLocalization } from '../i18n';
+import { RootStackParamList } from '../navigation/routes';
+import { DeviceId, MutationId, toDomainId } from '../domain';
 
 const archivePageSize = 30;
 
@@ -37,10 +50,19 @@ export default function HistoryScreen() {
   const { tokens } = useTheme();
   const { language } = useLocalization();
   const layout = useAdaptiveLayout();
-  const { mode, prepareReceiptPdf, searchReceiptArchive, sync } = useOrderiaData();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const {
+    loadReceiptTimeline,
+    mode,
+    prepareReceiptPdf,
+    reopenTableSession,
+    searchReceiptArchive,
+    sync,
+  } = useOrderiaData();
   const copy = archiveCopy(language);
   const timezone = auth.activeBranch?.timezone ?? 'UTC';
   const currency = auth.activeBranch?.currency_code ?? 'EUR';
+  const { show } = useSnackbar();
   const [draft, setDraft] = useState<ReceiptArchiveFilterDraft>(() =>
     defaultReceiptArchiveFilters(timezone),
   );
@@ -55,10 +77,15 @@ export default function HistoryScreen() {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [showFilters, setShowFilters] = useState(false);
   const [detailEntry, setDetailEntry] = useState<ReceiptArchiveEntry>();
+  const [timeline, setTimeline] = useState<readonly ReceiptTimelineEntry[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
   const [busyReceiptId, setBusyReceiptId] = useState<string>();
+  const [reopeningSessionId, setReopeningSessionId] = useState<string>();
   const requestRevision = useRef(0);
   const activeFilterCount = activeReceiptFilterCount(draft);
   const cloudReady = mode === 'cloud';
+  const managerCanReopen =
+    auth.status === 'unconfigured' || auth.activeMembership?.role === 'manager';
 
   const branches = useMemo(
     () =>
@@ -113,12 +140,36 @@ export default function HistoryScreen() {
     };
   }, [auth.activeBranch?.id, load]);
 
+  useEffect(() => {
+    if (!detailEntry) {
+      setTimeline([]);
+      setTimelineLoading(false);
+      return;
+    }
+    let active = true;
+    setTimelineLoading(true);
+    void loadReceiptTimeline(detailEntry.receipt.id)
+      .then((next) => {
+        if (active) setTimeline(next);
+      })
+      .catch(() => {
+        if (active) setTimeline([]);
+      })
+      .finally(() => {
+        if (active) setTimelineLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [detailEntry, loadReceiptTimeline]);
+
   const applyDraft = () => {
     try {
       setFilters(buildReceiptArchiveFilters(draft, currency));
       setShowFilters(false);
-    } catch (error) {
-      Alert.alert(copy.invalidFilters, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      haptic('error');
+      show({ message: copy.invalidFilters, tone: 'error' });
     }
   };
 
@@ -140,7 +191,9 @@ export default function HistoryScreen() {
       const prepared = await prepareReceiptPdf(entry.receipt);
       await presentReceiptPdf(prepared.signedUrl, entry.receipt.receiptNumber, mode);
     } catch (error) {
-      Alert.alert(copy.pdfFailed, error instanceof Error ? error.message : copy.tryAgain);
+      captureOperationalError(error, 'receipt_render_failure', { operation: 'receipt_pdf' });
+      haptic('error');
+      show({ message: copy.pdfFailed, tone: 'error' });
     } finally {
       setBusyReceiptId(undefined);
     }
@@ -150,8 +203,58 @@ export default function HistoryScreen() {
     if (branchId === auth.activeBranch?.id) return;
     try {
       await auth.switchBranch(branchId);
-    } catch (error) {
-      Alert.alert(copy.branchFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } catch {
+      haptic('error');
+      show({ message: copy.branchFailed, tone: 'error' });
+    }
+  };
+
+  const reopenOrder = async (entry: ReceiptArchiveEntry, reason: string, pin: string) => {
+    if (!auth.currentDeviceId || !managerCanReopen) return;
+    setReopeningSessionId(entry.receipt.tableSessionId);
+    try {
+      const result = await reopenTableSession(
+        toDomainId<DeviceId>(auth.currentDeviceId),
+        toDomainId<MutationId>(String(uuid.v4())),
+        entry.receipt.tableSessionId,
+        reason,
+        pin,
+      );
+      setDetailEntry(undefined);
+      navigation.navigate('TableDetail', { tableId: result.tableId });
+    } catch {
+      haptic('error');
+      show({ message: copy.reopenFailed, tone: 'error' });
+    } finally {
+      setReopeningSessionId(undefined);
+    }
+  };
+
+  const exportCsv = async () => {
+    if (entries.length === 0) return;
+    try {
+      const csv = `\uFEFF${receiptArchiveCsv(entries)}`;
+      const filename = `orderia-receipts-${new Date().toISOString().slice(0, 10)}.csv`;
+      if (Platform.OS === 'web' && typeof document !== 'undefined') {
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      await FileSystem.writeAsStringAsync(fileUri, csv);
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: copy.csvExport,
+        });
+      }
+    } catch {
+      haptic('error');
+      show({ message: copy.csvExportFailed, tone: 'error' });
     }
   };
 
@@ -213,33 +316,17 @@ export default function HistoryScreen() {
         }
         ListHeaderComponent={
           <View style={{ gap: tokens.space.md, paddingVertical: tokens.space.lg }}>
-            <View
-              style={{
-                alignItems: 'flex-start',
-                flexDirection: layout.mode === 'compact' ? 'column' : 'row',
-                gap: tokens.space.sm,
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={[tokens.typography.title, { color: tokens.colors.text }]}>
-                  {copy.title}
-                </Text>
-                <Text
-                  style={[
-                    tokens.typography.body,
-                    { color: tokens.colors.textSubtle, marginTop: tokens.space.xs },
-                  ]}
-                >
-                  {copy.subtitle}
-                </Text>
-              </View>
-              <ServiceStatusPill
-                icon={sync.online ? 'cloud-done-outline' : 'cloud-offline-outline'}
-                label={sync.online ? copy.cloudArchive : copy.offline}
-                tone={sync.online ? 'success' : 'warning'}
-              />
-            </View>
+            <ServiceScreenHeader
+              action={
+                <ServiceStatusPill
+                  icon={sync.online ? 'cloud-done-outline' : 'cloud-offline-outline'}
+                  label={sync.online ? copy.cloudArchive : copy.offline}
+                  tone={sync.online ? 'success' : 'warning'}
+                />
+              }
+              subtitle={copy.subtitle}
+              title={copy.title}
+            />
 
             {errorMessage && entries.length > 0 ? (
               <ServiceSurface accessibilityRole="alert" variant="outlined">
@@ -282,18 +369,42 @@ export default function HistoryScreen() {
               value={draft.query}
             />
 
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+            {/*
+              Rozetler ve düğmeler ayrı satırlarda. Altısı tek bir sarmalayan
+              satıra konduğunda 3-2-1 diye düzensiz kırılıyor, iki farklı yükseklik
+              yan yana geliyordu. Şimdi her satır tek tür taşıyor ve düğmeler eşit
+              genişlikte.
+            */}
+            <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
               <FilterChip label={copy.today} onPress={() => applyDatePreset(1)} />
               <FilterChip label={copy.sevenDays} onPress={() => applyDatePreset(7)} />
               <FilterChip label={copy.thirtyDays} onPress={() => applyDatePreset(30)} />
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
               <ServiceButton
                 icon="options-outline"
                 label={`${copy.filters} (${activeFilterCount})`}
                 onPress={() => setShowFilters(true)}
+                style={{ flex: 1 }}
                 variant="outline"
               />
-              <ServiceButton icon="search-outline" label={copy.searchAction} onPress={applyDraft} />
+              <ServiceButton
+                icon="search-outline"
+                label={copy.searchAction}
+                onPress={applyDraft}
+                style={{ flex: 1 }}
+              />
             </View>
+
+            <ServiceButton
+              disabled={entries.length === 0}
+              fullWidth
+              icon="download-outline"
+              label={copy.csvExport}
+              onPress={() => void exportCsv()}
+              variant="outline"
+            />
 
             <View
               style={{
@@ -346,7 +457,12 @@ export default function HistoryScreen() {
         <ReceiptDetailSheet
           entry={detailEntry}
           language={language}
+          managerCanReopen={managerCanReopen}
           onClose={() => setDetailEntry(undefined)}
+          onReopen={(reason, pin) => void reopenOrder(detailEntry, reason, pin)}
+          reopening={reopeningSessionId === detailEntry.receipt.tableSessionId}
+          timeline={timeline}
+          timelineLoading={timelineLoading}
         />
       ) : null}
     </SafeAreaView>
@@ -421,6 +537,9 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
       tryAgain: 'Tekrar deneyin.',
       pdfFailed: 'Fiş PDF’i açılamadı',
       branchFailed: 'Şube değiştirilemedi',
+      reopenFailed: 'Sipariş yeniden açılamadı',
+      csvExport: 'CSV dışa aktar',
+      csvExportFailed: 'CSV dışa aktarılamadı',
     };
   }
   if (language === 'bg') {
@@ -451,6 +570,9 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
       tryAgain: 'Опитайте отново.',
       pdfFailed: 'PDF файлът не можа да се отвори',
       branchFailed: 'Обектът не можа да се смени',
+      reopenFailed: 'Поръчката не бе отворена отново',
+      csvExport: 'Експортирай CSV',
+      csvExportFailed: 'CSV файлът не бе експортиран',
     };
   }
   return {
@@ -480,5 +602,8 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
     tryAgain: 'Try again.',
     pdfFailed: 'Receipt PDF could not be opened',
     branchFailed: 'Branch could not be changed',
+    reopenFailed: 'The order could not be reopened',
+    csvExport: 'Export CSV',
+    csvExportFailed: 'CSV export failed',
   };
 }

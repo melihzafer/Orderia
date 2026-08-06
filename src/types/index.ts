@@ -12,8 +12,12 @@ export interface MenuItem {
   name: string;
   price: number; // in cents (e.g., 12.50 => 1250)
   description?: string;
+  /** Optional device-local image used by the menu and order palette. */
+  photoUri?: string;
   isActive: boolean;
   prepTime?: number; // estimated preparation time in minutes
+  /** Optional local-only service handoff; legacy products default to kitchen. */
+  fulfillmentGroup?: 'kitchen' | 'drinks';
 }
 
 export interface Hall {
@@ -119,6 +123,8 @@ export interface CreateMenuItemData {
   name: string;
   price: number;
   description?: string;
+  photoUri?: string;
+  fulfillmentGroup?: 'kitchen' | 'drinks';
 }
 
 export interface CreateHallData {

@@ -4,9 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { accessibleBranches } from '../contexts/authTypes';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocalization } from '../i18n';
 
 export default function BranchSelectionScreen() {
   const { colors } = useTheme();
+  const { t } = useLocalization();
   const { workspace, switchBranch, signOut, errorMessage } = useAuth();
   const branches = workspace ? accessibleBranches(workspace) : [];
 
@@ -14,9 +16,9 @@ export default function BranchSelectionScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Select a branch</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t.selectBranchTitle}</Text>
           <Text style={[styles.subtitle, { color: colors.textSubtle }]}>
-            Your active tables and reports will follow this selection.
+            {t.selectBranchSubtitle}
           </Text>
         </View>
 
@@ -41,7 +43,7 @@ export default function BranchSelectionScreen() {
             >
               <Text style={[styles.branchName, { color: colors.text }]}>{branch.name}</Text>
               <Text style={[styles.organization, { color: colors.textSubtle }]}>
-                {organization?.name ?? 'Orderia'}
+                {organization?.name ?? t.defaultOrganization}
               </Text>
             </Pressable>
           );
@@ -60,7 +62,7 @@ export default function BranchSelectionScreen() {
           }}
           style={styles.signOut}
         >
-          <Text style={[styles.signOutText, { color: colors.textSubtle }]}>Sign out</Text>
+          <Text style={[styles.signOutText, { color: colors.textSubtle }]}>{t.signOut}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

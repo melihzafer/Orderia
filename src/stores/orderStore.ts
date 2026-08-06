@@ -11,6 +11,7 @@ import { calculateLinesTotal } from '../utils/financeUtils';
 
 interface OrderState {
   openTickets: Record<string, Ticket>; // ticketId -> ticket
+  replaceOpenTickets: (openTickets: Record<string, Ticket>) => void;
 
   // Ticket actions
   openTable: (tableId: string, ticketName?: string) => Ticket;
@@ -30,6 +31,12 @@ interface OrderState {
   // Batch actions
   markAllDelivered: (ticketId: string) => void;
   payTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
+  moveTicketLine: (
+    sourceTicketId: string,
+    lineId: string,
+    targetTicketId: string,
+    quantity?: number,
+  ) => void;
 
   // Selectors
   getTicket: (ticketId: string) => Ticket | undefined;
@@ -43,6 +50,8 @@ export const useOrderStore = create<OrderState>()(
   persist(
     (set, get) => ({
       openTickets: {},
+
+      replaceOpenTickets: (openTickets) => set({ openTickets }),
 
       // Ticket actions
       openTable: (tableId, ticketName) => {
@@ -326,6 +335,59 @@ export const useOrderStore = create<OrderState>()(
 
       payTicket: (ticketId, paymentInfo) => {
         get().closeTicket(ticketId, paymentInfo);
+      },
+
+      moveTicketLine: (sourceTicketId, lineId, targetTicketId, quantity) => {
+        if (sourceTicketId === targetTicketId) return;
+        const state = get();
+        const sourceTicket = state.openTickets[sourceTicketId];
+        const targetTicket = state.openTickets[targetTicketId];
+        if (!sourceTicket || !targetTicket || sourceTicket.tableId !== targetTicket.tableId) {
+          throw new Error('Orders must belong to the same table');
+        }
+
+        const sourceLine = sourceTicket.lines.find((line) => line.id === lineId);
+        if (!sourceLine || sourceLine.status === 'cancelled') {
+          throw new Error('Order line cannot be moved');
+        }
+        const moveQuantity = quantity ?? sourceLine.quantity;
+        if (
+          !Number.isInteger(moveQuantity) ||
+          moveQuantity < 1 ||
+          moveQuantity > sourceLine.quantity
+        ) {
+          throw new Error('Invalid move quantity');
+        }
+
+        const now = Date.now();
+        const movedLine: TicketLine = {
+          ...sourceLine,
+          id: generateId(),
+          quantity: moveQuantity,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        set((current) => ({
+          openTickets: {
+            ...current.openTickets,
+            [sourceTicketId]: {
+              ...sourceTicket,
+              lines:
+                moveQuantity === sourceLine.quantity
+                  ? sourceTicket.lines.filter((line) => line.id !== lineId)
+                  : sourceTicket.lines.map((line) =>
+                      line.id === lineId
+                        ? { ...line, quantity: line.quantity - moveQuantity, updatedAt: now }
+                        : line,
+                    ),
+            },
+            [targetTicketId]: {
+              ...targetTicket,
+              lines: [...targetTicket.lines, movedLine],
+            },
+          },
+        }));
       },
 
       // Selectors

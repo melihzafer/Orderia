@@ -2,11 +2,17 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { focusRing } from '../focusRing';
 
 export interface ServiceIconButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   readonly icon: keyof typeof Ionicons.glyphMap;
   readonly label: string;
   readonly tone?: 'default' | 'primary' | 'danger';
+  /**
+   * `compact` görsel kutuyu küçültür; dokunma alanı hitSlop ile yine ~48dp'de kalır.
+   * Yalnızca ikincil/üçüncül eylemler için (ör. bir kart üstündeki geri al/temizle).
+   */
+  readonly size?: 'default' | 'compact';
   readonly style?: StyleProp<ViewStyle>;
 }
 
@@ -14,14 +20,17 @@ export function ServiceIconButton({
   icon,
   label,
   tone = 'default',
+  size = 'default',
   disabled,
   style,
   onFocus,
   onBlur,
+  hitSlop,
   ...props
 }: ServiceIconButtonProps) {
   const { tokens } = useTheme();
   const [focused, setFocused] = useState(false);
+  const isCompact = size === 'compact';
   const color = disabled
     ? tokens.colors.textMuted
     : tone === 'danger'
@@ -37,7 +46,7 @@ export function ServiceIconButton({
       accessibilityLabel={label}
       accessibilityState={{ disabled: Boolean(disabled) }}
       disabled={disabled}
-      hitSlop={4}
+      hitSlop={hitSlop ?? (isCompact ? 8 : 4)}
       onFocus={(event) => {
         setFocused(true);
         onFocus?.(event);
@@ -50,18 +59,19 @@ export function ServiceIconButton({
         {
           alignItems: 'center',
           backgroundColor: pressed ? tokens.colors.surfaceAlt : 'transparent',
-          borderColor: focused ? tokens.colors.focus : 'transparent',
+          borderColor: 'transparent',
           borderRadius: tokens.radius.full,
-          borderWidth: focused ? 3 : 1,
-          height: tokens.sizing.minimumTarget,
+          borderWidth: 1,
+          height: isCompact ? 32 : tokens.sizing.minimumTarget,
           justifyContent: 'center',
           opacity: pressed ? 0.8 : 1,
-          width: tokens.sizing.minimumTarget,
+          width: isCompact ? 32 : tokens.sizing.minimumTarget,
         },
+        focusRing(tokens.colors.focus, focused),
         style,
       ]}
     >
-      <Ionicons name={icon} size={24} color={color} />
+      <Ionicons name={icon} size={isCompact ? 18 : 24} color={color} />
     </Pressable>
   );
 }

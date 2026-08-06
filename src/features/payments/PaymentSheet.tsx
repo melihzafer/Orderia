@@ -26,6 +26,8 @@ export interface PaymentSheetProps {
   readonly allocations: readonly PaymentAllocation[];
   readonly language: Language;
   readonly online: boolean;
+  readonly quickCash?: boolean;
+  readonly confirmBeforeClose?: boolean;
   readonly busy: boolean;
   readonly onClose: () => void;
   readonly onConfirm: (command: ConfirmCheckPaymentsCommand) => Promise<void>;
@@ -40,6 +42,8 @@ export function PaymentSheet({
   allocations,
   language,
   online,
+  quickCash = false,
+  confirmBeforeClose = true,
   busy,
   onClose,
   onConfirm,
@@ -73,9 +77,9 @@ export function PaymentSheet({
     setTenderedInput(remaining);
     setPartCount(2);
     setItemQuantities({});
-    setReviewing(false);
+    setReviewing(!confirmBeforeClose);
     setError(undefined);
-  }, [check.id, payable.balance.remainingMinor, visible]);
+  }, [check.id, confirmBeforeClose, payable.balance.remainingMinor, visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -371,17 +375,44 @@ export function PaymentSheet({
                     />
                   ) : null}
                   {tenderMode !== 'card' ? (
-                    <ServiceTextField
-                      helperText={`${copy.change}: ${formatMoney(
-                        changeMinor,
-                        currencyCode,
-                        language,
-                      )}`}
-                      keyboardType="decimal-pad"
-                      label={copy.cashReceived}
-                      onChangeText={setTenderedInput}
-                      value={tenderedInput}
-                    />
+                    <>
+                      <ServiceTextField
+                        helperText={`${copy.change}: ${formatMoney(
+                          changeMinor,
+                          currencyCode,
+                          language,
+                        )}`}
+                        keyboardType="decimal-pad"
+                        label={copy.cashReceived}
+                        onChangeText={setTenderedInput}
+                        value={tenderedInput}
+                      />
+                      {quickCash && cashPaymentMinor > 0 ? (
+                        <View style={{ gap: tokens.space.xs }}>
+                          <Text
+                            style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+                          >
+                            {copy.quickCash}
+                          </Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              flexWrap: 'wrap',
+                              gap: tokens.space.xs,
+                            }}
+                          >
+                            {quickCashAmounts(cashPaymentMinor).map((amount) => (
+                              <ChoiceChip
+                                key={amount}
+                                label={formatMoney(amount, currencyCode, language)}
+                                onPress={() => setTenderedInput(minorToInput(amount))}
+                                selected={inputToMinor(tenderedInput) === amount}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      ) : null}
+                    </>
                   ) : null}
                 </ServiceSurface>
               </>
@@ -635,6 +666,16 @@ function minorToInput(value: number): string {
   return (value / 100).toFixed(2);
 }
 
+function quickCashAmounts(amountMinor: number): readonly number[] {
+  const candidates = [
+    amountMinor,
+    Math.ceil(amountMinor / 500) * 500,
+    Math.ceil(amountMinor / 1000) * 1000,
+    Math.ceil(amountMinor / 5000) * 5000,
+  ];
+  return [...new Set(candidates)].filter((candidate) => candidate >= amountMinor);
+}
+
 function formatMoney(amountMinor: number, currencyCode: string, language: Language): string {
   return new Intl.NumberFormat(
     language === 'tr' ? 'tr-TR' : language === 'bg' ? 'bg-BG' : 'en-US',
@@ -665,6 +706,7 @@ function paymentCopy(language: Language) {
       cashPart: 'Nakit kısmı',
       cashReceived: 'Alınan nakit',
       change: 'Para üstü',
+      quickCash: 'Hızlı nakit',
       check: 'Hesap',
       selected: 'Tahsil edilecek',
       afterPayment: 'İşlem sonrası kalan',
@@ -695,6 +737,7 @@ function paymentCopy(language: Language) {
       cashPart: 'Част в брой',
       cashReceived: 'Получени пари',
       change: 'Ресто',
+      quickCash: 'Бърз избор на сума',
       check: 'Сметка',
       selected: 'За плащане',
       afterPayment: 'Остава след плащане',
@@ -725,6 +768,7 @@ function paymentCopy(language: Language) {
       cashPart: 'Cash part',
       cashReceived: 'Cash received',
       change: 'Change',
+      quickCash: 'Quick cash',
       check: 'Check',
       selected: 'Charge now',
       afterPayment: 'Remaining after payment',

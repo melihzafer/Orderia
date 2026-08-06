@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { focusRing } from '../focusRing';
 
 export type ServiceButtonVariant =
   'primary' | 'accent' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -17,7 +18,12 @@ export type ServiceButtonVariant =
 export interface ServiceButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   readonly label: string;
   readonly variant?: ServiceButtonVariant;
-  readonly size?: 'default' | 'large';
+  /**
+   * `hero` tek elle basılan asıl eylem içindir; ekranda en fazla bir tane olmalı.
+   * `compact` yalnızca ikincil/üçüncül eylemler için (ör. bir sayfadaki Kapat düğmesi);
+   * görsel kutu küçülse de dokunma alanı hitSlop ile 48dp'de tutulur.
+   */
+  readonly size?: 'compact' | 'default' | 'large' | 'hero';
   readonly loading?: boolean;
   readonly fullWidth?: boolean;
   readonly icon?: keyof typeof Ionicons.glyphMap;
@@ -37,6 +43,7 @@ export function ServiceButton({
   style,
   onFocus,
   onBlur,
+  hitSlop,
   ...props
 }: ServiceButtonProps) {
   const { tokens } = useTheme();
@@ -51,6 +58,7 @@ export function ServiceButton({
       accessibilityLabel={props.accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
+      hitSlop={hitSlop ?? (size === 'compact' ? 4 : undefined)}
       onFocus={(event) => {
         setFocused(true);
         onFocus?.(event);
@@ -63,16 +71,31 @@ export function ServiceButton({
         {
           alignItems: 'center',
           backgroundColor: palette.background,
-          borderColor: focused ? tokens.colors.focus : palette.border,
+          borderColor: palette.border,
           borderRadius: tokens.radius.medium,
-          borderWidth: focused ? 3 : 1,
+          borderWidth: 1,
           flexDirection: 'row',
           justifyContent: 'center',
-          minHeight: size === 'large' ? tokens.sizing.primaryTarget : tokens.sizing.minimumTarget,
+          minHeight:
+            size === 'hero'
+              ? tokens.sizing.heroTarget
+              : size === 'large'
+                ? tokens.sizing.primaryTarget
+                : size === 'compact'
+                  ? 40
+                  : tokens.sizing.minimumTarget,
           opacity: pressed ? 0.82 : 1,
-          paddingHorizontal: size === 'large' ? tokens.space.lg : tokens.space.md,
+          paddingHorizontal:
+            size === 'hero'
+              ? tokens.space.xl
+              : size === 'large'
+                ? tokens.space.lg
+                : size === 'compact'
+                  ? tokens.space.sm
+                  : tokens.space.md,
           width: fullWidth ? '100%' : undefined,
         },
+        focusRing(tokens.colors.focus, focused),
         style,
       ]}
     >
@@ -87,7 +110,7 @@ export function ServiceButton({
         ) : icon && iconPosition === 'left' ? (
           <Ionicons
             name={icon}
-            size={20}
+            size={size === 'hero' ? 26 : 20}
             color={palette.content}
             style={{ marginRight: tokens.space.xs }}
           />
@@ -95,7 +118,7 @@ export function ServiceButton({
         <Text
           numberOfLines={2}
           style={[
-            tokens.typography.label,
+            size === 'hero' ? tokens.typography.subtitle : tokens.typography.label,
             {
               color: palette.content,
               textAlign: 'center',
@@ -107,7 +130,7 @@ export function ServiceButton({
         {!loading && icon && iconPosition === 'right' ? (
           <Ionicons
             name={icon}
-            size={20}
+            size={size === 'hero' ? 26 : 20}
             color={palette.content}
             style={{ marginLeft: tokens.space.xs }}
           />

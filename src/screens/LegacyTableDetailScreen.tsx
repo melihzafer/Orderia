@@ -2,25 +2,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateId } from '../constants/branding';
 import { QuantityStepper } from '../components/QuantityStepper';
 import { useTheme } from '../contexts/ThemeContext';
 import {
+  haptic,
   ServiceButton,
+  ServiceConfirmSheet,
   ServiceEmptyState,
   ServiceIconButton,
   ServiceStatusPill,
   ServiceSurface,
   ServiceTextField,
   useAdaptiveLayout,
+  useSnackbar,
 } from '../design-system';
 import { useLocalization } from '../i18n';
 import { Translation } from '../i18n/languages';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { useLayoutStore, useMenuStore, useOrderStore } from '../stores';
-import { MenuItem, TicketLine } from '../types';
+import { RootStackParamList } from '../navigation/routes';
+import { useHistoryStore, useLayoutStore, useMenuStore, useOrderStore } from '../stores';
+import { MenuItem, Ticket, TicketLine } from '../types';
 import { createTextMatcher } from '../utils/searchUtils';
 
 type TableDetailRoute = RouteProp<RootStackParamList, 'TableDetail'>;
@@ -55,6 +58,12 @@ export default function LegacyTableDetailScreen() {
   const addTicketLine = useOrderStore((state) => state.addTicketLine);
   const updateTicketLine = useOrderStore((state) => state.updateTicketLine);
   const updateLineQuantity = useOrderStore((state) => state.updateLineQuantity);
+  const moveTicketLine = useOrderStore((state) => state.moveTicketLine);
+  const payTicket = useOrderStore((state) => state.payTicket);
+  const updateTicketName = useOrderStore((state) => state.updateTicketName);
+  const deleteTicket = useOrderStore((state) => state.deleteTicket);
+  const dailyHistory = useHistoryStore((state) => state.dailyHistory);
+  const updateHistoricalTicket = useHistoryStore((state) => state.updateHistoricalTicket);
   const tickets = useMemo(
     () =>
       Object.values(openTickets)
@@ -63,6 +72,8 @@ export default function LegacyTableDetailScreen() {
     [openTickets, route.params.tableId],
   );
   const [selectedTicketId, setSelectedTicketId] = useState<string>();
+  const [pendingDeleteTicketId, setPendingDeleteTicketId] = useState<string>();
+  const { show } = useSnackbar();
   const [pendingTicketName, setPendingTicketName] = useState('');
   const [newTicketName, setNewTicketName] = useState('');
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -75,7 +86,27 @@ export default function LegacyTableDetailScreen() {
   const [note, setNote] = useState('');
   const [cancelling, setCancelling] = useState<TicketLine>();
   const [showDraftModal, setShowDraftModal] = useState(false);
+  const [lineActions, setLineActions] = useState<TicketLine>();
+  const [ticketActions, setTicketActions] = useState<Ticket>();
+  const [ticketNameInput, setTicketNameInput] = useState('');
+  const [editingLineNote, setEditingLineNote] = useState<TicketLine>();
+  const [movingLine, setMovingLine] = useState<TicketLine>();
+  const [moveQuantity, setMoveQuantity] = useState(1);
+  const [moveAccountName, setMoveAccountName] = useState('');
+  const [paymentTicket, setPaymentTicket] = useState<Ticket>();
+  const [editingPaymentTicket, setEditingPaymentTicket] = useState<Ticket>();
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
+  const [amountReceived, setAmountReceived] = useState('');
+  const [paymentError, setPaymentError] = useState('');
   const selectedTicket = tickets.find((ticket) => ticket.id === selectedTicketId);
+  const paidTickets = useMemo(
+    () =>
+      Object.values(dailyHistory)
+        .flatMap((day) => day.tickets)
+        .filter((ticket) => ticket.tableId === route.params.tableId && ticket.status === 'paid')
+        .sort((left, right) => (right.closedAt ?? 0) - (left.closedAt ?? 0)),
+    [dailyHistory, route.params.tableId],
+  );
   const activeItems = useMemo(() => {
     const matcher = createTextMatcher(query);
     return menuItems.filter(
@@ -91,6 +122,14 @@ export default function LegacyTableDetailScreen() {
     selectedTicket?.lines
       .filter((line) => line.status !== 'cancelled')
       .reduce((total, line) => total + line.priceSnapshot * line.quantity, 0) ?? 0;
+  const paymentTarget = paymentTicket ?? editingPaymentTicket;
+  const paymentTotal = paymentTarget
+    ? paymentTarget.lines
+        .filter((line) => line.status !== 'cancelled')
+        .reduce((total, line) => total + line.priceSnapshot * line.quantity, 0)
+    : 0;
+  const receivedMinor = paymentMethod === 'card' ? paymentTotal : parseMoneyInput(amountReceived);
+  const changeMinor = Math.max(0, receivedMinor - paymentTotal);
 
   useEffect(() => {
     if (!selectedTicketId && !pendingTicketName && tickets[0]) {
@@ -202,8 +241,76 @@ export default function LegacyTableDetailScreen() {
       setHistory([]);
       setCompactPalette(false);
     } catch {
-      Alert.alert(t.error, t.genericError);
+      haptic('error');
+      show({ message: t.genericError, tone: 'error' });
     }
+  };
+
+  const openPayment = (ticket: Ticket) => {
+    const total = ticket.lines
+      .filter((line) => line.status !== 'cancelled')
+      .reduce((sum, line) => sum + line.priceSnapshot * line.quantity, 0);
+    setPaymentTicket(ticket);
+    setEditingPaymentTicket(undefined);
+    setPaymentMethod('cash');
+    setAmountReceived((total / 100).toFixed(2));
+    setPaymentError('');
+  };
+
+  const openPaymentEdit = (ticket: Ticket) => {
+    setEditingPaymentTicket(ticket);
+    setPaymentTicket(undefined);
+    setPaymentMethod(ticket.paymentInfo?.paymentMethod ?? 'cash');
+    setAmountReceived(
+      ((ticket.paymentInfo?.amountReceived ?? ticket.paymentInfo?.total ?? 0) / 100).toFixed(2),
+    );
+    setPaymentError('');
+  };
+
+  const savePayment = () => {
+    if (!paymentTarget) return;
+    if (paymentMethod === 'cash' && receivedMinor < paymentTotal) {
+      setPaymentError(t.insufficientFunds);
+      return;
+    }
+    const paymentInfo = {
+      total: paymentTotal,
+      paymentMethod,
+      ...(paymentMethod === 'cash'
+        ? { amountReceived: receivedMinor, change: changeMinor }
+        : { amountReceived: paymentTotal, change: 0 }),
+    } as const;
+    if (paymentTicket) {
+      payTicket(paymentTicket.id, paymentInfo);
+      const nextOpenTicket = tickets.find((ticket) => ticket.id !== paymentTicket.id);
+      setSelectedTicketId(nextOpenTicket?.id);
+      setPaymentTicket(undefined);
+    } else {
+      updateHistoricalTicket(paymentTarget.id, paymentInfo);
+      setEditingPaymentTicket(undefined);
+      haptic('success');
+      show({ message: t.paymentUpdated, tone: 'success' });
+    }
+    setPaymentError('');
+  };
+
+  const moveLineToAccount = (targetTicket: Ticket) => {
+    if (!selectedTicket || !movingLine) return;
+    try {
+      moveTicketLine(selectedTicket.id, movingLine.id, targetTicket.id, moveQuantity);
+      setMovingLine(undefined);
+      setMoveAccountName('');
+      setMoveQuantity(1);
+    } catch {
+      haptic('error');
+      show({ message: t.genericError, tone: 'error' });
+    }
+  };
+
+  const createAccountAndMoveLine = () => {
+    if (!table || !selectedTicket || !movingLine || !moveAccountName.trim()) return;
+    const target = openTable(table.id, moveAccountName.trim());
+    moveLineToAccount(target);
   };
 
   if (!table) {
@@ -236,7 +343,7 @@ export default function LegacyTableDetailScreen() {
         <Text
           numberOfLines={1}
           style={[
-            tokens.typography.title,
+            tokens.typography.subtitle,
             {
               color: tokens.colors.text,
               flex: 1,
@@ -249,49 +356,87 @@ export default function LegacyTableDetailScreen() {
         <ServiceStatusPill label={t.deviceOnly} tone="warning" />
       </View>
 
-      <ScrollView
-        horizontal
-        accessibilityRole="tablist"
-        contentContainerStyle={{
+      <View
+        style={{
           alignItems: 'center',
+          flexDirection: 'row',
           gap: tokens.space.xs,
           paddingBottom: tokens.space.sm,
           paddingHorizontal: tokens.space.md,
         }}
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
       >
-        {tickets.map((ticket, index) => (
-          <LocalChip
-            key={ticket.id}
-            label={ticket.name || `${t.orderName} ${index + 1}`}
-            role="tab"
-            onPress={() => {
-              setPendingTicketName('');
-              setSelectedTicketId(ticket.id);
-            }}
-            selected={ticket.id === selectedTicketId}
-          />
-        ))}
-        {pendingTicketName ? (
-          <LocalChip
-            label={pendingTicketName}
-            role="tab"
-            onPress={() => setSelectedTicketId(undefined)}
-            selected={!selectedTicketId}
-          />
-        ) : null}
-        <LocalChip
+        <ScrollView
+          horizontal
+          accessibilityRole="tablist"
+          contentContainerStyle={{ alignItems: 'center', gap: tokens.space.xs }}
+          showsHorizontalScrollIndicator={false}
+          style={{ flex: 1, minWidth: 0 }}
+        >
+          {tickets.map((ticket, index) => (
+            <LocalChip
+              key={ticket.id}
+              label={ticket.name || `${t.orderName} ${index + 1}`}
+              onLongPress={() => {
+                setTicketActions(ticket);
+                setTicketNameInput(ticket.name ?? '');
+              }}
+              role="tab"
+              onPress={() => {
+                setPendingTicketName('');
+                setSelectedTicketId(ticket.id);
+              }}
+              selected={ticket.id === selectedTicketId}
+            />
+          ))}
+          {pendingTicketName ? (
+            <LocalChip
+              label={pendingTicketName}
+              role="tab"
+              onPress={() => setSelectedTicketId(undefined)}
+              selected={!selectedTicketId}
+            />
+          ) : null}
+        </ScrollView>
+        <ServiceButton
           icon="add"
           label={t.addOrder}
-          role="tab"
           onPress={() => {
             setNewTicketName('');
             setShowTicketModal(true);
           }}
-          selected={false}
+          style={{ flexShrink: 0 }}
+          variant="outline"
         />
-      </ScrollView>
+      </View>
+
+      {paidTickets.length > 0 ? (
+        <View style={{ gap: tokens.space.xs, paddingBottom: tokens.space.sm }}>
+          <Text
+            style={[
+              tokens.typography.caption,
+              { color: tokens.colors.textSubtle, paddingHorizontal: tokens.space.md },
+            ]}
+          >
+            {t.paidOrders}
+          </Text>
+          <ScrollView
+            horizontal
+            contentContainerStyle={{ gap: tokens.space.xs, paddingHorizontal: tokens.space.md }}
+            showsHorizontalScrollIndicator={false}
+          >
+            {paidTickets.map((ticket) => (
+              <LocalChip
+                key={ticket.id}
+                label={`${ticket.name || t.orderName} · ${formatPrice(
+                  ticket.paymentInfo?.total ?? 0,
+                )}`}
+                onPress={() => openPaymentEdit(ticket)}
+                selected={false}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
 
       {compact ? (
         <View
@@ -349,6 +494,31 @@ export default function LegacyTableDetailScreen() {
                 {formatPrice(ticketTotal)}
               </Text>
             </View>
+            {selectedTicket && selectedTicket.lines.some((line) => line.status !== 'cancelled') ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: tokens.space.xs,
+                  paddingHorizontal: tokens.space.md,
+                  paddingBottom: tokens.space.sm,
+                }}
+              >
+                <ServiceButton
+                  label={t.splitOrder}
+                  onPress={() =>
+                    setLineActions(selectedTicket.lines.find((line) => line.status !== 'cancelled'))
+                  }
+                  style={{ flex: 1 }}
+                  variant="outline"
+                />
+                <ServiceButton
+                  label={t.makePayment}
+                  onPress={() => openPayment(selectedTicket)}
+                  style={{ flex: 1 }}
+                  variant="accent"
+                />
+              </View>
+            ) : null}
             {!selectedTicket || selectedTicket.lines.length === 0 ? (
               <ServiceEmptyState
                 body={t.tapToAddItem}
@@ -361,7 +531,10 @@ export default function LegacyTableDetailScreen() {
                 data={selectedTicket.lines}
                 keyExtractor={(line) => line.id}
                 renderItem={({ item: line }) => (
-                  <View
+                  <Pressable
+                    accessibilityHint={t.editDraft}
+                    accessibilityRole="button"
+                    onLongPress={() => setLineActions(line)}
                     style={{
                       borderBottomColor: tokens.colors.borderLight,
                       borderBottomWidth: 1,
@@ -416,7 +589,7 @@ export default function LegacyTableDetailScreen() {
                         )}
                       </View>
                     </View>
-                  </View>
+                  </Pressable>
                 )}
               />
             )}
@@ -535,64 +708,72 @@ export default function LegacyTableDetailScreen() {
         style={[
           tokens.elevation.sticky,
           {
-            alignItems: 'center',
             backgroundColor: tokens.colors.surface,
             borderTopColor: tokens.colors.border,
             borderTopWidth: 1,
-            flexDirection: 'row',
-            gap: tokens.space.xs,
-            padding: tokens.space.sm,
+            gap: compact ? tokens.space.xs : tokens.space.sm,
+            padding: compact ? tokens.space.xs : tokens.space.sm,
           },
         ]}
       >
-        <ServiceIconButton
-          disabled={history.length === 0}
-          icon="arrow-undo"
-          label={t.back}
-          onPress={() => {
-            const previous = history.at(-1);
-            if (!previous) return;
-            setDraft(previous);
-            setHistory((current) => current.slice(0, -1));
-          }}
-        />
-        <ServiceIconButton
-          disabled={
-            !selectedTicket ||
-            selectedTicket.lines.filter((line) => line.status !== 'cancelled').length === 0
-          }
-          icon="repeat"
-          label={t.repeatLastOrder}
-          onPress={repeatTicketLines}
-        />
-        <ServiceIconButton
-          disabled={draft.length === 0}
-          icon="trash-outline"
-          label={t.delete}
-          onPress={() => remember([])}
-        />
         <Pressable
           accessibilityHint={t.editDraft}
           accessibilityRole="button"
           disabled={draft.length === 0}
           onPress={() => setShowDraftModal(true)}
-          style={{ flex: 1, minHeight: 48, justifyContent: 'center' }}
+          style={{
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            minHeight: 48,
+            paddingHorizontal: compact ? tokens.space.xs : tokens.space.sm,
+          }}
         >
-          <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+          <Text style={[tokens.typography.label, { color: tokens.colors.textSubtle }]}>
             {draft.reduce((sum, line) => sum + line.quantity, 0)} {t.itemsFound}
           </Text>
-          <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+          <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
             {formatPrice(draftTotal)}
           </Text>
         </Pressable>
-        <ServiceButton
-          disabled={draft.length === 0}
-          icon="paper-plane"
-          label={t.addOrder}
-          onPress={sendDraft}
-          size="large"
-          variant="accent"
-        />
+        <View style={{ alignItems: 'center', flexDirection: 'row', gap: tokens.space.xs }}>
+          <ServiceIconButton
+            disabled={history.length === 0}
+            icon="arrow-undo"
+            label={t.back}
+            onPress={() => {
+              const previous = history.at(-1);
+              if (!previous) return;
+              setDraft(previous);
+              setHistory((current) => current.slice(0, -1));
+            }}
+          />
+          <ServiceIconButton
+            disabled={
+              !selectedTicket ||
+              selectedTicket.lines.filter((line) => line.status !== 'cancelled').length === 0
+            }
+            icon="repeat"
+            label={t.repeatLastOrder}
+            onPress={repeatTicketLines}
+          />
+          <ServiceIconButton
+            disabled={draft.length === 0}
+            icon="trash-outline"
+            label={t.delete}
+            onPress={() => remember([])}
+          />
+          <ServiceButton
+            disabled={draft.length === 0}
+            fullWidth={compact}
+            icon="paper-plane"
+            label={t.addOrder}
+            onPress={sendDraft}
+            size="large"
+            style={{ flex: 1 }}
+            variant="accent"
+          />
+        </View>
       </View>
 
       <LocalModal
@@ -762,6 +943,303 @@ export default function LegacyTableDetailScreen() {
         </View>
         <LocalModalActions onCancel={() => setCancelling(undefined)} />
       </LocalModal>
+
+      <LocalActionSheet
+        onClose={() => setTicketActions(undefined)}
+        title={ticketActions?.name || t.orderName}
+        visible={Boolean(ticketActions)}
+      >
+        {ticketActions ? (
+          <>
+            <ServiceTextField
+              label={t.orderName}
+              maxLength={80}
+              onChangeText={setTicketNameInput}
+              value={ticketNameInput}
+            />
+            <ServiceButton
+              disabled={!ticketNameInput.trim()}
+              fullWidth
+              label={t.save}
+              onPress={() => {
+                updateTicketName(ticketActions.id, ticketNameInput.trim());
+                setTicketActions(undefined);
+              }}
+            />
+            <ServiceButton
+              fullWidth
+              label={t.deleteOrder}
+              onPress={() => {
+                const ticketId = ticketActions.id;
+                setTicketActions(undefined);
+                setPendingDeleteTicketId(ticketId);
+              }}
+              variant="danger"
+            />
+          </>
+        ) : null}
+      </LocalActionSheet>
+
+      <LocalActionSheet
+        onClose={() => setLineActions(undefined)}
+        title={lineActions?.nameSnapshot ?? t.orderNotes}
+        visible={Boolean(lineActions)}
+      >
+        {lineActions ? (
+          <>
+            <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+              {lineActions.quantity}×{' '}
+              {formatPrice(lineActions.priceSnapshot * lineActions.quantity)}
+            </Text>
+            <View style={{ gap: tokens.space.xs, marginTop: tokens.space.md }}>
+              <ServiceButton
+                fullWidth
+                label={lineActions.note ? `${t.edit}: ${t.note}` : t.addNote}
+                onPress={() => {
+                  setEditingLineNote(lineActions);
+                  setNote(lineActions.note ?? '');
+                  setLineActions(undefined);
+                }}
+                variant="outline"
+              />
+              <ServiceButton
+                fullWidth
+                label={t.moveToOrder}
+                onPress={() => {
+                  setMovingLine(lineActions);
+                  setMoveQuantity(1);
+                  setMoveAccountName('');
+                  setLineActions(undefined);
+                }}
+                variant="outline"
+              />
+              {lineActions.status !== 'cancelled' ? (
+                <ServiceButton
+                  fullWidth
+                  label={t.cancel}
+                  onPress={() => {
+                    setCancelling(lineActions);
+                    setLineActions(undefined);
+                  }}
+                  variant="ghost"
+                />
+              ) : null}
+            </View>
+          </>
+        ) : null}
+      </LocalActionSheet>
+
+      <LocalActionSheet
+        onClose={() => setEditingLineNote(undefined)}
+        title={`${t.edit}: ${editingLineNote?.nameSnapshot ?? t.note}`}
+        visible={Boolean(editingLineNote)}
+      >
+        <ServiceTextField
+          autoFocus
+          label={t.addNote}
+          maxLength={500}
+          multiline
+          onChangeText={setNote}
+          placeholder={t.addNoteHint}
+          value={note}
+        />
+        <View style={{ flexDirection: 'row', gap: tokens.space.xs, marginTop: tokens.space.md }}>
+          <ServiceButton
+            label={t.close}
+            onPress={() => setEditingLineNote(undefined)}
+            style={{ flex: 1 }}
+            variant="ghost"
+          />
+          <ServiceButton
+            label={t.save}
+            onPress={() => {
+              if (selectedTicket && editingLineNote) {
+                updateTicketLine(selectedTicket.id, editingLineNote.id, {
+                  note: note.trim() || undefined,
+                });
+              }
+              setEditingLineNote(undefined);
+            }}
+            style={{ flex: 1 }}
+          />
+        </View>
+      </LocalActionSheet>
+
+      <LocalActionSheet
+        onClose={() => setMovingLine(undefined)}
+        title={t.moveToOrder}
+        visible={Boolean(movingLine)}
+      >
+        {movingLine ? (
+          <>
+            <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+              {movingLine.nameSnapshot} · {t.quantity}: {movingLine.quantity}
+            </Text>
+            <View
+              style={{
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                {t.quantity}
+              </Text>
+              <QuantityStepper
+                decreaseDisabled={moveQuantity <= 1}
+                decreaseLabel={`${t.decrease}: ${movingLine.nameSnapshot}`}
+                increaseDisabled={moveQuantity >= movingLine.quantity}
+                increaseLabel={`${t.increase}: ${movingLine.nameSnapshot}`}
+                onDecrease={() => setMoveQuantity((value) => Math.max(1, value - 1))}
+                onIncrease={() =>
+                  setMoveQuantity((value) => Math.min(movingLine.quantity, value + 1))
+                }
+                quantity={moveQuantity}
+              />
+            </View>
+            <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+              {t.moveToOrder}
+            </Text>
+            <View style={{ gap: tokens.space.xs }}>
+              {tickets
+                .filter((ticket) => ticket.id !== selectedTicket?.id)
+                .map((ticket) => (
+                  <ServiceButton
+                    key={ticket.id}
+                    fullWidth
+                    label={ticket.name || t.orderName}
+                    onPress={() => moveLineToAccount(ticket)}
+                    variant="outline"
+                  />
+                ))}
+            </View>
+            <ServiceTextField
+              label={t.orderName}
+              onChangeText={setMoveAccountName}
+              placeholder={t.newAccount}
+              value={moveAccountName}
+            />
+            <ServiceButton
+              disabled={!moveAccountName.trim()}
+              fullWidth
+              label={t.newAccount}
+              onPress={createAccountAndMoveLine}
+              variant="accent"
+            />
+          </>
+        ) : null}
+      </LocalActionSheet>
+
+      <LocalActionSheet
+        onClose={() => {
+          setPaymentTicket(undefined);
+          setEditingPaymentTicket(undefined);
+          setPaymentError('');
+        }}
+        title={editingPaymentTicket ? t.editPayment : t.makePayment}
+        visible={Boolean(paymentTarget)}
+      >
+        {paymentTarget ? (
+          <>
+            <View style={{ gap: tokens.space.xs }}>
+              <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+                {paymentTarget.name || t.orderName}
+              </Text>
+              <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+                {t.total}: {formatPrice(paymentTotal)}
+              </Text>
+            </View>
+            <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+              {t.paymentMethod}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
+              <LocalChip
+                label={t.cash}
+                onPress={() => setPaymentMethod('cash')}
+                selected={paymentMethod === 'cash'}
+              />
+              <LocalChip
+                label={t.card}
+                onPress={() => setPaymentMethod('card')}
+                selected={paymentMethod === 'card'}
+              />
+            </View>
+            {paymentMethod === 'cash' ? (
+              <ServiceTextField
+                keyboardType="decimal-pad"
+                label={t.amountReceived}
+                onChangeText={(value) => {
+                  setAmountReceived(value);
+                  setPaymentError('');
+                }}
+                value={amountReceived}
+              />
+            ) : null}
+            {paymentMethod === 'cash' ? (
+              <View
+                accessibilityLiveRegion="polite"
+                style={{
+                  backgroundColor: tokens.colors.state.delivered.bg,
+                  borderRadius: tokens.radius.medium,
+                  padding: tokens.space.md,
+                }}
+              >
+                <Text
+                  style={[
+                    tokens.typography.bodyStrong,
+                    { color: tokens.colors.state.delivered.text },
+                  ]}
+                >
+                  {t.change}: {formatPrice(changeMinor)}
+                </Text>
+              </View>
+            ) : null}
+            {paymentError ? (
+              <Text style={[tokens.typography.caption, { color: tokens.colors.error }]}>
+                {paymentError}
+              </Text>
+            ) : null}
+            <View
+              style={{ flexDirection: 'row', gap: tokens.space.xs, marginTop: tokens.space.sm }}
+            >
+              <ServiceButton
+                label={t.close}
+                onPress={() => {
+                  setPaymentTicket(undefined);
+                  setEditingPaymentTicket(undefined);
+                }}
+                style={{ flex: 1 }}
+                variant="ghost"
+              />
+              <ServiceButton
+                label={editingPaymentTicket ? t.save : t.makePayment}
+                onPress={savePayment}
+                style={{ flex: 1 }}
+                variant="accent"
+              />
+            </View>
+          </>
+        ) : null}
+      </LocalActionSheet>
+      <ServiceConfirmSheet
+        body={t.deleteOrderWarning}
+        cancelLabel={t.close}
+        confirmLabel={t.deleteOrder}
+        destructive
+        onClose={() => setPendingDeleteTicketId(undefined)}
+        onConfirm={() => {
+          const ticketId = pendingDeleteTicketId;
+          setPendingDeleteTicketId(undefined);
+          if (!ticketId) return;
+          const nextTicket = tickets.find((ticket) => ticket.id !== ticketId);
+          deleteTicket(ticketId);
+          if (selectedTicketId === ticketId) setSelectedTicketId(nextTicket?.id);
+          haptic('success');
+          show({ message: t.deleteOrder, tone: 'success' });
+        }}
+        title={t.deleteOrder}
+        visible={pendingDeleteTicketId !== undefined}
+      />
     </SafeAreaView>
   );
 }
@@ -781,12 +1259,14 @@ function LocalChip({
   label,
   selected,
   onPress,
+  onLongPress,
   icon,
   role = 'button',
 }: {
   readonly label: string;
   readonly selected: boolean;
   readonly onPress: () => void;
+  readonly onLongPress?: () => void;
   readonly icon?: keyof typeof Ionicons.glyphMap;
   readonly role?: 'button' | 'tab';
 }) {
@@ -795,6 +1275,7 @@ function LocalChip({
     <Pressable
       accessibilityRole={role}
       accessibilityState={{ selected }}
+      onLongPress={onLongPress}
       onPress={onPress}
       style={({ pressed }) => ({
         alignItems: 'center',
@@ -930,6 +1411,69 @@ function LocalModal({
   );
 }
 
+function LocalActionSheet({
+  visible,
+  title,
+  children,
+  onClose,
+}: {
+  readonly visible: boolean;
+  readonly title: string;
+  readonly children: React.ReactNode;
+  readonly onClose: () => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable
+        onPress={onClose}
+        style={{
+          backgroundColor: tokens.colors.overlay,
+          flex: 1,
+          justifyContent: 'flex-end',
+        }}
+      >
+        <Pressable
+          accessibilityViewIsModal
+          onPress={(event) => event.stopPropagation()}
+          style={{
+            backgroundColor: tokens.colors.surface,
+            borderTopLeftRadius: tokens.radius.large,
+            borderTopRightRadius: tokens.radius.large,
+            maxHeight: '88%',
+            padding: tokens.space.lg,
+          }}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
+              backgroundColor: tokens.colors.border,
+              borderRadius: tokens.radius.full,
+              height: 4,
+              marginBottom: tokens.space.md,
+              width: 42,
+            }}
+          />
+          <Text
+            style={[
+              tokens.typography.sectionTitle,
+              { color: tokens.colors.text, marginBottom: tokens.space.md },
+            ]}
+          >
+            {title}
+          </Text>
+          <ScrollView
+            contentContainerStyle={{ gap: tokens.space.md }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {children}
+          </ScrollView>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
 function LocalModalActions({
   confirmLabel,
   confirmDisabled,
@@ -958,4 +1502,12 @@ function LocalModalActions({
       ) : null}
     </View>
   );
+}
+
+function parseMoneyInput(value: string): number {
+  const normalized = value.trim().replace(',', '.');
+  if (!/^\d+(?:\.\d{0,2})?$/.test(normalized)) return 0;
+  const [whole, fraction = ''] = normalized.split('.');
+  const minor = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+  return Number.isSafeInteger(minor) ? minor : 0;
 }

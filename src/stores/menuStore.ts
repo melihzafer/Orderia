@@ -7,6 +7,7 @@ import { generateId } from '../constants/branding';
 interface MenuState {
   categories: Category[];
   menuItems: MenuItem[];
+  replaceData: (data: { categories: Category[]; menuItems: MenuItem[] }) => void;
 
   // Category actions
   addCategory: (data: CreateCategoryData) => Category;
@@ -30,6 +31,8 @@ export const useMenuStore = create<MenuState>()(
     (set, get) => ({
       categories: [],
       menuItems: [],
+
+      replaceData: ({ categories, menuItems }) => set({ categories, menuItems }),
 
       // Category actions
       addCategory: (data) => {
@@ -69,6 +72,8 @@ export const useMenuStore = create<MenuState>()(
           name: data.name,
           price: data.price,
           description: data.description,
+          fulfillmentGroup: data.fulfillmentGroup ?? 'kitchen',
+          ...(data.photoUri ? { photoUri: data.photoUri } : {}),
           isActive: true,
         };
 

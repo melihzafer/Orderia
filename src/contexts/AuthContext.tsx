@@ -9,20 +9,17 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { AppState, Linking, Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import uuid from 'react-native-uuid';
 import { captureOperationalError, recordOperationalEvent } from '../observability';
 import { AuthGateway, SupabaseAuthGateway } from '../services/supabase/authGateway';
-import {
-  clearAuthRedirectParams,
-  getSupabaseClient,
-  subscribeToNativeAuthAutoRefresh,
-} from '../services/supabase/client';
+import { getSupabaseClient, subscribeToNativeAuthAutoRefresh } from '../services/supabase/client';
 import { DeviceRow, SignupRequestRow } from '../services/supabase/database.types';
 import {
   AuthContextValue,
   AuthStatus,
   AuthWorkspace,
+  OnboardingRole,
   accessibleBranches,
   membershipForBranch,
 } from './authTypes';
@@ -72,6 +69,8 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
   const [devices, setDevices] = useState<readonly DeviceRow[]>([]);
   const [pendingSignupEmail, setPendingSignupEmail] = useState<string | undefined>();
   const [pendingApprovals, setPendingApprovals] = useState<readonly SignupRequestRow[]>([]);
+  const [onboardingRole, setOnboardingRole] = useState<OnboardingRole | null>(null);
+  const [createdRestaurantCode, setCreatedRestaurantCode] = useState<string | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     resolution.configurationError,
   );
@@ -103,6 +102,8 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       setActiveBranchId(branch.id);
       setCurrentDeviceId(deviceId);
       setDevices([]);
+      setOnboardingRole(null);
+      setCreatedRestaurantCode(undefined);
       setErrorMessage(undefined);
       setStatus('ready');
       recordOperationalEvent('auth_success', { operation: 'activate_branch' });
@@ -122,6 +123,9 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setActiveBranchId(null);
         setCurrentDeviceId(null);
         setDevices([]);
+        setPendingSignupEmail(undefined);
+        setOnboardingRole(null);
+        setCreatedRestaurantCode(undefined);
         setErrorMessage(undefined);
         setStatus('signed_out');
         return;
@@ -137,12 +141,14 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         const branches = accessibleBranches(targetWorkspace);
         if (branches.length === 0) {
           // Üyelik yok: bekleyen onay başvurusu var mı?
-          const signupRequest = await gateway.getMySignupRequest().catch(() => null);
+          const signupRequest = await gateway.getMySignupRequest();
           if (revision !== hydrationRevision.current) return;
           if (signupRequest?.status === 'pending') {
             setSession(targetSession);
             setWorkspace(targetWorkspace);
             setActiveBranchId(null);
+            setOnboardingRole(null);
+            setCreatedRestaurantCode(undefined);
             setPendingSignupEmail(signupRequest.email);
             setErrorMessage(undefined);
             setStatus('pending_approval');
@@ -151,8 +157,13 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           setSession(targetSession);
           setWorkspace(targetWorkspace);
           setActiveBranchId(null);
-          setErrorMessage('No active Orderia branch is assigned to this account.');
-          setStatus('error');
+          setCurrentDeviceId(null);
+          setDevices([]);
+          setPendingSignupEmail(undefined);
+          setOnboardingRole(null);
+          setCreatedRestaurantCode(undefined);
+          setErrorMessage(undefined);
+          setStatus('onboarding_role');
           return;
         }
 
@@ -191,6 +202,8 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setSession(targetSession);
         setWorkspace(null);
         setActiveBranchId(null);
+        setOnboardingRole(null);
+        setCreatedRestaurantCode(undefined);
         setErrorMessage('Your Orderia workspace could not be loaded.');
         setStatus('error');
         captureOperationalError(error, 'auth_failure', {
@@ -214,7 +227,6 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     }
 
     const unsubscribeAuth = gateway.onAuthStateChange((_event, nextSession) => {
-      if (nextSession) clearAuthRedirectParams();
       void restoreSession(nextSession);
     });
     void gateway
@@ -226,7 +238,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           errorClass: error instanceof Error ? error.name : 'UnknownError',
         });
         setErrorMessage('The saved session could not be restored.');
-        setStatus('signed_out');
+        setStatus('error');
       });
 
     return () => {
@@ -235,34 +247,6 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       unsubscribeRefresh();
     };
   }, [gateway, restoreSession, suppliedGateway]);
-
-  // Native derlemede Google donusu derin baglantiyla gelir; kodu oturuma
-  // burada takas ederiz. Webde bunu Supabase istemcisi kendi yapar.
-  useEffect(() => {
-    if (!gateway || Platform.OS === 'web') return;
-
-    const handleUrl = (url: string) => {
-      if (!url.includes('code=')) return;
-      void gateway
-        .completeOAuthRedirect(url)
-        .then(restoreSession)
-        .catch((error) => {
-          captureOperationalError(error, 'auth_failure', {
-            operation: 'complete_oauth_redirect',
-            errorClass: error instanceof Error ? error.name : 'UnknownError',
-          });
-          setStatus('signed_out');
-          setErrorMessage('Google sign-in could not be completed. Please try again.');
-        });
-    };
-
-    const subscription = Linking.addEventListener('url', (event) => handleUrl(event.url));
-    void Linking.getInitialURL().then((url) => {
-      if (url) handleUrl(url);
-    });
-
-    return () => subscription.remove();
-  }, [gateway, restoreSession]);
 
   const activeBranch = workspace?.branches.find((branch) => branch.id === activeBranchId) ?? null;
   const activeOrganization =
@@ -295,38 +279,6 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     [gateway, restoreSession],
   );
 
-  /**
-   * Google ile giris. PWA'da da calisir: Supabase sayfayi yonlendirir, geri
-   * donuste oturum URL'den okunur ve adres cubugu temizlenir. Boylece garson
-   * sifre hatirlamak zorunda kalmaz ve verisi kendi hesabina bagli kalir.
-   */
-  const signInWithGoogle = useCallback(async () => {
-    if (!gateway) {
-      throw new Error('Orderia Cloud is not configured');
-    }
-
-    setErrorMessage(undefined);
-    try {
-      const handoff = await gateway.startGoogleSignIn(oauthRedirectUrl());
-      if (handoff.redirected) {
-        // Tarayici Supabase'e gidiyor; donusteki oturumu onAuthStateChange alir.
-        return;
-      }
-      if (!handoff.authorizationUrl) {
-        throw new Error('oauth_authorization_url_missing');
-      }
-      setStatus('initializing');
-      await Linking.openURL(handoff.authorizationUrl);
-    } catch (error) {
-      captureOperationalError(error, 'auth_failure', {
-        operation: 'sign_in_google',
-        errorClass: error instanceof Error ? error.name : 'UnknownError',
-      });
-      setStatus('signed_out');
-      setErrorMessage('Google sign-in could not be started. Check the connection and try again.');
-    }
-  }, [gateway]);
-
   const signUp = useCallback(
     async (email: string, password: string, displayName: string) => {
       if (!gateway) {
@@ -337,10 +289,15 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       setErrorMessage(undefined);
       try {
         const nextSession = await gateway.signUp(email.trim(), password, displayName.trim());
-        const request = await gateway.requestSignup(displayName.trim());
         setSession(nextSession);
-        setPendingSignupEmail(request.email);
-        setStatus('pending_approval');
+        setWorkspace(null);
+        setActiveBranchId(null);
+        setCurrentDeviceId(null);
+        setDevices([]);
+        setPendingSignupEmail(undefined);
+        setOnboardingRole(null);
+        setCreatedRestaurantCode(undefined);
+        setStatus('onboarding_role');
         recordOperationalEvent('auth_success', { operation: 'sign_up' });
       } catch (error) {
         captureOperationalError(error, 'auth_failure', {
@@ -361,6 +318,67 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     [gateway],
   );
 
+  const selectOnboardingRole = useCallback((role: OnboardingRole) => {
+    setOnboardingRole(role);
+    setCreatedRestaurantCode(undefined);
+    setErrorMessage(undefined);
+    setStatus('onboarding_restaurant');
+  }, []);
+
+  const resetOnboardingRole = useCallback(() => {
+    setOnboardingRole(null);
+    setCreatedRestaurantCode(undefined);
+    setErrorMessage(undefined);
+    setStatus('onboarding_role');
+  }, []);
+
+  const joinRestaurant = useCallback(
+    async (code: string) => {
+      if (!gateway || !session || !onboardingRole) {
+        throw new Error('Restaurant onboarding is not ready');
+      }
+
+      setStatus('initializing');
+      setErrorMessage(undefined);
+      try {
+        await gateway.joinRestaurant(code, onboardingRole);
+        await restoreSession(session);
+      } catch (error) {
+        setStatus('onboarding_restaurant');
+        setErrorMessage(onboardingErrorMessage(error));
+        throw error;
+      }
+    },
+    [gateway, onboardingRole, restoreSession, session],
+  );
+
+  const createRestaurant = useCallback(
+    async (name: string, branchName?: string) => {
+      if (!gateway || !session || onboardingRole !== 'manager') {
+        throw new Error('Manager onboarding is not ready');
+      }
+
+      setStatus('initializing');
+      setErrorMessage(undefined);
+      try {
+        const result = await gateway.createRestaurant(name, branchName);
+        setCreatedRestaurantCode(result.restaurantCode);
+        setStatus('onboarding_restaurant');
+      } catch (error) {
+        setStatus('onboarding_restaurant');
+        setErrorMessage(onboardingErrorMessage(error));
+        throw error;
+      }
+    },
+    [gateway, onboardingRole, session],
+  );
+
+  const finishOnboarding = useCallback(async () => {
+    if (!session) throw new Error('An authenticated session is required');
+    setCreatedRestaurantCode(undefined);
+    await restoreSession(session);
+  }, [restoreSession, session]);
+
   const signOut = useCallback(async () => {
     if (!gateway) return;
     hydrationRevision.current += 1;
@@ -371,6 +389,8 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     setCurrentDeviceId(null);
     setDevices([]);
     setPendingSignupEmail(undefined);
+    setOnboardingRole(null);
+    setCreatedRestaurantCode(undefined);
     setErrorMessage(undefined);
     setStatus('signed_out');
   }, [gateway]);
@@ -515,15 +535,20 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     activeBranch,
     activeOrganization,
     activeMembership,
+    onboardingRole,
+    createdRestaurantCode,
     currentDeviceId,
     devices,
     errorMessage,
     pendingSignupEmail,
     pendingApprovals,
-    googleSignInAvailable: gateway !== null,
     signIn,
-    signInWithGoogle,
     signUp,
+    selectOnboardingRole,
+    resetOnboardingRole,
+    joinRestaurant,
+    createRestaurant,
+    finishOnboarding,
     signOut,
     refreshApprovals,
     approveSignup,
@@ -543,18 +568,6 @@ export function useAuth(): AuthContextValue {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
-}
-
-/**
- * Google donusunun gelecegi adres. Web/PWA'da uygulamanin acildigi sayfa,
- * native derlemede uygulamanin kendi semasi kullanilir. Ikisi de Supabase'in
- * "Redirect URLs" listesinde tanimli olmalidir.
- */
-function oauthRedirectUrl(): string {
-  if (Platform.OS !== 'web') return 'orderia://auth-callback';
-  const location = (globalThis as unknown as { readonly location?: Location }).location;
-  if (!location) return 'orderia://auth-callback';
-  return `${location.origin}${location.pathname}`;
 }
 
 function branchStorageKey(userId: string): string {
@@ -587,4 +600,21 @@ function isDeviceRevocationError(error: unknown): boolean {
     error instanceof Error &&
     (error.message.includes('device_revoked') || error.message.includes('device_unavailable'))
   );
+}
+
+function onboardingErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : '';
+  if (message.includes('restaurant_not_found') || message.includes('invalid_restaurant_code')) {
+    return 'That restaurant code is invalid or no longer active.';
+  }
+  if (message.includes('already_member')) {
+    return 'This account is already connected to a restaurant.';
+  }
+  if (message.includes('invalid_restaurant_name')) {
+    return 'Enter a restaurant name between 1 and 120 characters.';
+  }
+  if (message.includes('invalid_branch_name')) {
+    return 'Enter a valid branch name.';
+  }
+  return 'Restaurant setup could not be completed. Check your connection and try again.';
 }

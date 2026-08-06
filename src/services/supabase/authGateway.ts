@@ -1,7 +1,6 @@
 import { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js';
-import { Platform } from 'react-native';
-import { Database, DeviceRow, SignupRequestRow } from './database.types';
-import type { AuthWorkspace } from '../../contexts/authTypes';
+import { Database, DeviceRow, Json, SignupRequestRow } from './database.types';
+import type { AuthWorkspace, OnboardingRole } from '../../contexts/authTypes';
 
 export interface RegisterDeviceInput {
   readonly appVersion: string;
@@ -12,10 +11,12 @@ export interface RegisterDeviceInput {
   readonly pushEndpoint?: string;
 }
 
-export interface GoogleSignInHandoff {
-  /** Webde tarayici zaten yonlendirildi; native tarafta bu URL acilir. */
-  readonly authorizationUrl?: string;
-  readonly redirected: boolean;
+export interface RestaurantOnboardingResult {
+  readonly organizationId: string;
+  readonly branchId: string;
+  readonly restaurantCode: string;
+  readonly restaurantName: string;
+  readonly role: OnboardingRole;
 }
 
 export interface AuthGateway {
@@ -24,9 +25,9 @@ export interface AuthGateway {
     listener: (event: AuthChangeEvent, session: Session | null) => void,
   ): () => void;
   signIn(email: string, password: string): Promise<Session>;
-  startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff>;
-  completeOAuthRedirect(url: string): Promise<Session>;
   signUp(email: string, password: string, displayName: string): Promise<Session>;
+  joinRestaurant(code: string, role: OnboardingRole): Promise<RestaurantOnboardingResult>;
+  createRestaurant(name: string, branchName?: string): Promise<RestaurantOnboardingResult>;
   requestSignup(displayName: string): Promise<SignupRequestRow>;
   getMySignupRequest(): Promise<SignupRequestRow | null>;
   listPendingSignupRequests(): Promise<readonly SignupRequestRow[]>;
@@ -70,40 +71,6 @@ export class SupabaseAuthGateway implements AuthGateway {
     return data.session;
   }
 
-  /**
-   * Google ile giris. Web/PWA'da Supabase sayfayi kendisi yonlendirir; native
-   * derlemede yetkilendirme adresi geri doner ve uygulama onu tarayicida acar.
-   */
-  async startGoogleSignIn(redirectTo: string): Promise<GoogleSignInHandoff> {
-    const isWeb = Platform.OS === 'web';
-    const { data, error } = await this.client.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo,
-        skipBrowserRedirect: !isWeb,
-        queryParams: { prompt: 'select_account' },
-      },
-    });
-    if (error) throw error;
-    return {
-      ...(data.url ? { authorizationUrl: data.url } : {}),
-      redirected: isWeb,
-    };
-  }
-
-  async completeOAuthRedirect(url: string): Promise<Session> {
-    const code = new URL(url).searchParams.get('code');
-    if (!code) {
-      throw new Error('oauth_redirect_has_no_code');
-    }
-    const { data, error } = await this.client.auth.exchangeCodeForSession(code);
-    if (error) throw error;
-    if (!data.session) {
-      throw new Error('Supabase did not return an authenticated session');
-    }
-    return data.session;
-  }
-
   async signUp(email: string, password: string, displayName: string): Promise<Session> {
     const { data, error } = await this.client.auth.signUp({
       email,
@@ -119,6 +86,24 @@ export class SupabaseAuthGateway implements AuthGateway {
       throw new Error('email_confirmation_must_be_disabled');
     }
     return data.session;
+  }
+
+  async joinRestaurant(code: string, role: OnboardingRole): Promise<RestaurantOnboardingResult> {
+    const { data, error } = await this.client.rpc('join_restaurant', {
+      requested_code: normalizeRestaurantCode(code),
+      requested_role: role,
+    });
+    if (error) throw error;
+    return parseRestaurantOnboardingResult(data);
+  }
+
+  async createRestaurant(name: string, branchName?: string): Promise<RestaurantOnboardingResult> {
+    const { data, error } = await this.client.rpc('create_restaurant', {
+      requested_name: name.trim(),
+      requested_branch_name: branchName?.trim() || null,
+    });
+    if (error) throw error;
+    return parseRestaurantOnboardingResult(data);
   }
 
   async requestSignup(displayName: string): Promise<SignupRequestRow> {
@@ -265,4 +250,38 @@ export class SupabaseAuthGateway implements AuthGateway {
     if (error) throw error;
     return data;
   }
+}
+
+function normalizeRestaurantCode(code: string): string {
+  return code.replace(/[^a-z0-9]/gi, '').toUpperCase();
+}
+
+function parseRestaurantOnboardingResult(value: Json): RestaurantOnboardingResult {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('invalid_onboarding_response');
+  }
+
+  const record = value as Record<string, Json | undefined>;
+  const organizationId = record.organizationId;
+  const branchId = record.branchId;
+  const restaurantCode = record.restaurantCode;
+  const restaurantName = record.restaurantName;
+  const role = record.role;
+  if (
+    typeof organizationId !== 'string' ||
+    typeof branchId !== 'string' ||
+    typeof restaurantCode !== 'string' ||
+    typeof restaurantName !== 'string' ||
+    (role !== 'waiter' && role !== 'manager')
+  ) {
+    throw new Error('invalid_onboarding_response');
+  }
+
+  return {
+    organizationId,
+    branchId,
+    restaurantCode,
+    restaurantName,
+    role,
+  };
 }

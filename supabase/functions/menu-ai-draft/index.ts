@@ -32,7 +32,7 @@ Deno.serve(async (request) => {
     const body = await request.json();
     const input = parseInput(body);
     scope = input;
-    const model = Deno.env.get('OPENAI_MENU_MODEL')?.trim() || 'gpt-5.6-luna';
+    const model = Deno.env.get('NVIDIA_MENU_MODEL')?.trim() || 'nvidia/nemotron-3-nano-30b-a3b';
 
     const reservation = await rpc(
       'reserve_menu_ai_request',
@@ -68,8 +68,8 @@ Deno.serve(async (request) => {
       }
     }
 
-    const openAiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
-    if (!openAiKey) throw new PublicError('ai_unconfigured', 503);
+    const nvidiaApiKey = Deno.env.get('NVIDIA_API_KEY')?.trim();
+    if (!nvidiaApiKey) throw new PublicError('ai_unconfigured', 503);
 
     const [categories, menuItems, allergens] = await Promise.all([
       restSelect(
@@ -83,22 +83,23 @@ Deno.serve(async (request) => {
       restSelect('allergens?select=code,name&order=code', authorization),
     ]);
 
-    const apiResponse = await fetch('https://api.openai.com/v1/responses', {
+    const apiResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${openAiKey}`,
+        Authorization: `Bearer ${nvidiaApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model,
-        store: false,
-        reasoning: { effort: 'low' },
-        max_output_tokens: 1800,
-        safety_identifier: await safetyIdentifier(authorization),
-        input: [
+        temperature: 0.3,
+        top_p: 1,
+        max_tokens: 1800,
+        reasoning_budget: 4096,
+        response_format: { type: 'json_object' },
+        messages: [
           {
             role: 'system',
-            content: menuAssistantPrompt(input.currencyCode, input.locale),
+            content: `${menuAssistantPrompt(input.currencyCode, input.locale)} Respond with a single JSON object only, matching this JSON Schema exactly, with no prose, no markdown fences, and no keys outside the schema: ${JSON.stringify(menuDraftSchema(input.currencyCode))}`,
           },
           {
             role: 'user',
@@ -111,20 +112,12 @@ Deno.serve(async (request) => {
             }),
           },
         ],
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'orderia_menu_item_draft',
-            strict: true,
-            schema: menuDraftSchema(input.currencyCode),
-          },
-        },
       }),
       signal: AbortSignal.timeout(25_000),
     });
     const responseJson = await apiResponse.json();
     if (!apiResponse.ok) {
-      console.error('menu-ai-draft OpenAI error', {
+      console.error('menu-ai-draft NVIDIA error', {
         requestId,
         status: apiResponse.status,
         type: isRecord(responseJson.error) ? responseJson.error.type : undefined,
@@ -135,7 +128,7 @@ Deno.serve(async (request) => {
       );
     }
 
-    const suggestion = JSON.parse(extractOutputText(responseJson));
+    const suggestion = JSON.parse(extractChatContent(responseJson));
     assertSuggestion(suggestion, input.currencyCode);
     const usage = isRecord(responseJson.usage) ? responseJson.usage : {};
     const completed = await rpc(
@@ -146,8 +139,8 @@ Deno.serve(async (request) => {
         requested_request_id: requestId,
         requested_suggestion: suggestion,
         requested_model: model,
-        requested_input_tokens: integerOrZero(usage.input_tokens),
-        requested_output_tokens: integerOrZero(usage.output_tokens),
+        requested_input_tokens: integerOrZero(usage.prompt_tokens),
+        requested_output_tokens: integerOrZero(usage.completion_tokens),
         requested_latency_ms: Date.now() - startedAt,
       },
       authorization,
@@ -385,41 +378,15 @@ async function apiFetch(path: string, authorization: string, init: RequestInit) 
   return body;
 }
 
-async function safetyIdentifier(authorization: string): Promise<string> {
-  const token = authorization.slice('Bearer '.length);
-  const subject = decodeJwtSubject(token);
-  const bytes = new TextEncoder().encode(`orderia-menu:${subject}`);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return `ord_${Array.from(new Uint8Array(digest))
-    .map((value) => value.toString(16).padStart(2, '0'))
-    .join('')
-    .slice(0, 32)}`;
-}
-
-function decodeJwtSubject(token: string): string {
-  try {
-    const payload = token.split('.')[1];
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const parsed = JSON.parse(atob(normalized));
-    return requiredString(parsed.sub, 'invalid_token');
-  } catch {
-    throw new PublicError('invalid_token', 401);
+function extractChatContent(response: unknown): string {
+  if (!isRecord(response) || !Array.isArray(response.choices)) {
+    throw new Error('invalid_nvidia_response');
   }
-}
-
-function extractOutputText(response: unknown): string {
-  if (!isRecord(response)) throw new Error('invalid_openai_response');
-  if (typeof response.output_text === 'string') return response.output_text;
-  if (!Array.isArray(response.output)) throw new Error('missing_openai_output');
-  for (const output of response.output) {
-    if (!isRecord(output) || !Array.isArray(output.content)) continue;
-    for (const content of output.content) {
-      if (isRecord(content) && content.type === 'output_text' && typeof content.text === 'string') {
-        return content.text;
-      }
-    }
+  const first = response.choices[0];
+  if (!isRecord(first) || !isRecord(first.message) || typeof first.message.content !== 'string') {
+    throw new Error('missing_nvidia_output_text');
   }
-  throw new Error('missing_openai_output_text');
+  return first.message.content;
 }
 
 function assertSuggestion(value: unknown, currencyCode: string): asserts value is JsonRecord {

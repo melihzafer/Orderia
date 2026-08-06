@@ -12,43 +12,29 @@ import { useLocalization } from '../i18n';
 import {
   AddCategoryScreen,
   AddHallScreen,
+  AddTableScreen,
   AddMenuItemScreen,
   AnalyticsScreen,
   ApprovalsScreen,
   DeviceManagementScreen,
   EditTableScreen,
+  HomeScreen,
+  HallTablesScreen,
   HistoryScreen,
   MenuScreen,
   MenuAssistantScreen,
+  NewOrderScreen,
+  OrdersFlowScreen,
   QRMenuScreen,
   SettingsScreen,
-  ShiftBoardScreen,
   TableDetailScreen,
+  TablesScreen,
+  TablesHomeScreen,
 } from '../screens';
 import { AdaptiveTabBar } from './AdaptiveTabBar';
-
-export type RootStackParamList = {
-  MainTabs: undefined;
-  TableDetail: { tableId: string };
-  AddMenuItem: { categoryId?: string; itemId?: string };
-  MenuAssistant: undefined;
-  AddHall: { hallId?: string };
-  EditTable: { tableId: string };
-  AddCategory: { categoryId?: string };
-  Analytics: undefined;
-  Approvals: undefined;
-  QRMenu: undefined;
-  Devices: undefined;
-};
-
-export type TabParamList = {
-  Service: undefined;
-  Receipts: undefined;
-  Profile: undefined;
-  Menu: undefined;
-  Reports: undefined;
-  More: undefined;
-};
+// Rota tipleri `./routes` içinde yaşıyor. Ekranlar da oradan alıyor; böylece
+// "navigatör bütün ekranları, her ekran da navigatörü içe aktarır" döngüsü yok.
+import type { RootStackParamList, TabParamList } from './routes';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -89,68 +75,44 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
-        component={ShiftBoardScreen}
-        name="Service"
+        component={TablesHomeScreen}
+        name="Masalar"
         options={{
           headerShown: false,
-          title: t.serviceNav,
+          title: t.tablesNav,
         }}
       />
-      {isManager ? (
-        <>
-          <Tab.Screen
-            component={MenuScreen}
-            name="Menu"
-            options={{
-              headerTitle: t.menuManagement,
-              title: t.menu,
-            }}
-          />
-          <Tab.Screen
-            component={AnalyticsScreen}
-            name="Reports"
-            options={{
-              headerShown: false,
-              title: t.reportsNav,
-            }}
-          />
-          <Tab.Screen
-            component={HistoryScreen}
-            name="Receipts"
-            options={{
-              headerShown: false,
-              title: t.receiptsNav,
-            }}
-          />
-          <Tab.Screen
-            component={SettingsScreen}
-            name="More"
-            options={{
-              headerTitle: t.settings,
-              title: t.moreNav,
-            }}
-          />
-        </>
-      ) : (
-        <>
-          <Tab.Screen
-            component={HistoryScreen}
-            name="Receipts"
-            options={{
-              headerShown: false,
-              title: t.receiptsNav,
-            }}
-          />
-          <Tab.Screen
-            component={SettingsScreen}
-            name="Profile"
-            options={{
-              headerTitle: t.profileNav,
-              title: t.profileNav,
-            }}
-          />
-        </>
-      )}
+      <Tab.Screen
+        component={OrdersFlowScreen}
+        name="Orders"
+        options={{
+          headerShown: false,
+          title: t.ordersNav,
+        }}
+      />
+      <Tab.Screen
+        component={HomeScreen}
+        name="Home"
+        options={{
+          title: t.homeNav,
+        }}
+      />
+      <Tab.Screen
+        component={MenuScreen}
+        name="Menu"
+        options={{
+          headerShown: false,
+          title: t.menu,
+        }}
+      />
+      <Tab.Screen
+        component={HistoryScreen}
+        name="Receipts"
+        options={{
+          headerShown: false,
+          title: t.receiptsNav,
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -175,12 +137,30 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={stackOptions}>
         <Stack.Screen component={MainTabs} name="MainTabs" options={{ headerShown: false }} />
         <Stack.Screen
+          component={NewOrderScreen}
+          name="NewOrder"
+          options={{ headerShown: false, presentation: 'modal', title: t.newOrder }}
+        />
+        <Stack.Screen
           component={TableDetailScreen}
           name="TableDetail"
           options={{
             headerShown: false,
-            presentation: 'modal',
             title: t.tableDetail,
+          }}
+        />
+        <Stack.Screen
+          component={TablesScreen}
+          name="Tables"
+          options={{
+            title: t.tablesTitle,
+          }}
+        />
+        <Stack.Screen
+          component={HallTablesScreen}
+          name="HallTables"
+          options={{
+            title: t.tablesTitle,
           }}
         />
         <Stack.Screen
@@ -202,10 +182,18 @@ export default function AppNavigator() {
         <Stack.Screen
           component={AddHallScreen}
           name="AddHall"
-          options={{
+          options={({ route }) => ({
             presentation: 'modal',
-            title: t.addHall,
-          }}
+            title: route.params?.hallId ? t.editHall : t.addHall,
+          })}
+        />
+        <Stack.Screen
+          component={AddTableScreen}
+          name="AddTable"
+          options={({ route }) => ({
+            presentation: 'modal',
+            title: route.params?.tableId ? t.editTable : t.addTable,
+          })}
         />
         <Stack.Screen
           component={EditTableScreen}
@@ -227,7 +215,6 @@ export default function AppNavigator() {
           component={AnalyticsScreen}
           name="Analytics"
           options={{
-            presentation: 'modal',
             title: t.analytics,
           }}
         />
@@ -235,7 +222,6 @@ export default function AppNavigator() {
           component={QRMenuScreen}
           name="QRMenu"
           options={{
-            presentation: 'modal',
             title: t.qrMenu,
           }}
         />
@@ -243,7 +229,7 @@ export default function AppNavigator() {
           component={DeviceManagementScreen}
           name="Devices"
           options={{
-            title: 'Authorized devices',
+            title: t.devicesTitle,
           }}
         />
         <Stack.Screen
@@ -251,6 +237,13 @@ export default function AppNavigator() {
           name="Approvals"
           options={{
             title: t.pendingApprovalTitle ?? 'Approvals',
+          }}
+        />
+        <Stack.Screen
+          component={SettingsScreen}
+          name="Settings"
+          options={{
+            title: t.settings,
           }}
         />
       </Stack.Navigator>

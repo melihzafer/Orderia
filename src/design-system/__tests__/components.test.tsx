@@ -6,8 +6,10 @@ import {
   ServiceButton,
   ServiceEmptyState,
   ServiceIconButton,
+  ServiceSegmented,
   ServiceSkeleton,
   ServiceStatusPill,
+  ServiceStepper,
   ServiceSurface,
   ServiceTextField,
 } from '../components';
@@ -78,6 +80,73 @@ describe('service design-system interactions', () => {
 
     fireEvent.press(screen.getByRole('button', { name: 'Open table' }));
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('steps a quantity up and down within its bounds', async () => {
+    const onChange = jest.fn();
+    const screen = await renderWithTheme(
+      <ServiceStepper
+        value={1}
+        onChange={onChange}
+        label="Köfte adedi"
+        minimum={1}
+        maximum={3}
+        decrementLabel="Azalt"
+        incrementLabel="Arttır"
+      />,
+    );
+
+    fireEvent.press(screen.getByRole('button', { name: 'Arttır' }));
+    expect(onChange).toHaveBeenCalledWith(2);
+
+    // Alt sınırdaki azaltma butonu devre dışı olmalı, aksi halde 0 adet yazılabilirdi.
+    const decrement = screen.getByRole('button', { name: 'Azalt' });
+    expect(decrement.props.accessibilityState).toMatchObject({ disabled: true });
+    fireEvent.press(decrement);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the stepper value to assistive technology', async () => {
+    const screen = await renderWithTheme(
+      <ServiceStepper
+        value={2}
+        onChange={jest.fn()}
+        label="Kişi sayısı"
+        minimum={1}
+        maximum={8}
+        decrementLabel="Azalt"
+        incrementLabel="Arttır"
+      />,
+    );
+
+    expect(screen.getByLabelText('Kişi sayısı').props.accessibilityValue).toEqual({
+      now: 2,
+      min: 1,
+      max: 8,
+    });
+  });
+
+  it('marks the active segment as selected and reports its count', async () => {
+    const onChange = jest.fn();
+    const screen = await renderWithTheme(
+      <ServiceSegmented
+        label="Sipariş özeti"
+        value="kitchen"
+        onChange={onChange}
+        options={[
+          { value: 'all', label: 'Tümü' },
+          { value: 'kitchen', label: 'Mutfağa', count: 4 },
+          { value: 'drinks', label: 'İçecekler', count: 3 },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Mutfağa, 4' }).props.accessibilityState).toMatchObject({
+      selected: true,
+    });
+
+    fireEvent.press(screen.getByRole('tab', { name: 'İçecekler, 3' }));
+    expect(onChange).toHaveBeenCalledWith('drinks');
   });
 });
 
