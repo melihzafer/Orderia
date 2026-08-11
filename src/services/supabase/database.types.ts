@@ -602,6 +602,15 @@ export type Database = {
         };
         Returns: Json;
       };
+      replace_catalog_from_legacy_snapshot: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_snapshot: Json;
+        };
+        Returns: Json;
+      };
       pull_sync_events: {
         Args: {
           requested_organization_id: string;

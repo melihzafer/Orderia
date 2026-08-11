@@ -29,11 +29,17 @@ import {
 } from '../design-system';
 import { operationsOrder, settingsCopy } from '../features/app-settings';
 import { LegacyMigrationCard } from '../features/legacy-migration/LegacyMigrationCard';
+import {
+  LegacyMigrationGateway,
+  prepareLegacyMigration,
+  type LegacyMigrationSnapshot,
+} from '../features/legacy-migration';
 import { PwaStatusCard } from '../features/pwa';
 import { Currency, Language, useLocalization } from '../i18n';
 import { DeviceId, MutationId, toDomainId } from '../domain';
 import type { RootStackParamList } from '../navigation/routes';
 import { brand } from '../constants/branding';
+import { getSupabaseClient } from '../services/supabase';
 import { useHistoryStore } from '../stores/historyStore';
 import { useLayoutStore } from '../stores/layoutStore';
 import { useMenuStore } from '../stores/menuStore';
@@ -81,7 +87,13 @@ export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const layout = useAdaptiveLayout();
   const copy = useMemo(() => settingsCopy(language), [language]);
-  const { mode, setManagerActionPin } = useOrderiaData();
+  const data = useOrderiaData();
+  const { mode, scope, refresh, setManagerActionPin } = data;
+  const cloudClient = getSupabaseClient();
+  const legacyMigrationGateway = useMemo(
+    () => (cloudClient ? new LegacyMigrationGateway(cloudClient) : null),
+    [cloudClient],
+  );
 
   const layoutStore = useLayoutStore();
   const menuStore = useMenuStore();
@@ -102,6 +114,8 @@ export default function SettingsScreen() {
   const [savingManagerPin, setSavingManagerPin] = useState(false);
   // Onay bekleyen yıkıcı işlemler: yedek geri yükleme ve yerel veri sıfırlama.
   const [pendingImport, setPendingImport] = useState<OrderiaBackup>();
+  const [pendingCatalogReplace, setPendingCatalogReplace] = useState<LegacyMigrationSnapshot>();
+  const [applyingCatalogReplace, setApplyingCatalogReplace] = useState(false);
   const [resetPending, setResetPending] = useState(false);
   const { show } = useSnackbar();
 
@@ -182,11 +196,67 @@ export default function SettingsScreen() {
       const raw = asset.file
         ? await asset.file.text()
         : await FileSystem.readAsStringAsync(asset.uri);
+
+      if (mode === 'cloud') {
+        if (auth.activeMembership?.role !== 'manager') {
+          show({ message: copy.catalogReplaceManagerRequired, tone: 'error' });
+          return;
+        }
+        let prepared;
+        try {
+          prepared = prepareLegacyMigration(JSON.parse(raw));
+        } catch (error) {
+          show({
+            message: error instanceof Error ? error.message : copy.catalogReplaceInvalid,
+            tone: 'error',
+          });
+          return;
+        }
+        if (prepared.snapshot.openTickets.length > 0 || prepared.snapshot.historyDays.length > 0) {
+          show({ message: copy.catalogReplaceTicketsUnsupported, tone: 'error' });
+          return;
+        }
+        if (prepared.report.blockingIssueCount > 0) {
+          show({
+            message: prepared.report.issues[0]?.message ?? copy.catalogReplaceInvalid,
+            tone: 'error',
+          });
+          return;
+        }
+        setPendingCatalogReplace(prepared.snapshot);
+        return;
+      }
+
       setPendingImport(parseOrderiaBackup(raw));
     } catch (error) {
       show({ message: error instanceof Error ? error.message : t.importFailed, tone: 'error' });
     } finally {
       setImporting(false);
+    }
+  };
+
+  const applyCatalogReplace = async (snapshot: LegacyMigrationSnapshot) => {
+    setPendingCatalogReplace(undefined);
+    if (!legacyMigrationGateway || !scope || !auth.currentDeviceId) {
+      haptic('error');
+      show({ message: t.workspaceUnavailable, tone: 'error' });
+      return;
+    }
+    setApplyingCatalogReplace(true);
+    try {
+      const result = await legacyMigrationGateway.replaceCatalog(
+        scope,
+        toDomainId<DeviceId>(auth.currentDeviceId),
+        snapshot,
+      );
+      await refresh().catch(() => undefined);
+      haptic('success');
+      show({ message: copy.catalogReplaceSuccess(result.counts), tone: 'success' });
+    } catch (error) {
+      haptic('error');
+      show({ message: error instanceof Error ? error.message : t.importFailed, tone: 'error' });
+    } finally {
+      setApplyingCatalogReplace(false);
     }
   };
 
@@ -625,13 +695,13 @@ export default function SettingsScreen() {
           <ServiceListRow
             accessory="chevron"
             compact={settings.compactDensity}
-            disabled={importing}
+            disabled={importing || applyingCatalogReplace}
             icon="cloud-upload-outline"
             onPress={() => {
               void handleDataImport();
             }}
             showSubtitle={dataDescriptionsRevealed}
-            subtitle={t.restorePreviousData}
+            subtitle={mode === 'cloud' ? copy.importBackupCloudBody : t.restorePreviousData}
             title={t.dataImport}
           />
           <ServiceListRow
@@ -716,6 +786,20 @@ export default function SettingsScreen() {
         }}
         title={t.importWarning}
         visible={pendingImport !== undefined}
+      />
+
+      <ServiceConfirmSheet
+        body={copy.catalogReplaceConfirmBody}
+        busy={applyingCatalogReplace}
+        cancelLabel={t.cancel}
+        confirmLabel={t.import}
+        destructive
+        onClose={() => setPendingCatalogReplace(undefined)}
+        onConfirm={() => {
+          if (pendingCatalogReplace) void applyCatalogReplace(pendingCatalogReplace);
+        }}
+        title={copy.catalogReplaceConfirmTitle}
+        visible={pendingCatalogReplace !== undefined}
       />
 
       <ServiceConfirmSheet

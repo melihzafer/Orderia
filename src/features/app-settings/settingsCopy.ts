@@ -79,6 +79,18 @@ export interface SettingsCopy {
   readonly resetLocalDataConfirm: string;
   readonly resetLocalDataDone: string;
   readonly legacyMigrationReveal: string;
+  readonly importBackupCloudBody: string;
+  readonly catalogReplaceConfirmTitle: string;
+  readonly catalogReplaceConfirmBody: string;
+  readonly catalogReplaceManagerRequired: string;
+  readonly catalogReplaceTicketsUnsupported: string;
+  readonly catalogReplaceInvalid: string;
+  readonly catalogReplaceSuccess: (counts: {
+    readonly halls: number;
+    readonly tables: number;
+    readonly categories: number;
+    readonly menuItems: number;
+  }) => string;
 
   readonly aboutSection: string;
   readonly versionLabel: string;
@@ -209,6 +221,17 @@ const tr: SettingsCopy = {
   resetLocalDataConfirm: 'Bu cihazdaki tüm yerel veriler silinsin mi?',
   resetLocalDataDone: 'Cihaz verileri sıfırlandı',
   legacyMigrationReveal: 'Eski yedekten veri aktar',
+  importBackupCloudBody:
+    'Bu şubenin bulut menüsünü yedekteki salon, masa, kategori ve ürünlerle değiştirir',
+  catalogReplaceConfirmTitle: 'Bulut menüsü yedekle değiştirilsin mi?',
+  catalogReplaceConfirmBody:
+    'Bu şubedeki mevcut salonlar, masalar, kategoriler ve ürünler arşivlenip yedekteki verilerle değiştirilecek. Açık hesap veya geçmiş varsa bu içe aktarma çalışmaz.',
+  catalogReplaceManagerRequired: 'Bulut menüsünü değiştirmek için yönetici olmalısınız.',
+  catalogReplaceTicketsUnsupported:
+    'Bu yedekte açık hesap veya gün geçmişi var; bulut menü değişimi yalnızca salon/masa/menü verisini kabul eder. Tam geçmiş için "Eski veri geçişi" kartını kullanın.',
+  catalogReplaceInvalid: 'Yedek doğrulanamadı',
+  catalogReplaceSuccess: (counts) =>
+    `Bulut menüsü güncellendi · ${counts.halls} salon · ${counts.tables} masa · ${counts.categories} kategori · ${counts.menuItems} ürün`,
 
   aboutSection: 'Uygulama',
   versionLabel: 'Sürüm',
@@ -360,6 +383,17 @@ const bg: SettingsCopy = {
   resetLocalDataConfirm: 'Да се изтрият ли всички локални данни от това устройство?',
   resetLocalDataDone: 'Данните на устройството са изчистени',
   legacyMigrationReveal: 'Импортирай от стар архив',
+  importBackupCloudBody:
+    'Заменя облачното меню на този обект със залите, масите, категориите и продуктите от архива',
+  catalogReplaceConfirmTitle: 'Да се замени ли облачното меню с архива?',
+  catalogReplaceConfirmBody:
+    'Текущите зали, маси, категории и продукти в този обект ще бъдат архивирани и заменени с данните от архива. Импортът не работи, ако архивът съдържа отворени сметки или история.',
+  catalogReplaceManagerRequired: 'Нужен е достъп на мениджър, за да смените облачното меню.',
+  catalogReplaceTicketsUnsupported:
+    'Този архив съдържа отворени сметки или дневна история; смяната на облачното меню приема само зали/маси/меню. За пълна история използвайте картата „Миграция на стари данни“.',
+  catalogReplaceInvalid: 'Архивът не можа да бъде проверен',
+  catalogReplaceSuccess: (counts) =>
+    `Облачното меню е обновено · ${counts.halls} зали · ${counts.tables} маси · ${counts.categories} категории · ${counts.menuItems} продукта`,
 
   aboutSection: 'Приложение',
   versionLabel: 'Версия',
@@ -512,6 +546,17 @@ const en: SettingsCopy = {
   resetLocalDataConfirm: 'Reset all local data on this device?',
   resetLocalDataDone: 'Device data reset',
   legacyMigrationReveal: 'Import from an old backup',
+  importBackupCloudBody:
+    "Replaces this branch's cloud menu with the backup's halls, tables, categories and items",
+  catalogReplaceConfirmTitle: 'Replace the cloud menu with this backup?',
+  catalogReplaceConfirmBody:
+    "This branch's current halls, tables, categories and items will be archived and replaced with the backup's data. This import does not run if the backup contains open checks or history.",
+  catalogReplaceManagerRequired: 'You need manager access to replace the cloud menu.',
+  catalogReplaceTicketsUnsupported:
+    'This backup contains open checks or daily history; cloud menu replace only accepts halls/tables/menu data. Use the "Legacy data migration" card for full history.',
+  catalogReplaceInvalid: 'Backup could not be validated',
+  catalogReplaceSuccess: (counts) =>
+    `Cloud menu updated · ${counts.halls} halls · ${counts.tables} tables · ${counts.categories} categories · ${counts.menuItems} items`,
 
   aboutSection: 'Application',
   versionLabel: 'Version',

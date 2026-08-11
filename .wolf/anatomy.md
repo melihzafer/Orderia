@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T08:52:51.813Z
-> Files: 34 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T09:10:21.018Z
+> Files: 36 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -221,7 +221,7 @@
 
 ## src/features/app-settings/
 
-- `settingsCopy.ts` — Ayarlar ekranının metinleri burada yaşar. (~6781 tok)
+- `settingsCopy.ts` — Ayarlar ekranının metinleri burada yaşar. (~7715 tok)
 
 ## src/features/cancellation-reasons/
 
@@ -234,6 +234,7 @@
 ## src/features/legacy-migration/
 
 - `legacyMigration.ts` — Exports LegacyHall, LegacyTable, LegacyCategory, LegacyMenuItem + 13 more (~5332 tok)
+- `legacyMigrationGateway.ts` — Exports LegacyMigrationScope, LegacyMigrationServerResult, CatalogReplaceCounts, CatalogReplaceResul (~1676 tok)
 
 ## src/features/legacy-migration/__tests__/
 
@@ -323,7 +324,7 @@
 - `LegacyTableDetailScreen.tsx` — localCancellationReasons — renders table (~15580 tok)
 - `MenuAssistantScreen.tsx` — MenuAssistantScreen (~8570 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
-- `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8088 tok)
+- `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
 - `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~11364 tok)
 
 ## src/screens/__tests__/
@@ -337,7 +338,7 @@
 
 ## src/services/supabase/
 
-- `database.types.ts` — Exports Json, OrganizationRow, BranchRow, ProfileRow + 18 more (~5156 tok)
+- `database.types.ts` — Exports Json, OrganizationRow, BranchRow, ProfileRow + 18 more (~5232 tok)
 
 ## src/services/supabase/__tests__/
 
@@ -384,3 +385,4 @@
 
 - `20260808120000_check_rename_command.sql` — Renaming a check ("Mehmet Ağa") had no server-side command handler at all: (~1745 tok)
 - `20260808130000_seed_cancellation_reasons.sql` — The cancellation_reasons table shipped with manager-insert RLS but no seed (~1239 tok)
+- `20260811000000_replace_catalog_from_legacy_snapshot.sql` — Catalog-only variant of the legacy migration: lets a manager re-import a (~3401 tok)

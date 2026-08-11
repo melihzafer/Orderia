@@ -20,6 +20,18 @@ export interface LegacyMigrationServerResult {
   readonly idempotentReplay?: boolean;
 }
 
+export interface CatalogReplaceCounts {
+  readonly halls: number;
+  readonly tables: number;
+  readonly categories: number;
+  readonly menuItems: number;
+}
+
+export interface CatalogReplaceResult {
+  readonly status: 'completed';
+  readonly counts: CatalogReplaceCounts;
+}
+
 export class LegacyMigrationGateway {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
@@ -50,6 +62,37 @@ export class LegacyMigrationGateway {
     if (error) throw new Error(error.message);
     return parseServerResult(data);
   }
+
+  async replaceCatalog(
+    scope: LegacyMigrationScope,
+    deviceId: DeviceId,
+    snapshot: LegacyMigrationSnapshot,
+  ): Promise<CatalogReplaceResult> {
+    const { data, error } = await this.client.rpc('replace_catalog_from_legacy_snapshot', {
+      requested_organization_id: scope.organizationId,
+      requested_branch_id: scope.branchId,
+      requested_device_id: deviceId,
+      requested_snapshot: toJson(snapshot),
+    });
+    if (error) throw new Error(error.message);
+    return parseCatalogReplaceResult(data);
+  }
+}
+
+function parseCatalogReplaceResult(value: Json): CatalogReplaceResult {
+  const root = asRecord(value, 'Catalog replace response is invalid');
+  if (root.status !== 'completed') throw new Error('Catalog replace response is invalid');
+  const report = asRecord(root.report, 'Catalog replace report is invalid');
+  const counts = asRecord(report.counts, 'Catalog replace counts are invalid');
+  return {
+    status: 'completed',
+    counts: {
+      halls: requiredNumber(counts.halls),
+      tables: requiredNumber(counts.tables),
+      categories: requiredNumber(counts.categories),
+      menuItems: requiredNumber(counts.menuItems),
+    },
+  };
 }
 
 function parseServerResult(value: Json): LegacyMigrationServerResult {
