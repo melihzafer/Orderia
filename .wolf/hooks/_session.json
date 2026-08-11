@@ -91,6 +91,11 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-08-11T09:09:15.860Z"
+    },
+    "D:/Projects/Orderia/playwright.config.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T09:31:55.427Z"
     }
   },
   "files_written": [
@@ -206,8 +211,8 @@
     "src/screens/SettingsScreen.tsx": 6
   },
   "anatomy_hits": 4,
-  "anatomy_misses": 14,
+  "anatomy_misses": 15,
   "repeated_reads_warned": 8,
   "cerebrum_warnings": 0,
-  "stop_count": 5
+  "stop_count": 7
 }
