@@ -11,6 +11,7 @@ import {
   haptic,
   ServiceActionSheet,
   ServiceButton,
+  ServiceConfirmSheet,
   ServiceEmptyState,
   ServiceIconButton,
   ServiceProductThumb,
@@ -38,7 +39,8 @@ export default function MenuScreen() {
   const { tokens } = useTheme();
   const { language, t } = useLocalization();
   const layout = useAdaptiveLayout();
-  const { loadCatalog, mode, revision, setCatalogAvailability, sync } = useOrderiaData();
+  const { archiveMenuItem, loadCatalog, mode, revision, setCatalogAvailability, sync } =
+    useOrderiaData();
   const legacy = useMenuStore();
   const showItemPhotos = useSettingsStore((state) => state.showItemPhotos);
   const photoUris = useProductPhotoStore((state) => state.photoUris);
@@ -52,6 +54,8 @@ export default function MenuScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
   const [showMenuActions, setShowMenuActions] = useState(false);
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<CatalogItem>();
+  const [deletingItem, setDeletingItem] = useState(false);
   const { show } = useSnackbar();
   const menuColumns = layout.mode === 'expanded' ? 3 : layout.mode === 'medium' ? 2 : 1;
   const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
@@ -145,6 +149,27 @@ export default function MenuScreen() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const confirmDeleteItem = async () => {
+    if (!pendingDeleteItem) return;
+    const item = pendingDeleteItem;
+    setPendingDeleteItem(undefined);
+    setDeletingItem(true);
+    try {
+      await archiveMenuItem(item.id);
+      setSelectedItemIds((current) => current.filter((id) => id !== item.id));
+      await refreshCatalog();
+      haptic('success');
+    } catch (deleteError) {
+      haptic('error');
+      show({
+        message: deleteError instanceof Error ? deleteError.message : copy.tryAgain,
+        tone: 'error',
+      });
+    } finally {
+      setDeletingItem(false);
     }
   };
 
@@ -384,6 +409,11 @@ export default function MenuScreen() {
             item={item}
             imageUri={showItemPhotos ? photoUris[String(item.id)] : undefined}
             managerSelectable={isManager && mode === 'cloud' && !item.isOrganizationWide}
+            onDelete={
+              isManager && mode === 'cloud' && !item.isOrganizationWide
+                ? () => setPendingDeleteItem(item)
+                : undefined
+            }
             onLongPress={() => {
               haptic('activate');
               navigation.navigate('AddMenuItem', {
@@ -405,6 +435,26 @@ export default function MenuScreen() {
         title={copy.moreActions}
         visible={showMenuActions}
       />
+
+      <ServiceConfirmSheet
+        body={
+          pendingDeleteItem
+            ? copy.deleteItemConfirm(
+                pendingDeleteItem.name,
+                pendingDeleteItem.description,
+                `${(pendingDeleteItem.priceMinor / 100).toFixed(2)} ${pendingDeleteItem.currencyCode}`,
+              )
+            : ''
+        }
+        busy={deletingItem}
+        cancelLabel={t.cancel}
+        confirmLabel={copy.deleteItem}
+        destructive
+        onClose={() => setPendingDeleteItem(undefined)}
+        onConfirm={() => void confirmDeleteItem()}
+        title={copy.deleteItemTitle}
+        visible={pendingDeleteItem !== undefined}
+      />
     </SafeAreaView>
   );
 }
@@ -415,6 +465,7 @@ function CatalogItemCard({
   editable,
   item,
   managerSelectable,
+  onDelete,
   onLongPress,
   onPress,
   selected,
@@ -425,6 +476,7 @@ function CatalogItemCard({
   readonly editable: boolean;
   readonly item: CatalogItem;
   readonly managerSelectable: boolean;
+  readonly onDelete?: () => void;
   readonly onLongPress: () => void;
   readonly onPress: () => void;
   readonly selected: boolean;
@@ -500,6 +552,27 @@ function CatalogItemCard({
           ) : null}
           {duplicate ? <ServiceStatusPill label={copy.possibleDuplicate} tone="warning" /> : null}
         </View>
+        {duplicate && onDelete ? (
+          <Pressable
+            accessibilityLabel={copy.deleteItem}
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={onDelete}
+            style={({ pressed }) => ({
+              alignItems: 'center',
+              alignSelf: 'flex-start',
+              flexDirection: 'row',
+              gap: tokens.space.xxs,
+              minHeight: tokens.sizing.minimumTarget,
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Ionicons color={tokens.colors.error} name="trash-outline" size={16} />
+            <Text style={[tokens.typography.label, { color: tokens.colors.error }]}>
+              {copy.deleteItem}
+            </Text>
+          </Pressable>
+        ) : null}
       </ServiceSurface>
     </Pressable>
   );
@@ -640,6 +713,10 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       selectDuplicates: 'Olası tekrarları seç',
       selectDuplicatesBody: 'Aynı kategori ve isimdeki ürünleri seçili hale getirir.',
       refreshCatalog: 'Menüyü yenile',
+      deleteItem: 'Sil',
+      deleteItemTitle: 'Ürün silinsin mi?',
+      deleteItemConfirm: (name: string, description: string | undefined, price: string) =>
+        `"${name}"${description ? ` — ${description}` : ''} (${price}) menüden kaldırılacak. Bu işlem geri alınamaz. Aynı isimli başka bir ürünü silmediğinden emin ol.`,
     } as const;
   }
   if (language === 'bg') {
@@ -676,6 +753,10 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       selectDuplicates: 'Избери възможните дубликати',
       selectDuplicatesBody: 'Избира артикулите с еднаква категория и име.',
       refreshCatalog: 'Обнови менюто',
+      deleteItem: 'Изтрий',
+      deleteItemTitle: 'Да се изтрие ли артикулът?',
+      deleteItemConfirm: (name: string, description: string | undefined, price: string) =>
+        `„${name}“${description ? ` — ${description}` : ''} (${price}) ще бъде премахнат от менюто. Действието е необратимо. Уверете се, че не е друг артикул със същото име.`,
     } as const;
   }
   return {
@@ -711,5 +792,9 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
     selectDuplicates: 'Select possible duplicates',
     selectDuplicatesBody: 'Selects items that share the same category and name.',
     refreshCatalog: 'Refresh menu',
+    deleteItem: 'Delete',
+    deleteItemTitle: 'Delete this item?',
+    deleteItemConfirm: (name: string, description: string | undefined, price: string) =>
+      `"${name}"${description ? ` — ${description}` : ''} (${price}) will be removed from the menu. This cannot be undone — make sure this isn't a different item with the same name.`,
   } as const;
 }

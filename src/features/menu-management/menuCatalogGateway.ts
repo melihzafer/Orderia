@@ -222,6 +222,24 @@ export class MenuCatalogGateway {
     if (error) throw error;
     return data;
   }
+
+  /**
+   * Soft-deletes a branch-scoped item (`deleted_at`). Covered by the same
+   * `menu_items_manager_update` RLS policy as `saveItem` — no separate
+   * delete policy or RPC needed. Organization-wide items (branch_id null)
+   * aren't reachable here; the UI never offers deletion for those.
+   */
+  async archiveItem(scope: MenuScope, itemId: MenuItemId): Promise<void> {
+    const { error } = await this.client
+      .from('menu_items')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', itemId)
+      .eq('organization_id', scope.organizationId)
+      .eq('branch_id', scope.branchId)
+      .select('id')
+      .single();
+    if (error) throw error;
+  }
 }
 
 function isMenuAiDraft(value: unknown): value is MenuAiDraft {

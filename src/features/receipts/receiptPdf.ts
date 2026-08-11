@@ -30,7 +30,14 @@ export async function generateReceiptPdf(receipt: Receipt): Promise<Uint8Array> 
   ]);
   const definition = receiptDocument(receipt);
   const base64 = await new Promise<string>((resolve) => {
-    pdfMake.createPdf(definition, undefined, fonts, fontAssets.vfs).getBase64(resolve);
+    // vfs_fonts.js does `module.exports = vfs` at runtime — the font map
+    // itself (filename -> base64), not `{ vfs }`. @types/pdfmake's shape for
+    // this module is stale and doesn't match, hence the cast. The previous
+    // `fontAssets.vfs` read was `undefined` at runtime, so pdfmake had no
+    // font data and fell back to a require() path Metro can't resolve on web
+    // ("Requiring unknown module").
+    const vfs = fontAssets as unknown as Record<string, string>;
+    pdfMake.createPdf(definition, undefined, fonts, vfs).getBase64(resolve);
   });
   return base64ToBytes(base64);
 }

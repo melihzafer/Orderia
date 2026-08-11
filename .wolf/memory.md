@@ -628,3 +628,25 @@ bug-081..086 olarak islendi. Hicbir dosya silinmedi, sadece duzenlendi (kullanic
 | 14:03 | Edited src/screens/MenuScreen.tsx | 3→7 lines | ~98 |
 | 14:03 | Edited src/screens/MenuScreen.tsx | 3→7 lines | ~96 |
 | 14:08 | Edited src/design-system/components/ServiceActionSheet.tsx | expanded (+6 lines) | ~185 |
+| 14:26 | Session end: 27 writes across 9 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 26 reads | ~47872 tok |
+| 14:43 | Edited src/features/receipts/receiptPdf.ts | 4→8 lines | ~133 |
+| 14:44 | Edited src/features/receipts/receiptPdf.ts | modified generateReceiptPdf() | ~263 |
+| 14:46 | Edited src/features/menu-management/menuCatalogGateway.ts | added 1 condition(s) | ~210 |
+| 14:46 | Edited src/data/runtime/OrderiaDataContext.tsx | CSS: itemId | ~126 |
+| 14:46 | Edited src/data/runtime/OrderiaDataContext.tsx | CSS: itemId | ~72 |
+| 14:46 | Edited src/data/runtime/OrderiaDataContext.tsx | 27→29 lines | ~192 |
+| 14:47 | Edited src/screens/MenuScreen.tsx | 1→2 lines | ~32 |
+| 14:47 | Edited src/screens/MenuScreen.tsx | 2→4 lines | ~71 |
+| 14:47 | Edited src/screens/MenuScreen.tsx | added error handling | ~201 |
+| 14:48 | Edited src/screens/MenuScreen.tsx | modified CatalogItemCard() | ~139 |
+| 14:48 | Edited src/screens/MenuScreen.tsx | expanded (+21 lines) | ~305 |
+| 14:48 | Edited src/screens/MenuScreen.tsx | modified setPendingDeleteItem() | ~158 |
+| 14:48 | Edited src/screens/MenuScreen.tsx | modified deleteItemConfirm() | ~193 |
+| 14:48 | Edited src/screens/MenuScreen.tsx | 16→17 lines | ~95 |
+| 14:49 | Edited src/screens/MenuScreen.tsx | 5→8 lines | ~114 |
+| 14:49 | Edited src/screens/MenuScreen.tsx | 5→9 lines | ~120 |
+| 14:49 | Edited src/screens/MenuScreen.tsx | 5→8 lines | ~112 |
+| 14:54 | Edited src/screens/MenuScreen.tsx | expanded (+8 lines) | ~90 |
+| 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~75 |
+| 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~76 |
+| 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~78 |

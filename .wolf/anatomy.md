@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T11:08:10.698Z
-> Files: 39 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T11:54:43.285Z
+> Files: 42 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -175,6 +175,7 @@
 
 ## src/data/runtime/
 
+- `OrderiaDataContext.tsx` — initialSync (~7081 tok)
 
 ## src/data/runtime/__tests__/
 
@@ -248,6 +249,7 @@
 
 ## src/features/menu-management/
 
+- `menuCatalogGateway.ts` — Soft-deletes a branch-scoped item (`deleted_at`). Covered by the same (~2747 tok)
 
 ## src/features/menu-management/__tests__/
 
@@ -272,6 +274,7 @@
 
 ## src/features/receipts/
 
+- `receiptPdf.ts` — Exports PreparedReceiptPdf, generateReceiptPdf, ReceiptPdfGateway (~2416 tok)
 
 ## src/features/receipts/__tests__/
 
@@ -325,7 +328,7 @@
 - `index.ts` (~519 tok)
 - `LegacyTableDetailScreen.tsx` — localCancellationReasons — renders table (~15580 tok)
 - `MenuAssistantScreen.tsx` — MenuAssistantScreen (~8570 tok)
-- `MenuScreen.tsx` — MenuScreen (~7164 tok)
+- `MenuScreen.tsx` — MenuScreen (~8155 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
 - `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
 - `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~11364 tok)

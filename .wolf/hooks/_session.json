@@ -38,7 +38,7 @@
       "first_read": "2026-08-11T08:52:44.169Z"
     },
     "D:/Projects/Orderia/src/features/menu-management/menuCatalogGateway.ts": {
-      "count": 1,
+      "count": 2,
       "tokens": 0,
       "first_read": "2026-08-11T09:01:08.222Z"
     },
@@ -63,8 +63,8 @@
       "first_read": "2026-08-11T09:03:01.679Z"
     },
     "D:/Projects/Orderia/src/data/runtime/OrderiaDataContext.tsx": {
-      "count": 1,
-      "tokens": 0,
+      "count": 4,
+      "tokens": 7068,
       "first_read": "2026-08-11T09:03:24.404Z"
     },
     "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx": {
@@ -98,8 +98,8 @@
       "first_read": "2026-08-11T09:31:55.427Z"
     },
     "D:/Projects/Orderia/src/screens/MenuScreen.tsx": {
-      "count": 6,
-      "tokens": 6926,
+      "count": 15,
+      "tokens": 8066,
       "first_read": "2026-08-11T10:58:05.303Z"
     },
     "D:/Projects/Orderia/src/design-system/components/ServiceActionSheet.tsx": {
@@ -118,7 +118,7 @@
       "first_read": "2026-08-11T10:59:24.062Z"
     },
     "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx": {
-      "count": 2,
+      "count": 3,
       "tokens": 11364,
       "first_read": "2026-08-11T10:59:46.598Z"
     },
@@ -131,6 +131,21 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-08-11T11:01:28.554Z"
+    },
+    "D:/Projects/Orderia/src/features/receipts/receiptPdf.ts": {
+      "count": 2,
+      "tokens": 2356,
+      "first_read": "2026-08-11T11:36:45.784Z"
+    },
+    "D:/Projects/Orderia/src/features/receipts/__tests__/receiptPdf.test.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T11:44:41.737Z"
+    },
+    "D:/Projects/Orderia/src/features/menu-management/menuManagementTypes.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T11:45:48.643Z"
     }
   },
   "files_written": [
@@ -295,6 +310,132 @@
       "action": "edit",
       "tokens": 185,
       "at": "2026-08-11T11:08:10.707Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/receipts/receiptPdf.ts",
+      "action": "edit",
+      "tokens": 133,
+      "at": "2026-08-11T11:43:16.191Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/receipts/receiptPdf.ts",
+      "action": "edit",
+      "tokens": 263,
+      "at": "2026-08-11T11:44:01.219Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/menu-management/menuCatalogGateway.ts",
+      "action": "edit",
+      "tokens": 210,
+      "at": "2026-08-11T11:46:03.752Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/data/runtime/OrderiaDataContext.tsx",
+      "action": "edit",
+      "tokens": 126,
+      "at": "2026-08-11T11:46:22.352Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/data/runtime/OrderiaDataContext.tsx",
+      "action": "edit",
+      "tokens": 72,
+      "at": "2026-08-11T11:46:43.788Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/data/runtime/OrderiaDataContext.tsx",
+      "action": "edit",
+      "tokens": 192,
+      "at": "2026-08-11T11:46:59.491Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 32,
+      "at": "2026-08-11T11:47:12.051Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 71,
+      "at": "2026-08-11T11:47:19.967Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 201,
+      "at": "2026-08-11T11:47:35.597Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 139,
+      "at": "2026-08-11T11:48:09.447Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 305,
+      "at": "2026-08-11T11:48:18.424Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 158,
+      "at": "2026-08-11T11:48:27.632Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 193,
+      "at": "2026-08-11T11:48:36.339Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 95,
+      "at": "2026-08-11T11:48:46.036Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 114,
+      "at": "2026-08-11T11:49:01.805Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 120,
+      "at": "2026-08-11T11:49:15.125Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 112,
+      "at": "2026-08-11T11:49:21.288Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 90,
+      "at": "2026-08-11T11:54:03.325Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 75,
+      "at": "2026-08-11T11:54:11.478Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 76,
+      "at": "2026-08-11T11:54:37.025Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+      "action": "edit",
+      "tokens": 78,
+      "at": "2026-08-11T11:54:43.294Z"
     }
   ],
   "edit_counts": {
@@ -305,12 +446,15 @@
     "src/features/app-settings/settingsCopy.ts": 4,
     "src/screens/SettingsScreen.tsx": 6,
     "src/features/table-workspace/components/WorkspaceChrome.tsx": 1,
-    "src/screens/MenuScreen.tsx": 8,
-    "src/design-system/components/ServiceActionSheet.tsx": 1
+    "src/screens/MenuScreen.tsx": 23,
+    "src/design-system/components/ServiceActionSheet.tsx": 1,
+    "src/features/receipts/receiptPdf.ts": 2,
+    "src/features/menu-management/menuCatalogGateway.ts": 1,
+    "src/data/runtime/OrderiaDataContext.tsx": 3
   },
   "anatomy_hits": 5,
-  "anatomy_misses": 21,
-  "repeated_reads_warned": 14,
+  "anatomy_misses": 24,
+  "repeated_reads_warned": 29,
   "cerebrum_warnings": 0,
-  "stop_count": 8
+  "stop_count": 9
 }

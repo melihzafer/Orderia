@@ -130,6 +130,7 @@ export interface OrderiaDataContextValue {
     existing?: { readonly id: MenuItemId; readonly version: number },
   ): Promise<MenuItemId>;
   setCatalogAvailability(itemIds: readonly MenuItemId[], isAvailable: boolean): Promise<number>;
+  archiveMenuItem(itemId: MenuItemId): Promise<void>;
   inspectLegacyMigration(snapshot: LegacyMigrationSnapshot): Promise<LegacyMigrationServerResult>;
   applyLegacyMigration(
     deviceId: DeviceId,
@@ -583,6 +584,15 @@ export function OrderiaDataProvider({
     [client, refresh, scope],
   );
 
+  const archiveMenuItem = useCallback(
+    async (itemId: MenuItemId): Promise<void> => {
+      if (!client || !scope) throw new Error('Cloud catalog is unavailable');
+      await new MenuCatalogGateway(client).archiveItem(scope, itemId);
+      await refresh();
+    },
+    [client, refresh, scope],
+  );
+
   const inspectLegacyMigration = useCallback(
     async (snapshot: LegacyMigrationSnapshot): Promise<LegacyMigrationServerResult> => {
       if (!client || !scope) throw new Error('Cloud migration service is unavailable');
@@ -723,10 +733,12 @@ export function OrderiaDataProvider({
       publishMenuAiDraft,
       saveCatalogItem,
       setCatalogAvailability,
+      archiveMenuItem,
       inspectLegacyMigration,
       applyLegacyMigration,
     }),
     [
+      archiveMenuItem,
       client,
       confirmCheckPayments,
       database,

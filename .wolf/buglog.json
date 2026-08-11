@@ -1693,6 +1693,118 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-11T11:08:10.709Z"
+    },
+    {
+      "id": "bug-105",
+      "timestamp": "2026-08-11T11:44:01.221Z",
+      "error_message": "Type error",
+      "file": "src/features/receipts/receiptPdf.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:44:01.221Z"
+    },
+    {
+      "id": "bug-106",
+      "timestamp": "2026-08-11T11:46:03.754Z",
+      "error_message": "Missing await",
+      "file": "src/features/menu-management/menuCatalogGateway.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:46:03.754Z"
+    },
+    {
+      "id": "bug-107",
+      "timestamp": "2026-08-11T11:46:22.354Z",
+      "error_message": "Missing guard clause",
+      "file": "src/data/runtime/OrderiaDataContext.tsx",
+      "root_cause": "No early return/throw for edge case: !client || !scope",
+      "fix": "Added guard clause: if (!client || !scope)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:46:22.354Z"
+    },
+    {
+      "id": "bug-108",
+      "timestamp": "2026-08-11T11:47:35.599Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:47:35.599Z"
+    },
+    {
+      "id": "bug-109",
+      "timestamp": "2026-08-11T11:48:36.341Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:48:36.341Z"
+    },
+    {
+      "id": "bug-110",
+      "timestamp": "2026-08-11T11:54:11.480Z",
+      "error_message": "CSS fix: deleteItemConfirm",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "deleteItemConfirm: (name: string) => `\"${name → (name: string, description: string | undefined, price: string) =>",
+      "fix": "Changed deleteItemConfirm: (name: string) => `\"${name → (name: string, description: string | undefined, price: string) =>",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-11T11:54:43.296Z"
+    },
+    {
+      "id": "bug-111",
+      "timestamp": "2026-08-11T11:54:37.027Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/MenuScreen.tsx",
+      "root_cause": "Had `„${name}“ ще бъде премахнат от менюто. Действието",
+      "fix": "Changed to `„${name}“${description ? `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-11T11:54:37.027Z"
     }
   ]
 }
