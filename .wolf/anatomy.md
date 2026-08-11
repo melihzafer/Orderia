@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T09:10:21.018Z
-> Files: 36 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T11:08:10.698Z
+> Files: 39 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -211,6 +211,7 @@
 ## src/design-system/components/
 
 - `index.ts` (~248 tok)
+- `ServiceActionSheet.tsx` — Uzun basış ve taşma düğmesinin ortak hedefi: bir öğeye ait bağlamsal eylemler. (~1377 tok)
 - `SyncStatusBanner.tsx` — Servis sırasında bağlantı durumu yalnızca masanın "..." menüsünü açınca (~928 tok)
 
 ## src/domain/
@@ -296,6 +297,7 @@
 ## src/features/table-workspace/components/
 
 - `OrderPane.tsx` — Açık hesabın sipariş satırları: gruplama, servis işaretleme ve satır eylemleri. (~3886 tok)
+- `WorkspaceChrome.tsx` — Palet daraltma kapsamı: ya sabit bir grup ya da bir kategori kimliği. (~1902 tok)
 
 ## src/i18n/
 
@@ -323,6 +325,7 @@
 - `index.ts` (~519 tok)
 - `LegacyTableDetailScreen.tsx` — localCancellationReasons — renders table (~15580 tok)
 - `MenuAssistantScreen.tsx` — MenuAssistantScreen (~8570 tok)
+- `MenuScreen.tsx` — MenuScreen (~7164 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
 - `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
 - `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~11364 tok)

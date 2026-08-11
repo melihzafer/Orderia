@@ -154,13 +154,21 @@ export function CheckStrip({
           />
         ) : null}
       </ScrollView>
-      <ServiceButton
-        icon="add"
-        label={copy.newCheck}
-        onPress={onAdd}
-        style={{ flexShrink: 0 }}
-        variant="outline"
-      />
+      {/*
+        Bekleyen (henüz gönderilmemiş) bir taslak hesap zaten "New check" çipi
+        olarak görünüyorken bu butonu da göstermek aynı eylemi iki kez sunuyordu
+        — ikisi de `onAdd`'ın yaptığı şeyi yapıyor. Yalnızca bekleyen taslak
+        yokken göster.
+      */}
+      {!pendingCheck ? (
+        <ServiceButton
+          icon="add"
+          label={copy.newCheck}
+          onPress={onAdd}
+          style={{ flexShrink: 0 }}
+          variant="outline"
+        />
+      ) : null}
     </View>
   );
 }

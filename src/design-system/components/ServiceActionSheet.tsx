@@ -44,7 +44,13 @@ export function ServiceActionSheet({
       <ScrollView
         bounces={false}
         contentContainerStyle={{ paddingHorizontal: tokens.space.md }}
-        style={{ flexGrow: 0 }}
+        // `overflow: auto` gives a flex item an automatic CSS min-height of 0,
+        // so without flexShrink: 0 this collapses below its own content height
+        // inside ServiceSheet's flex column — actions get clipped to under one
+        // row even with plenty of screen space free. flexShrink: 0 forces it to
+        // size to content; ServiceSheet's maxHeight: '90%' still caps it and
+        // only then does this scroll, when a sheet genuinely has many actions.
+        style={{ flexGrow: 0, flexShrink: 0 }}
       >
         {actions.map((action) => (
           <Pressable

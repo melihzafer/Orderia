@@ -617,3 +617,14 @@ bug-081..086 olarak islendi. Hicbir dosya silinmedi, sadece duzenlendi (kullanic
 | 12:11 | Session end: 17 writes across 6 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 18 reads | ~27788 tok |
 | 12:18 | Session end: 17 writes across 6 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 18 reads | ~27788 tok |
 | 12:57 | Session end: 17 writes across 6 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 19 reads | ~27788 tok |
+| 13:47 | Session end: 17 writes across 6 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 19 reads | ~27788 tok |
+| 14:00 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | expanded (+8 lines) | ~217 |
+| 14:01 | Edited src/screens/MenuScreen.tsx | 22→25 lines | ~254 |
+| 14:02 | Edited src/screens/MenuScreen.tsx | 3→4 lines | ~56 |
+| 14:02 | Edited src/screens/MenuScreen.tsx | expanded (+20 lines) | ~522 |
+| 14:02 | Edited src/screens/MenuScreen.tsx | expanded (+23 lines) | ~183 |
+| 14:03 | Edited src/screens/MenuScreen.tsx | modified CatalogItemCard() | ~83 |
+| 14:03 | Edited src/screens/MenuScreen.tsx | 3→7 lines | ~100 |
+| 14:03 | Edited src/screens/MenuScreen.tsx | 3→7 lines | ~98 |
+| 14:03 | Edited src/screens/MenuScreen.tsx | 3→7 lines | ~96 |
+| 14:08 | Edited src/design-system/components/ServiceActionSheet.tsx | expanded (+6 lines) | ~185 |

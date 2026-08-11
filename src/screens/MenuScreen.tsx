@@ -9,8 +9,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
   haptic,
+  ServiceActionSheet,
   ServiceButton,
   ServiceEmptyState,
+  ServiceIconButton,
   ServiceProductThumb,
   ServiceScreenHeader,
   ServiceSkeleton,
@@ -19,6 +21,7 @@ import {
   ServiceTextField,
   useAdaptiveLayout,
   useSnackbar,
+  type ServiceAction,
 } from '../design-system';
 import { CurrencyCode, MenuCategoryId, MenuItemId, toDomainId } from '../domain';
 import { CatalogItem, CatalogSnapshot } from '../features/menu-management';
@@ -48,6 +51,7 @@ export default function MenuScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const [showMenuActions, setShowMenuActions] = useState(false);
   const { show } = useSnackbar();
   const menuColumns = layout.mode === 'expanded' ? 3 : layout.mode === 'medium' ? 2 : 1;
   const isManager = auth.activeMembership?.role === 'manager' || auth.status === 'unconfigured';
@@ -144,6 +148,29 @@ export default function MenuScreen() {
     }
   };
 
+  const menuActions: readonly ServiceAction[] = [
+    {
+      id: 'select-duplicates',
+      label: copy.selectDuplicates,
+      description: copy.selectDuplicatesBody,
+      icon: 'copy-outline',
+      disabled: duplicateIds.size === 0 || mode !== 'cloud',
+      onPress: () => {
+        setSelectedItemIds([...duplicateIds]);
+        haptic('activate');
+      },
+    },
+    {
+      id: 'refresh-catalog',
+      label: copy.refreshCatalog,
+      icon: 'refresh-outline',
+      onPress: () => {
+        setRefreshing(true);
+        void refreshCatalog();
+      },
+    },
+  ];
+
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
@@ -216,6 +243,22 @@ export default function MenuScreen() {
         ListHeaderComponent={
           <View style={{ gap: tokens.space.md, marginBottom: tokens.space.md }}>
             <ServiceScreenHeader
+              action={
+                isManager ? (
+                  <View style={{ flexDirection: 'row', gap: tokens.space.xs }}>
+                    <ServiceIconButton
+                      icon="add"
+                      label={copy.addManually}
+                      onPress={() => navigation.navigate('AddMenuItem', {})}
+                    />
+                    <ServiceIconButton
+                      icon="ellipsis-horizontal"
+                      label={copy.moreActions}
+                      onPress={() => setShowMenuActions(true)}
+                    />
+                  </View>
+                ) : undefined
+              }
               subtitle={isManager ? copy.managerSubtitle : copy.waiterSubtitle}
               title={t.menu}
             />
@@ -224,7 +267,6 @@ export default function MenuScreen() {
                 alignItems: 'center',
                 flexDirection: 'row',
                 gap: tokens.space.sm,
-                justifyContent: 'space-between',
               }}
             >
               <ServiceStatusPill
@@ -232,14 +274,19 @@ export default function MenuScreen() {
                 label={mode === 'cloud' ? copy.cloudCatalog : copy.deviceCatalog}
                 tone={mode === 'cloud' && sync.online ? 'success' : 'neutral'}
               />
-              {isManager ? (
-                <ServiceButton
-                  icon="sparkles"
-                  label={copy.aiAssistant}
-                  onPress={() => navigation.navigate('MenuAssistant')}
-                  variant="accent"
-                />
-              ) : null}
+              {/*
+                AI ile ürün ekleme şimdilik kapalı. Kod silinmedi, yalnızca
+                gizlendi — geri açmak `isManager ? (...) : null` bloğunu
+                kaldırmaktan ibaret.
+                {isManager ? (
+                  <ServiceButton
+                    icon="sparkles"
+                    label={copy.aiAssistant}
+                    onPress={() => navigation.navigate('MenuAssistant')}
+                    variant="accent"
+                  />
+                ) : null}
+              */}
             </View>
 
             <ServiceTextField
@@ -349,6 +396,14 @@ export default function MenuScreen() {
             width="100%"
           />
         )}
+      />
+
+      <ServiceActionSheet
+        actions={menuActions}
+        cancelLabel={t.cancel}
+        onClose={() => setShowMenuActions(false)}
+        title={copy.moreActions}
+        visible={showMenuActions}
       />
     </SafeAreaView>
   );
@@ -581,6 +636,10 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       possibleDuplicate: 'Olası tekrar',
       sharedItem: 'Tüm şubeler',
       aiBoundary: 'AI ile ürün ekleme şimdilik devre dışı. Ürünü elle ekleyebilirsin.',
+      moreActions: 'Diğer işlemler',
+      selectDuplicates: 'Olası tekrarları seç',
+      selectDuplicatesBody: 'Aynı kategori ve isimdeki ürünleri seçili hale getirir.',
+      refreshCatalog: 'Menüyü yenile',
     } as const;
   }
   if (language === 'bg') {
@@ -613,6 +672,10 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
       possibleDuplicate: 'Възможен дубликат',
       sharedItem: 'Всички обекти',
       aiBoundary: 'Добавянето с AI временно е деактивирано. Добавете артикула ръчно.',
+      moreActions: 'Още действия',
+      selectDuplicates: 'Избери възможните дубликати',
+      selectDuplicatesBody: 'Избира артикулите с еднаква категория и име.',
+      refreshCatalog: 'Обнови менюто',
     } as const;
   }
   return {
@@ -644,5 +707,9 @@ function menuCopy(language: 'tr' | 'bg' | 'en') {
     possibleDuplicate: 'Possible duplicate',
     sharedItem: 'All branches',
     aiBoundary: 'Adding items with AI is temporarily disabled. Add the item manually.',
+    moreActions: 'More actions',
+    selectDuplicates: 'Select possible duplicates',
+    selectDuplicatesBody: 'Selects items that share the same category and name.',
+    refreshCatalog: 'Refresh menu',
   } as const;
 }
