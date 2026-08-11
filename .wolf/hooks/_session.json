@@ -1,12 +1,57 @@
 {
   "session_id": "session-2026-08-11-1111",
   "started": "2026-08-11T08:11:13.381Z",
-  "files_read": {},
-  "files_written": [],
-  "edit_counts": {},
-  "anatomy_hits": 0,
-  "anatomy_misses": 0,
+  "files_read": {
+    "D:/Projects/Orderia/src/screens/SettingsScreen.tsx": {
+      "count": 1,
+      "tokens": 8088,
+      "first_read": "2026-08-11T08:47:25.549Z"
+    },
+    "D:/Projects/Orderia/src/utils/backupUtils.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:47:32.688Z"
+    },
+    "D:/Projects/Orderia/node_modules/expo-document-picker/build/ExpoDocumentPicker.web.js": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:48:10.267Z"
+    },
+    "D:/Projects/Orderia/src/stores/layoutStore.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:49:33.409Z"
+    },
+    "D:/Projects/Orderia/src/features/legacy-migration/legacyMigrationGateway.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:51:03.143Z"
+    },
+    "D:/Projects/Orderia/src/features/legacy-migration/LegacyMigrationCard.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:51:24.093Z"
+    },
+    "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-11T08:52:44.169Z"
+    }
+  },
+  "files_written": [
+    {
+      "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts",
+      "action": "edit",
+      "tokens": 64,
+      "at": "2026-08-11T08:52:51.824Z"
+    }
+  ],
+  "edit_counts": {
+    "src/features/legacy-migration/legacyMigration.ts": 1
+  },
+  "anatomy_hits": 1,
+  "anatomy_misses": 6,
   "repeated_reads_warned": 0,
   "cerebrum_warnings": 0,
-  "stop_count": 0
+  "stop_count": 3
 }

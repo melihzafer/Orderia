@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-08T14:18:58.992Z
-> Files: 33 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T08:52:51.813Z
+> Files: 34 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -233,6 +233,7 @@
 
 ## src/features/legacy-migration/
 
+- `legacyMigration.ts` — Exports LegacyHall, LegacyTable, LegacyCategory, LegacyMenuItem + 13 more (~5332 tok)
 
 ## src/features/legacy-migration/__tests__/
 

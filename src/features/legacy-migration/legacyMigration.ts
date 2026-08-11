@@ -125,7 +125,10 @@ export class LegacySnapshotFormatError extends Error {
 
 export function prepareLegacyMigration(raw: unknown): PreparedLegacyMigration {
   const root = requiredRecord(raw, 'Backup must be a JSON object');
-  const sourceVersion = requiredString(root.version, 'Backup version is missing');
+  const sourceVersion = requiredString(
+    typeof root.version === 'number' ? String(root.version) : root.version,
+    'Backup version is missing',
+  );
   const data = requiredRecord(root.data, 'Backup data section is missing');
 
   const snapshot: LegacyMigrationSnapshot = {
