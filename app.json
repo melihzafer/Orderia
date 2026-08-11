@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F4F7F6"
+      "backgroundColor": "#F6F4EF"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -25,7 +25,7 @@
       "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F766E"
+        "backgroundColor": "#BE4A26"
       },
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -48,16 +48,16 @@
       "name": "Orderia — Garson Sipariş",
       "shortName": "Orderia",
       "lang": "tr",
-      "themeColor": "#0F766E",
-      "backgroundColor": "#F4F7F6"
+      "themeColor": "#BE4A26",
+      "backgroundColor": "#F6F4EF"
     },
     "plugins": [
       "expo-font",
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
-          "color": "#0F766E",
+          "icon": "./assets/notification-icon.png",
+          "color": "#BE4A26",
           "mode": "development"
         }
       ],

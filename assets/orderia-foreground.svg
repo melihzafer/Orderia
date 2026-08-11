@@ -1,23 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <path
-    d="M709 324C658 271 588 239 512 239C361 239 239 361 239 512s122 273 273 273c137 0 251-101 270-234"
+  <circle
+    cx="512"
+    cy="472"
+    r="292"
     fill="none"
-    stroke="#F8FAFC"
-    stroke-width="92"
-    stroke-linecap="round"
+    stroke="#F6F4EF"
+    stroke-width="112"
   />
   <path
-    d="M457 411h153M425 512h185M457 613h153"
-    fill="none"
-    stroke="#D5F5EF"
-    stroke-width="44"
-    stroke-linecap="round"
+    d="M408 558h208c31 0 56 25 56 56v184l-40 32-40-32-40 32-40-32-40 32-40-32-40 32-40-32V614c0-31 25-56 56-56Z"
+    fill="#F6F4EF"
   />
   <path
-    d="m652 304 128 13-13 128-40-47-81 81-59-59 81-81-16-35Z"
-    fill="#FB923C"
-    stroke="#F8FAFC"
-    stroke-width="20"
+    d="m442 684 52 52 94-108"
+    fill="none"
+    stroke="#BE4A26"
+    stroke-linecap="round"
     stroke-linejoin="round"
+    stroke-width="54"
   />
 </svg>

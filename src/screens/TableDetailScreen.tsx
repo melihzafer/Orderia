@@ -1,16 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Text, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import LegacyTableDetailScreen from './LegacyTableDetailScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
+  haptic,
   ServiceButton,
   ServiceEmptyState,
   ServiceIconButton,
@@ -24,7 +23,6 @@ import {
   CheckId,
   DeviceId,
   FulfillmentGroup,
-  ModifierOptionId,
   MutationId,
   OrderItem,
   Receipt,
@@ -35,7 +33,6 @@ import {
 } from '../domain';
 import {
   applyCheckSplit,
-  backdrop,
   CancellationModal,
   CenteredState,
   CheckSplitPlan,
@@ -43,37 +40,33 @@ import {
   CheckStrip,
   clientMutationUuid,
   countOrderViews,
+  DeleteCheckModal,
   DraftBar,
-  DraftOrderLine,
-  DraftSheet,
-  draftLineTotal,
   filterOrderItems,
   formatMoney,
   getFulfillmentGroup,
   ItemNoteModal,
-  loadTableWorkspace,
-  loadWorkspacePreferences,
   LocationNoteModal,
   markOrderItemsServed,
   ModalActions,
   NameCheckModal,
   OrderPane,
   type OrderView,
-  type PaletteScope,
   PalettePane,
   ProductConfigurationModal,
+  renameCheck,
   resolveOrderItemNoteConflict,
-  saveWorkspacePreferences,
-  sendOrderBatch,
   TableWorkspaceSnapshot,
   updateOrderItemNote,
   updateOrderItemQuantity,
   updateTableSessionNote,
+  useTableWorkspace,
+  useWorkspaceDraft,
+  voidCheck,
   voidOrderItemQuantity,
   WorkspaceHeader,
   WorkspaceModal,
   workspaceCopy,
-  WorkspaceProduct,
 } from '../features/table-workspace';
 import { ConfirmCheckPaymentsCommand, PaymentSheet } from '../features/payments';
 import {
@@ -86,7 +79,6 @@ import { useLocalization } from '../i18n';
 import { RootStackParamList } from '../navigation/routes';
 import { useProductPhotoStore } from '../stores';
 import { useSettingsStore } from '../stores/settingsStore';
-import { createTextMatcher } from '../utils/searchUtils';
 
 type TableDetailRoute = RouteProp<RootStackParamList, 'TableDetail'>;
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -155,87 +147,56 @@ function CloudTableWorkspace({
     errorMessage: runtimeError,
     prepareReceiptPdf,
     refresh,
-    resolveActiveParticipants,
-    resolveProfileNames,
-    revision,
     scope,
-    setCatalogAvailability,
     sync,
     transferOrMergeTableSession,
   } = useOrderiaData();
-  const [snapshot, setSnapshot] = useState<TableWorkspaceSnapshot | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string>();
+  const tableId = toDomainId<RestaurantTableId>(route.params.tableId);
+
+  const {
+    snapshot,
+    loading,
+    loadError,
+    reload,
+    waiterNames,
+    participantNames,
+    incomingMessage,
+    dismissIncoming,
+  } = useTableWorkspace({ tableId, actorUserId, copy });
+
   const [selectedCheckId, setSelectedCheckId] = useState<CheckId>();
   const [pendingCheckName, setPendingCheckName] = useState('');
+  /**
+   * "Yeni hesap"a basıldı, henüz gönderilmedi.
+   *
+   * Ayrı bir bayrak şart: bunu `selectedCheckId === undefined`'dan çıkarmak
+   * işe yaramıyordu, çünkü aşağıdaki otomatik seçim efekti seçimi hemen ilk
+   * hesaba geri alıyor ve garson hiçbir şey olmamış gibi görüyordu.
+   */
+  const [startingNewCheck, setStartingNewCheck] = useState(false);
   const [showCheckModal, setShowCheckModal] = useState(false);
   const [checkNameInput, setCheckNameInput] = useState('');
-  const [draft, setDraft] = useState<readonly DraftOrderLine[]>([]);
-  const [undoStack, setUndoStack] = useState<readonly (readonly DraftOrderLine[])[]>([]);
-  const [paletteScope, setPaletteScope] = useState<PaletteScope>('all');
   const [orderView, setOrderView] = useState<OrderView>('all');
-  const [query, setQuery] = useState('');
-  const [favoriteIds, setFavoriteIds] = useState<readonly string[]>([]);
-  const [configuring, setConfiguring] = useState<WorkspaceProduct>();
-  const [configuration, setConfiguration] = useState<readonly ModifierOptionId[]>([]);
-  const [configurationNote, setConfigurationNote] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [cancellingItem, setCancellingItem] = useState<OrderItem>();
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem>();
   const [editingNote, setEditingNote] = useState('');
   const [editingLocationNote, setEditingLocationNote] = useState(false);
   const [locationNote, setLocationNote] = useState('');
-  const [showDraftSheet, setShowDraftSheet] = useState(false);
   const [payingCheck, setPayingCheck] = useState<Check>();
   const [paymentBusy, setPaymentBusy] = useState(false);
   const [splittingCheck, setSplittingCheck] = useState<Check>();
   const [splitBusy, setSplitBusy] = useState(false);
   const [showTableOperation, setShowTableOperation] = useState(false);
   const [showActionsSheet, setShowActionsSheet] = useState(false);
-  const [showCartSheet, setShowCartSheet] = useState(false);
   const [tableOperationBusy, setTableOperationBusy] = useState(false);
   const [readyReceipt, setReadyReceipt] = useState<Receipt>();
   const [preparedReceiptPdf, setPreparedReceiptPdf] = useState<PreparedReceiptPdf>();
   const [receiptBusy, setReceiptBusy] = useState(false);
-  const [waiterNames, setWaiterNames] = useState<Readonly<Record<string, string>>>({});
-  const [participantNames, setParticipantNames] = useState<readonly string[]>([]);
-  const [incomingMessage, setIncomingMessage] = useState<string>();
   const [notice, setNotice] = useState<WorkspaceNotice>();
-  const [availabilityTarget, setAvailabilityTarget] = useState<WorkspaceProduct>();
-  const snapshotRef = useRef<TableWorkspaceSnapshot | null>(null);
-  const reloadRequestRevisionRef = useRef(0);
-  const submitLockRef = useRef(false);
-  const actionsSheetRef = useRef<React.ElementRef<typeof BottomSheetModal>>(null);
-  const cartSheetRef = useRef<React.ElementRef<typeof BottomSheetModal>>(null);
-  const tableId = toDomainId<RestaurantTableId>(route.params.tableId);
-
-  const hapticLight = () => {
-    if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-  const hapticSuccess = () => {
-    if (Platform.OS !== 'web')
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
-  const hapticWarning = () => {
-    if (Platform.OS !== 'web')
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-  };
-
-  useEffect(() => {
-    if (showActionsSheet) {
-      actionsSheetRef.current?.present();
-    } else {
-      actionsSheetRef.current?.dismiss();
-    }
-  }, [showActionsSheet]);
-
-  useEffect(() => {
-    if (showCartSheet) {
-      cartSheetRef.current?.present();
-    } else {
-      cartSheetRef.current?.dismiss();
-    }
-  }, [showCartSheet]);
+  const [renamingCheck, setRenamingCheck] = useState<Check>();
+  const [renameCheckBusy, setRenameCheckBusy] = useState(false);
+  const [deletingCheck, setDeletingCheck] = useState<Check>();
+  const [deleteCheckBusy, setDeleteCheckBusy] = useState(false);
 
   /**
    * Uyarilari ekranin kendi seridinde gosteririz. react-native-web'de
@@ -246,128 +207,6 @@ function CloudTableWorkspace({
     setNotice({ title, ...(body ? { body } : {}), tone });
   }, []);
 
-  const reload = useCallback(async () => {
-    if (!database || !scope) return;
-    const requestRevision = ++reloadRequestRevisionRef.current;
-    const isCurrentRequest = () => requestRevision === reloadRequestRevisionRef.current;
-    try {
-      const next = await loadTableWorkspace(database, scope, tableId);
-      if (!isCurrentRequest()) return;
-      const previous = snapshotRef.current;
-      if (previous && next) {
-        const previousItemIds = new Set(previous.orderItems.map((item) => item.id));
-        const incoming = next.orderItems.filter(
-          (item) => !previousItemIds.has(item.id) && item.createdBy !== actorUserId,
-        );
-        if (incoming.length > 0) {
-          const actorIds = [...new Set(incoming.map((item) => item.createdBy))];
-          const names: Readonly<Record<string, string>> = await resolveProfileNames(actorIds).catch(
-            () => ({}),
-          );
-          if (!isCurrentRequest()) return;
-          const actorNames = actorIds.map((id) => names[id] ?? copy.unknownWaiter);
-          setIncomingMessage(`${actorNames.join(', ')} · ${incoming.length} ${copy.incomingItems}`);
-        }
-      }
-      if (!isCurrentRequest()) return;
-      snapshotRef.current = next;
-      setSnapshot(next);
-      setLoadError(next ? undefined : copy.tableNotFound);
-    } catch {
-      if (isCurrentRequest()) setLoadError(copy.loadFailed);
-    } finally {
-      if (isCurrentRequest()) setLoading(false);
-    }
-  }, [
-    actorUserId,
-    copy.incomingItems,
-    copy.loadFailed,
-    copy.tableNotFound,
-    copy.unknownWaiter,
-    database,
-    resolveProfileNames,
-    scope,
-    tableId,
-  ]);
-
-  useEffect(() => {
-    reloadRequestRevisionRef.current += 1;
-    snapshotRef.current = null;
-    setSnapshot(null);
-    setLoadError(undefined);
-    setIncomingMessage(undefined);
-    setWaiterNames({});
-    setParticipantNames([]);
-    setLoading(true);
-
-    return () => {
-      reloadRequestRevisionRef.current += 1;
-    };
-  }, [scope?.branchId, scope?.organizationId, tableId]);
-
-  useEffect(() => {
-    void reload();
-  }, [reload, revision]);
-
-  useEffect(() => {
-    void loadWorkspacePreferences(preferencesKey).then((preferences) => {
-      setFavoriteIds(preferences.favoriteProductIds);
-      if (preferences.selectedCategoryId) {
-        setPaletteScope(preferences.selectedCategoryId);
-      }
-    });
-  }, [preferencesKey]);
-
-  useEffect(() => {
-    if (!snapshot) return;
-    const ids = [...new Set(snapshot.orderItems.map((item) => item.createdBy))];
-    let active = true;
-    void resolveProfileNames(ids)
-      .then((names) => {
-        if (active) setWaiterNames(names);
-      })
-      .catch(() => {
-        if (active) setWaiterNames({});
-      });
-    return () => {
-      active = false;
-    };
-  }, [resolveProfileNames, snapshot]);
-
-  useEffect(() => {
-    if (!snapshot?.session) {
-      setParticipantNames([]);
-      return;
-    }
-    let active = true;
-    void resolveActiveParticipants(snapshot.session.id)
-      .then((participants) => {
-        if (active)
-          setParticipantNames(participants.map((participant) => participant.display_name));
-      })
-      .catch(() => {
-        if (!active) return;
-        const cutoff = Date.now() - 15 * 60_000;
-        const userIds = [
-          ...new Set(
-            snapshot.orderItems
-              .filter((item) => Date.parse(item.updatedAt) >= cutoff)
-              .map((item) => item.createdBy),
-          ),
-        ];
-        setParticipantNames(userIds.map((id) => waiterNames[id] ?? copy.unknownWaiter));
-      });
-    return () => {
-      active = false;
-    };
-  }, [copy.unknownWaiter, resolveActiveParticipants, revision, snapshot, waiterNames]);
-
-  useEffect(() => {
-    if (!incomingMessage) return;
-    const timer = setTimeout(() => setIncomingMessage(undefined), 4_000);
-    return () => clearTimeout(timer);
-  }, [incomingMessage]);
-
   // Basarili islem bildirimi kendiliginden kaybolur; hata garson kapatana
   // kadar ekranda kalir.
   useEffect(() => {
@@ -377,60 +216,50 @@ function CloudTableWorkspace({
   }, [notice]);
 
   useEffect(() => {
-    if (!snapshot || pendingCheckName) return;
+    if (!snapshot || startingNewCheck) return;
     if (selectedCheckId && snapshot.checks.some((check) => check.id === selectedCheckId)) return;
     setSelectedCheckId(snapshot.checks[0]?.id);
-  }, [pendingCheckName, selectedCheckId, snapshot]);
+  }, [selectedCheckId, snapshot, startingNewCheck]);
 
-  const recentProductIds = useMemo(
-    () =>
-      snapshot
-        ? [
-            ...new Set(
-              [...snapshot.orderItems]
-                .reverse()
-                .map((item) => item.menuItemId)
-                .filter((id): id is NonNullable<typeof id> => Boolean(id)),
-            ),
-          ].slice(0, 12)
-        : [],
-    [snapshot],
-  );
-  const filteredProducts = useMemo(() => {
-    if (!snapshot) return [];
-    const matcher = createTextMatcher(query);
-    return snapshot.products.filter((product) => {
-      if (paletteScope === 'favorites' && !favoriteIds.includes(product.id)) return false;
-      if (paletteScope === 'recent' && !recentProductIds.includes(product.id)) return false;
-      if (
-        paletteScope !== 'all' &&
-        paletteScope !== 'favorites' &&
-        paletteScope !== 'recent' &&
-        product.categoryId !== paletteScope
-      ) {
-        return false;
-      }
-      return matcher(`${product.name} ${product.categoryName} ${product.description ?? ''}`);
-    });
-  }, [favoriteIds, paletteScope, query, recentProductIds, snapshot]);
+  /**
+   * Festival modunda ("namedOrders") sipariş adı ilk üründen ÖNCE istenmeli
+   * ("Mehmet Ağa" gibi). Bu zaten "+ Yeni hesap" butonuna basınca oluyordu,
+   * ama masaya ilk kez girildiğinde otomatik oluşan taslak hesap için hiç
+   * tetiklenmiyordu — en sık senaryo (bir masanın İLK siparişi) isim sormadan
+   * geçiyordu. Yalnızca bu ekran açıldığında, masada hiç hesap yokken, bir kez
+   * sorulur.
+   */
+  const offeredInitialNamePrompt = useRef(false);
+  useEffect(() => {
+    if (!snapshot || !namedOrdersEnabled || offeredInitialNamePrompt.current) return;
+    offeredInitialNamePrompt.current = true;
+    if (snapshot.checks.length > 0) return;
+    setStartingNewCheck(true);
+    setPendingCheckName('');
+    setCheckNameInput('');
+    setShowCheckModal(true);
+  }, [namedOrdersEnabled, snapshot]);
+
+  // AddProductScreen'den "sipariş gönderildi" ile dönülünce ilgili hesap seçilir.
+  useEffect(() => {
+    if (!route.params.selectCheckId) return;
+    setSelectedCheckId(toDomainId<CheckId>(route.params.selectCheckId));
+    setStartingNewCheck(false);
+    setPendingCheckName('');
+    navigation.setParams({ selectCheckId: undefined });
+  }, [navigation, route.params.selectCheckId]);
+
   const selectedCheck = snapshot?.checks.find((check) => check.id === selectedCheckId);
-  const selectedCheckItems = useMemo(
-    () => snapshot?.orderItems.filter((item) => item.checkId === selectedCheckId) ?? [],
-    [selectedCheckId, snapshot?.orderItems],
-  );
-  const fulfillmentByItemId = useMemo<Readonly<Record<string, FulfillmentGroup>>>(
-    () =>
-      Object.fromEntries(
-        selectedCheckItems.map((item) => [
-          item.id,
-          getFulfillmentGroup(snapshot?.products.find((product) => product.id === item.menuItemId)),
-        ]),
-      ),
-    [selectedCheckItems, snapshot?.products],
+  const selectedCheckItems =
+    snapshot?.orderItems.filter((item) => item.checkId === selectedCheckId) ?? [];
+  const fulfillmentByItemId: Readonly<Record<string, FulfillmentGroup>> = Object.fromEntries(
+    selectedCheckItems.map((item) => [
+      item.id,
+      getFulfillmentGroup(snapshot?.products.find((product) => product.id === item.menuItemId)),
+    ]),
   );
   const visibleItems = filterOrderItems(selectedCheckItems, orderView, fulfillmentByItemId);
   const orderViewCounts = countOrderViews(selectedCheckItems, fulfillmentByItemId);
-  const draftTotal = draft.reduce((total, line) => total + draftLineTotal(line), 0);
   const checkTotal = snapshot
     ? selectedCheckItems.reduce(
         (total, item) =>
@@ -455,155 +284,56 @@ function CloudTableWorkspace({
         }))
     : [];
 
-  const rememberDraft = (next: readonly DraftOrderLine[]) => {
-    setUndoStack((history) => [...history.slice(-19), draft]);
-    setDraft(next);
-  };
-
-  /**
-   * Masadan tek dokunusla "bugun bitti" / "geri geldi". Mutfaktan haber gelen
-   * garson menu ekranina gitmek zorunda kalmasin.
-   */
-  const applyAvailability = async (product: WorkspaceProduct) => {
-    setAvailabilityTarget(undefined);
-    try {
-      await setCatalogAvailability([product.id], !product.isAvailable);
-      await reload();
-      void refresh();
-    } catch (error) {
-      notify(copy.availabilityFailed, error instanceof Error ? error.message : copy.tryAgain);
-    }
-  };
-
-  const addProduct = (product: WorkspaceProduct, configure = false) => {
-    if (!product.isAvailable) {
-      setAvailabilityTarget(product);
-      return;
-    }
-    const defaults = product.modifierGroups.flatMap((group) =>
-      group.options.filter((option) => option.isDefault).map((option) => option.id),
-    );
-    const needsChoice = product.modifierGroups.some((group) => {
-      const selectedCount = defaults.filter((id) =>
-        group.options.some((option) => option.id === id),
-      ).length;
-      return selectedCount < Math.max(group.minimumChoices, group.isRequired ? 1 : 0);
-    });
-    if (configure || needsChoice) {
-      setConfiguring(product);
-      setConfiguration(defaults);
-      setConfigurationNote('');
-      return;
-    }
-    appendDraft(product, defaults, '');
-    hapticLight();
-  };
-
-  const appendDraft = (
-    product: WorkspaceProduct,
-    optionIds: readonly ModifierOptionId[],
-    note: string,
-  ) => {
-    const normalizedNote = note.trim();
-    const signature = [...optionIds].sort().join(':');
-    const existingIndex = draft.findIndex(
-      (line) =>
-        line.product.id === product.id &&
-        [...line.selectedOptionIds].sort().join(':') === signature &&
-        (line.note ?? '') === normalizedNote,
-    );
-    if (existingIndex >= 0) {
-      rememberDraft(
-        draft.map((line, index) =>
-          index === existingIndex ? { ...line, quantity: line.quantity + 1 } : line,
-        ),
-      );
-    } else {
-      rememberDraft([
-        ...draft,
-        {
-          id: `${product.id}.${Date.now()}.${draft.length}`,
-          product,
-          quantity: 1,
-          ...(normalizedNote ? { note: normalizedNote } : {}),
-          selectedOptionIds: optionIds,
-        },
-      ]);
-    }
-  };
-
-  const undo = () => {
-    const previous = undoStack.at(-1);
-    if (!previous) return;
-    setDraft(previous);
-    setUndoStack((history) => history.slice(0, -1));
-  };
-
-  const changeDraftQuantity = (lineId: string, delta: number) => {
-    rememberDraft(
-      draft
-        .map((line) => (line.id === lineId ? { ...line, quantity: line.quantity + delta } : line))
-        .filter((line) => line.quantity > 0),
-    );
-  };
-
-  const removeDraftLine = (lineId: string) => {
-    rememberDraft(draft.filter((line) => line.id !== lineId));
-  };
-
-  const decrementDraftProduct = (product: WorkspaceProduct) => {
-    // Önce modifiersüz/notsuz düz satırı azalt, yoksa son eşleşen satırı
-    const plainIndex = draft.findLastIndex(
-      (line) =>
-        line.product.id === product.id &&
-        line.selectedOptionIds.length === 0 &&
-        !(line.note ?? '').trim(),
-    );
-    const fallbackIndex = draft.reduce(
-      (found, line, index) => (line.product.id === product.id ? index : found),
-      -1,
-    );
-    const index = plainIndex >= 0 ? plainIndex : fallbackIndex;
-    if (index >= 0) {
-      changeDraftQuantity(draft[index].id, -1);
-    }
-  };
-
-  const repeatLastBatch = () => {
-    if (!snapshot) return;
-    const activeItems = snapshot.orderItems.filter((item) => item.status !== 'cancelled');
-    if (activeItems.length === 0) return;
-    // En yeni batch: en son oluşturulan aktif ürünün batch'i
-    const newestItem = activeItems.reduce((latest, item) =>
-      Date.parse(item.createdAt) > Date.parse(latest.createdAt) ? item : latest,
-    );
-    const latestBatchId = newestItem.orderBatchId;
-    const batchItems = activeItems.filter((item) => item.orderBatchId === latestBatchId);
-    const additions: DraftOrderLine[] = batchItems.flatMap((item, index) => {
-      const product = snapshot.products.find((candidate) => candidate.id === item.menuItemId);
-      if (!product || !product.isAvailable) return [];
-      const optionIds = snapshot.orderItemModifiers
-        .filter((modifier) => modifier.orderItemId === item.id)
-        .flatMap((modifier) => {
-          const option = product.modifierGroups
-            .flatMap((group) => group.options)
-            .find((candidate) => candidate.name === modifier.modifierOptionNameSnapshot);
-          return option ? [option.id] : [];
-        });
-      return [
-        {
-          id: `${product.id}.repeat.${Date.now()}.${index}`,
-          product,
-          quantity: item.quantity,
-          ...(item.note?.trim() ? { note: item.note.trim() } : {}),
-          selectedOptionIds: optionIds,
-        },
-      ];
-    });
-    if (additions.length > 0) {
-      rememberDraft([...draft, ...additions]);
-    }
-  };
+  const {
+    addProduct,
+    changeDraftQuantity,
+    configuration,
+    configurationNote,
+    configuring,
+    decrementDraftProduct,
+    draft,
+    favoriteIds,
+    filteredProducts,
+    paletteScope,
+    query,
+    removeDraftLine,
+    repeatAvailable,
+    repeatLastBatch,
+    selectPaletteScope,
+    setConfiguration,
+    setConfigurationNote,
+    setConfiguring,
+    submit,
+    submitting,
+    toggleFavorite,
+    totalMinor: draftTotal,
+    undo,
+    undoAvailable,
+    applyAvailability,
+    availabilityTarget,
+    setAvailabilityTarget,
+    setQuery,
+    appendDraft,
+    clearDraft,
+  } = useWorkspaceDraft({
+    tableId,
+    snapshot,
+    ...(selectedCheck ? { selectedCheck } : {}),
+    pendingCheckName,
+    preferencesKey,
+    actorUserId,
+    deviceId,
+    copy,
+    orderBatchesEnabled,
+    notify,
+    onSent: (result) => {
+      setSelectedCheckId(result.check.id);
+      setStartingNewCheck(false);
+      setPendingCheckName('');
+      setOrderView('new');
+      void reload();
+    },
+  });
 
   const changeItemQuantity = async (item: OrderItem, nextQuantity: number) => {
     if (!database || !scope) return;
@@ -641,40 +371,6 @@ function CloudTableWorkspace({
     }
   };
 
-  const submit = async () => {
-    if (submitLockRef.current || !database || !scope || !snapshot || draft.length === 0) return;
-    submitLockRef.current = true;
-    setSubmitting(true);
-    try {
-      const result = await sendOrderBatch({
-        database,
-        scope,
-        actorUserId,
-        deviceId,
-        tableId,
-        session: snapshot.session,
-        ...(selectedCheck ? { check: selectedCheck } : {}),
-        checkName:
-          selectedCheck?.name || pendingCheckName || `${copy.check} ${snapshot.checks.length + 1}`,
-        lines: draft,
-      });
-      setSelectedCheckId(result.check.id);
-      setPendingCheckName('');
-      setDraft([]);
-      setUndoStack([]);
-      setOrderView('new');
-      await reload();
-      void refresh();
-      hapticSuccess();
-      notify(copy.sendDone, undefined, 'success');
-    } catch (error) {
-      notify(copy.sendFailed, error instanceof Error ? error.message : copy.tryAgain);
-    } finally {
-      submitLockRef.current = false;
-      setSubmitting(false);
-    }
-  };
-
   const cancelItem = async (reason: CancellationReason, quantity: number) => {
     if (!database || !scope || !cancellingItem || !snapshot) return;
     if (reason.requiresManager && !isManager) return;
@@ -704,9 +400,67 @@ function CloudTableWorkspace({
       setCancellingItem(undefined);
       await reload();
       void refresh();
-      hapticWarning();
+      haptic('warning');
     } catch (error) {
       notify(copy.cancelFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
+  const renameSelectedCheck = async () => {
+    if (!database || !scope || !renamingCheck || renameCheckBusy) return;
+    const name = checkNameInput.trim();
+    if (!name) return;
+    setRenameCheckBusy(true);
+    try {
+      await renameCheck({ database, scope, actorUserId, deviceId, check: renamingCheck, name });
+      setRenamingCheck(undefined);
+      await reload();
+      void refresh();
+    } catch (error) {
+      notify(copy.renameCheckFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } finally {
+      setRenameCheckBusy(false);
+    }
+  };
+
+  const deleteSelectedCheck = async (reason: CancellationReason) => {
+    if (!database || !scope || !deletingCheck || !snapshot || deleteCheckBusy) return;
+    if (reason.requiresManager && !isManager) return;
+    // Ödemesi onaylanmış bir hesap silinemez — tek satır iptalindeki
+    // paidQuantity kontrolüyle aynı desen, hesabın tamamı için.
+    const hasConfirmedPayments = snapshot.paymentAllocations.some(
+      (allocation) =>
+        allocation.checkId === deletingCheck.id &&
+        snapshot.payments.some(
+          (payment) => payment.id === allocation.paymentId && payment.status === 'confirmed',
+        ),
+    );
+    if (hasConfirmedPayments) {
+      notify(copy.deleteCheckFailed, copy.deleteCheckHasPayments);
+      return;
+    }
+    setDeleteCheckBusy(true);
+    try {
+      await voidCheck({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        check: deletingCheck,
+        items: snapshot.orderItems,
+        modifiers: snapshot.orderItemModifiers,
+        reasonId: reason.id,
+        hasConfirmedPayments,
+      });
+      setDeletingCheck(undefined);
+      if (selectedCheckId === deletingCheck.id) setSelectedCheckId(undefined);
+      await reload();
+      void refresh();
+      haptic('warning');
+    } catch (error) {
+      notify(copy.deleteCheckFailed, error instanceof Error ? error.message : copy.tryAgain);
+    } finally {
+      setDeleteCheckBusy(false);
     }
   };
 
@@ -778,7 +532,7 @@ function CloudTableWorkspace({
       const clientMutationId = toDomainId<MutationId>(clientMutationUuid());
       const result = await confirmCheckPayments(deviceId, clientMutationId, command);
       setPayingCheck(undefined);
-      hapticSuccess();
+      haptic('success');
       if (result.checkStatus === 'paid' && database && scope) {
         let after: string | undefined;
         let receipt: Receipt | undefined;
@@ -898,29 +652,6 @@ function CloudTableWorkspace({
     }
   };
 
-  const toggleFavorite = (productId: string) => {
-    const next = favoriteIds.includes(productId)
-      ? favoriteIds.filter((id) => id !== productId)
-      : [...favoriteIds, productId];
-    setFavoriteIds(next);
-    void saveWorkspacePreferences(preferencesKey, {
-      favoriteProductIds: next,
-      ...(paletteScope !== 'all' && paletteScope !== 'favorites' && paletteScope !== 'recent'
-        ? { selectedCategoryId: paletteScope }
-        : {}),
-    });
-  };
-
-  const selectPaletteScope = (next: PaletteScope) => {
-    setPaletteScope(next);
-    void saveWorkspacePreferences(preferencesKey, {
-      favoriteProductIds: favoriteIds,
-      ...(next !== 'all' && next !== 'favorites' && next !== 'recent'
-        ? { selectedCategoryId: next }
-        : {}),
-    });
-  };
-
   if (loading) {
     return (
       <CenteredState>
@@ -946,8 +677,10 @@ function CloudTableWorkspace({
   }
 
   const compact = layout.mode === 'compact';
+  const draftCount = draft.reduce((total, line) => total + line.quantity, 0);
 
-  // Adisyon görünümü: tablet/desktop'ta inline, telefonda CartSheet içinde.
+  // Adisyon görünümü: tablet/desktop'ta ürün paletinin yanında, telefonda
+  // masanın tek görünümü — ürün eklemek ayrı bir ekrana (AddProduct) gider.
   const orderPane = (
     <OrderPane
       checkName={selectedCheck?.name || pendingCheckName || copy.newCheck}
@@ -955,6 +688,7 @@ function CloudTableWorkspace({
       copy={copy}
       currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
       items={visibleItems}
+      allItems={selectedCheckItems}
       itemGroups={fulfillmentByItemId}
       language={language}
       modifiers={snapshot.orderItemModifiers}
@@ -1057,20 +791,18 @@ function CloudTableWorkspace({
           >
             {incomingMessage}
           </Text>
-          <ServiceIconButton
-            icon="close"
-            label={copy.close}
-            onPress={() => setIncomingMessage(undefined)}
-          />
+          <ServiceIconButton icon="close" label={copy.close} onPress={dismissIncoming} />
         </View>
       ) : null}
 
       <CheckStrip
         checks={snapshot.checks}
         copy={copy}
+        pendingCheck={startingNewCheck}
         pendingCheckName={pendingCheckName}
         selectedCheckId={selectedCheckId}
         onAdd={() => {
+          setStartingNewCheck(true);
           setPendingCheckName('');
           setSelectedCheckId(undefined);
           if (namedOrdersEnabled) {
@@ -1079,6 +811,7 @@ function CloudTableWorkspace({
           }
         }}
         onSelect={(checkId) => {
+          setStartingNewCheck(false);
           setPendingCheckName('');
           setSelectedCheckId(checkId);
         }}
@@ -1093,85 +826,82 @@ function CloudTableWorkspace({
           paddingHorizontal: layout.horizontalPadding,
         }}
       >
-        {!compact ? orderPane : null}
-        <PalettePane
-          categories={snapshot.categories}
+        {orderPane}
+        {!compact ? (
+          <PalettePane
+            categories={snapshot.categories}
+            copy={copy}
+            currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
+            draft={draft}
+            favoriteIds={favoriteIds}
+            language={language}
+            onAdd={addProduct}
+            onConfigure={setConfiguring}
+            onDecrement={decrementDraftProduct}
+            onQuery={setQuery}
+            onScope={selectPaletteScope}
+            onToggleAvailability={setAvailabilityTarget}
+            onToggleFavorite={toggleFavorite}
+            photoUris={showItemPhotos ? photoUris : {}}
+            products={filteredProducts}
+            query={query}
+            selectedScope={paletteScope}
+          />
+        ) : null}
+      </View>
+
+      {compact ? (
+        <View style={{ padding: tokens.space.sm }}>
+          <ServiceButton
+            fullWidth
+            icon="add"
+            label={
+              draftCount > 0
+                ? `${copy.addProduct} · ${draftCount} ${copy.products}`
+                : copy.addProduct
+            }
+            onPress={() =>
+              navigation.navigate('AddProduct', {
+                tableId: route.params.tableId,
+                ...(selectedCheckId ? { checkId: selectedCheckId } : {}),
+                ...(pendingCheckName ? { pendingCheckName } : {}),
+              })
+            }
+            size="large"
+            variant="accent"
+          />
+        </View>
+      ) : (
+        <DraftBar
           copy={copy}
           currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
           draft={draft}
-          favoriteIds={favoriteIds}
           language={language}
-          onAdd={addProduct}
-          onConfigure={setConfiguring}
-          onDecrement={decrementDraftProduct}
-          onQuery={setQuery}
-          onScope={selectPaletteScope}
-          onToggleAvailability={setAvailabilityTarget}
-          onToggleFavorite={toggleFavorite}
-          photoUris={showItemPhotos ? photoUris : {}}
-          products={filteredProducts}
-          query={query}
-          selectedScope={paletteScope}
+          onChangeQuantity={changeDraftQuantity}
+          onClear={clearDraft}
+          onRemove={removeDraftLine}
+          onRepeat={repeatLastBatch}
+          onSend={() => void submit()}
+          onUndo={undo}
+          repeatAvailable={repeatAvailable}
+          submitting={submitting}
+          totalMinor={draftTotal}
+          undoAvailable={undoAvailable}
         />
-      </View>
+      )}
 
-      <DraftBar
-        copy={copy}
-        currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
-        draft={draft}
-        language={language}
-        onClear={() => rememberDraft([])}
-        onOpenDraft={() => setShowDraftSheet(true)}
-        onRepeat={repeatLastBatch}
-        onSend={() => void submit()}
-        onUndo={undo}
-        repeatAvailable={
-          orderBatchesEnabled && snapshot.orderItems.some((item) => item.status !== 'cancelled')
-        }
-        submitting={submitting}
-        totalMinor={draftTotal}
-        undoAvailable={undoStack.length > 0}
-      />
-
-      <DraftSheet
-        copy={copy}
-        currencyCode={snapshot.products[0]?.currencyCode ?? 'EUR'}
-        draft={draft}
-        language={language}
-        onChangeQuantity={changeDraftQuantity}
-        onClose={() => setShowDraftSheet(false)}
-        onRemove={removeDraftLine}
-        visible={showDraftSheet}
-      />
-
-      <BottomSheetModal
-        backdropComponent={backdrop}
-        handleIndicatorStyle={{ backgroundColor: tokens.colors.border }}
-        onDismiss={() => setShowActionsSheet(false)}
-        ref={actionsSheetRef}
-        snapPoints={['58%']}
+      <WorkspaceModal
+        onClose={() => setShowActionsSheet(false)}
+        title={snapshot.table.label}
+        visible={showActionsSheet}
       >
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            backgroundColor: tokens.colors.surface,
-            gap: tokens.space.xs,
-            paddingHorizontal: tokens.space.md,
-            paddingBottom: tokens.space.xl,
-          }}
-        >
-          <Text
-            style={[
-              tokens.typography.subtitle,
-              { color: tokens.colors.text, paddingVertical: tokens.space.sm },
-            ]}
-          >
-            {snapshot.table.label}
-          </Text>
+        <ScrollView style={{ maxHeight: 420 }}>
           <ServiceListRow
             accessory="chevron"
             icon="add-circle-outline"
             onPress={() => {
               setShowActionsSheet(false);
+              setStartingNewCheck(true);
               setPendingCheckName('');
               setSelectedCheckId(undefined);
               if (namedOrdersEnabled) {
@@ -1181,17 +911,19 @@ function CloudTableWorkspace({
             }}
             title={copy.newCheck}
           />
-          {compact ? (
-            <ServiceListRow
-              accessory="chevron"
-              icon="receipt-outline"
-              onPress={() => {
-                setShowActionsSheet(false);
-                setShowCartSheet(true);
-              }}
-              title={copy.order}
-            />
-          ) : null}
+          <ServiceListRow
+            accessory="chevron"
+            disabled={!selectedCheck}
+            icon="create-outline"
+            onPress={() => {
+              setShowActionsSheet(false);
+              if (selectedCheck) {
+                setCheckNameInput(selectedCheck.name);
+                setRenamingCheck(selectedCheck);
+              }
+            }}
+            title={copy.renameCheck}
+          />
           <ServiceListRow
             accessory="chevron"
             disabled={!selectedCheck}
@@ -1233,6 +965,17 @@ function CloudTableWorkspace({
             }}
             title={copy.locationNote}
           />
+          <ServiceListRow
+            accessory="chevron"
+            destructive
+            disabled={!selectedCheck}
+            icon="trash-outline"
+            onPress={() => {
+              setShowActionsSheet(false);
+              if (selectedCheck) setDeletingCheck(selectedCheck);
+            }}
+            title={copy.deleteCheck}
+          />
           <View
             style={{
               alignItems: 'center',
@@ -1256,25 +999,8 @@ function CloudTableWorkspace({
               tone={sync.hasError ? 'error' : sync.pendingCount > 0 ? 'warning' : 'success'}
             />
           </View>
-        </BottomSheetScrollView>
-      </BottomSheetModal>
-
-      <BottomSheetModal
-        backdropComponent={backdrop}
-        handleIndicatorStyle={{ backgroundColor: tokens.colors.border }}
-        onDismiss={() => setShowCartSheet(false)}
-        ref={cartSheetRef}
-        snapPoints={['82%']}
-      >
-        <BottomSheetScrollView
-          contentContainerStyle={{
-            backgroundColor: tokens.colors.surface,
-            paddingBottom: tokens.space.xl,
-          }}
-        >
-          {compact ? orderPane : null}
-        </BottomSheetScrollView>
-      </BottomSheetModal>
+        </ScrollView>
+      </WorkspaceModal>
 
       <NameCheckModal
         copy={copy}
@@ -1289,6 +1015,28 @@ function CloudTableWorkspace({
           setShowCheckModal(false);
         }}
         visible={showCheckModal}
+      />
+      <NameCheckModal
+        confirmLabel={copy.renameCheckSave}
+        copy={copy}
+        name={checkNameInput}
+        onChange={setCheckNameInput}
+        onClose={() => {
+          if (!renameCheckBusy) setRenamingCheck(undefined);
+        }}
+        onConfirm={() => void renameSelectedCheck()}
+        title={copy.renameCheck}
+        visible={Boolean(renamingCheck)}
+      />
+      <DeleteCheckModal
+        check={deletingCheck}
+        copy={copy}
+        isManager={isManager}
+        onClose={() => {
+          if (!deleteCheckBusy) setDeletingCheck(undefined);
+        }}
+        onConfirm={(reason) => void deleteSelectedCheck(reason)}
+        reasons={snapshot.cancellationReasons}
       />
       <ProductConfigurationModal
         copy={copy}

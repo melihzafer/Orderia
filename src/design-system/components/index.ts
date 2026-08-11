@@ -21,3 +21,4 @@ export * from './ServiceStepper';
 export * from './ServiceSurface';
 export * from './ServiceSwipeRow';
 export * from './ServiceTextField';
+export * from './SyncStatusBanner';

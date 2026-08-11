@@ -1,3 +1,12 @@
+/**
+ * `--warn-only`: eksikleri aynı listeyle basar ama çıkış kodu 0 döner.
+ *
+ * Bu bayrak `prebuild:web` içinde kullanılıyor. Amaç, Vercel derlemesinde
+ * "Sentry DSN yok, bu derleme çökmeleri bildirmeyecek" uyarısını görünür kılmak
+ * ama deploy'u düşürmemek. Sert kapı hâlâ `npm run release:env` (bayraksız).
+ */
+const warnOnly = process.argv.includes('--warn-only');
+
 const required = [
   'EXPO_PUBLIC_SUPABASE_URL',
   'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
@@ -36,11 +45,22 @@ if (
 }
 
 if (failures.length) {
-  console.error('Release environment gate failed:');
-  failures.forEach((failure) => console.error(`- ${failure}`));
-  process.exit(1);
+  if (warnOnly) {
+    console.warn('Release environment is incomplete; building anyway:');
+    failures.forEach((failure) => console.warn(`- ${failure}`));
+    if (!process.env.EXPO_PUBLIC_SENTRY_DSN?.trim()) {
+      console.warn(
+        'No EXPO_PUBLIC_SENTRY_DSN: this build reports no crashes. Set it in the Vercel project environment to turn crash reporting on.',
+      );
+    }
+  } else {
+    console.error('Release environment gate failed:');
+    failures.forEach((failure) => console.error(`- ${failure}`));
+    process.exit(1);
+  }
+} else {
+  console.log('Production release environment is complete and uses non-privileged client values.');
 }
-console.log('Production release environment is complete and uses non-privileged client values.');
 
 function validateHttpsUrl(name, failures) {
   const value = process.env[name];

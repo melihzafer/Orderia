@@ -58,6 +58,8 @@ export default function AddCategoryScreenModern() {
     try {
       if (editingCategory) updateCategory(editingCategory.id, { name: nextName });
       else addCategory({ name: nextName });
+      haptic('success');
+      show({ message: isEditing ? t.categoryUpdated : t.categoryAdded, tone: 'success' });
       setName('');
       if (editingCategory) navigation.goBack();
     } catch {
@@ -71,7 +73,7 @@ export default function AddCategoryScreenModern() {
     try {
       deleteCategory(id);
       haptic('success');
-      show({ message: t.deleteCategory, tone: 'success' });
+      show({ message: t.categoryDeleted, tone: 'success' });
     } catch {
       haptic('error');
       show({ message: t.genericError, tone: 'error' });

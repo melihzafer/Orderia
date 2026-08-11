@@ -11,6 +11,8 @@ import React, {
 } from 'react';
 import { AppState, Platform } from 'react-native';
 import uuid from 'react-native-uuid';
+import { useLocalization } from '../i18n';
+import type { Translation } from '../i18n/languages';
 import { captureOperationalError, recordOperationalEvent } from '../observability';
 import { AuthGateway, SupabaseAuthGateway } from '../services/supabase/authGateway';
 import { getSupabaseClient, subscribeToNativeAuthAutoRefresh } from '../services/supabase/client';
@@ -58,6 +60,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       };
     }
   }, [suppliedGateway]);
+  const { t } = useLocalization();
   const gateway = resolution.gateway;
   const [status, setStatus] = useState<AuthStatus>(
     resolution.configurationError ? 'error' : gateway ? 'initializing' : 'unconfigured',
@@ -194,7 +197,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           setSession(null);
           setWorkspace(null);
           setActiveBranchId(null);
-          setErrorMessage('This device was revoked by a manager. Sign in on an authorized device.');
+          setErrorMessage(t.authDeviceRevokedMessage);
           setStatus('signed_out');
           return;
         }
@@ -204,7 +207,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setActiveBranchId(null);
         setOnboardingRole(null);
         setCreatedRestaurantCode(undefined);
-        setErrorMessage('Your Orderia workspace could not be loaded.');
+        setErrorMessage(t.authWorkspaceLoadFailed);
         setStatus('error');
         captureOperationalError(error, 'auth_failure', {
           operation: 'restore_workspace',
@@ -237,7 +240,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           operation: 'restore_session',
           errorClass: error instanceof Error ? error.name : 'UnknownError',
         });
-        setErrorMessage('The saved session could not be restored.');
+        setErrorMessage(t.authSessionRestoreFailed);
         setStatus('error');
       });
 
@@ -273,10 +276,10 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           errorClass: error instanceof Error ? error.name : 'UnknownError',
         });
         setStatus('signed_out');
-        setErrorMessage('Email or password is incorrect.');
+        setErrorMessage(signInErrorMessage(error, t));
       }
     },
-    [gateway, restoreSession],
+    [gateway, restoreSession, t],
   );
 
   const signUp = useCallback(
@@ -310,12 +313,12 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
             'This Supabase project still sends confirmation emails to users. Disable "Confirm email" in Supabase Auth settings so only the owner receives approval emails.',
           );
         } else {
-          setErrorMessage('Registration failed. The email may already be in use.');
+          setErrorMessage(signUpErrorMessage(error, t));
         }
         throw error;
       }
     },
-    [gateway],
+    [gateway, t],
   );
 
   const selectOnboardingRole = useCallback((role: OnboardingRole) => {
@@ -345,11 +348,11 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         await restoreSession(session);
       } catch (error) {
         setStatus('onboarding_restaurant');
-        setErrorMessage(onboardingErrorMessage(error));
+        setErrorMessage(onboardingErrorMessage(error, t));
         throw error;
       }
     },
-    [gateway, onboardingRole, restoreSession, session],
+    [gateway, onboardingRole, restoreSession, session, t],
   );
 
   const createRestaurant = useCallback(
@@ -366,11 +369,11 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setStatus('onboarding_restaurant');
       } catch (error) {
         setStatus('onboarding_restaurant');
-        setErrorMessage(onboardingErrorMessage(error));
+        setErrorMessage(onboardingErrorMessage(error, t));
         throw error;
       }
     },
-    [gateway, onboardingRole, session],
+    [gateway, onboardingRole, session, t],
   );
 
   const finishOnboarding = useCallback(async () => {
@@ -412,15 +415,15 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       } catch (error) {
         if (isDeviceRevocationError(error)) {
           await signOut();
-          setErrorMessage('This device was revoked by a manager. Sign in on an authorized device.');
+          setErrorMessage(t.authDeviceRevokedMessage);
           return;
         }
 
-        setErrorMessage('The selected branch could not be activated.');
+        setErrorMessage(t.authBranchActivateFailed);
         setStatus(activeBranchId ? 'ready' : 'select_branch');
       }
     },
-    [activateBranch, activeBranchId, session, signOut, workspace],
+    [activateBranch, activeBranchId, session, signOut, t, workspace],
   );
 
   useEffect(() => {
@@ -433,7 +436,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         if (!isDeviceRevocationError(error)) return;
 
         await signOut().catch(() => undefined);
-        setErrorMessage('This device was revoked by a manager. Sign in on an authorized device.');
+        setErrorMessage(t.authDeviceRevokedMessage);
       }
     };
 
@@ -457,7 +460,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     return () => {
       subscription.remove();
     };
-  }, [currentDeviceId, gateway, signOut, status]);
+  }, [currentDeviceId, gateway, signOut, status, t]);
 
   const refreshDevices = useCallback(async () => {
     if (!gateway || !activeBranch || activeMembership?.role !== 'manager') {
@@ -473,9 +476,9 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         ),
       );
     } catch {
-      setErrorMessage('The device list could not be refreshed.');
+      setErrorMessage(t.authDeviceListRefreshFailed);
     }
-  }, [activeBranch, activeMembership, gateway]);
+  }, [activeBranch, activeMembership, gateway, t]);
 
   const revokeDevice = useCallback(
     async (deviceId: string) => {
@@ -602,19 +605,54 @@ function isDeviceRevocationError(error: unknown): boolean {
   );
 }
 
-function onboardingErrorMessage(error: unknown): string {
+function onboardingErrorMessage(error: unknown, t: Translation): string {
   const message = error instanceof Error ? error.message : '';
   if (message.includes('restaurant_not_found') || message.includes('invalid_restaurant_code')) {
-    return 'That restaurant code is invalid or no longer active.';
+    return t.authInvalidRestaurantCodeMessage;
   }
   if (message.includes('already_member')) {
-    return 'This account is already connected to a restaurant.';
+    return t.authAlreadyMember;
   }
   if (message.includes('invalid_restaurant_name')) {
-    return 'Enter a restaurant name between 1 and 120 characters.';
+    return t.authInvalidRestaurantName;
   }
   if (message.includes('invalid_branch_name')) {
-    return 'Enter a valid branch name.';
+    return t.authInvalidBranchName;
   }
-  return 'Restaurant setup could not be completed. Check your connection and try again.';
+  return t.authRestaurantSetupFailed;
+}
+
+/**
+ * Ağ hatası tespiti: Supabase JS network hatalarında sabit bir `code` alanı
+ * yok — RN'de "Network request failed", web'de "Failed to fetch" fırlatıyor.
+ */
+function isNetworkError(error: unknown): boolean {
+  const message = (error instanceof Error ? error.message : '').toLowerCase();
+  return message.includes('network request failed') || message.includes('failed to fetch');
+}
+
+function isRateLimitError(error: unknown): boolean {
+  const status = (error as { status?: number } | null)?.status;
+  const message = (error instanceof Error ? error.message : '').toLowerCase();
+  return status === 429 || message.includes('rate limit') || message.includes('security purposes');
+}
+
+function signInErrorMessage(error: unknown, t: Translation): string {
+  if (isNetworkError(error)) return t.authNetworkError;
+  if (isRateLimitError(error)) return t.authTooManyRequests;
+  return t.authInvalidCredentials;
+}
+
+function signUpErrorMessage(error: unknown, t: Translation): string {
+  if (isNetworkError(error)) return t.authNetworkError;
+  if (isRateLimitError(error)) return t.authTooManyRequests;
+
+  const message = (error instanceof Error ? error.message : '').toLowerCase();
+  if (message.includes('already registered') || message.includes('already exists')) {
+    return t.authEmailInUse;
+  }
+  if (message.includes('password') && (message.includes('weak') || message.includes('at least'))) {
+    return t.authWeakPassword;
+  }
+  return t.authRegistrationFailed;
 }

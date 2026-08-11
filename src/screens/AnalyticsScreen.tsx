@@ -75,7 +75,13 @@ export default function AnalyticsScreen() {
       if (isLatestRequest()) {
         setLoading(false);
         setRefreshing(false);
-        setErrorMessage(isManager ? copy.onlineRequired : copy.managerRequired);
+        setErrorMessage(
+          !isManager
+            ? copy.managerRequired
+            : mode !== 'cloud'
+              ? copy.cloudRequired
+              : copy.onlineRequired,
+        );
       }
       return;
     }
@@ -99,11 +105,13 @@ export default function AnalyticsScreen() {
     }
   }, [
     cloudReady,
+    copy.cloudRequired,
     copy.loadFailed,
     copy.managerRequired,
     copy.onlineRequired,
     isManager,
     loadManagerReport,
+    mode,
     range,
     selectedWaiterId,
   ]);
@@ -563,6 +571,8 @@ function reportCopy(language: 'tr' | 'bg' | 'en') {
       serverConfirmed: 'Server doğrulamalı',
       unavailable: 'Rapor kullanılamıyor',
       onlineRequired: 'Yönetici raporu için internet bağlantısı gerekli.',
+      cloudRequired:
+        "Bu cihaz bir bulut işletmesine bağlı değil. Rapor görmek için Ayarlar'dan bulut hesabına bağlanın.",
       managerRequired: 'Bu rapor yalnız yöneticiler tarafından görüntülenebilir.',
       loadFailed: 'Yönetici raporu yüklenemedi.',
       branch: 'Şube',
@@ -620,6 +630,8 @@ function reportCopy(language: 'tr' | 'bg' | 'en') {
       serverConfirmed: 'Потвърдено от сървъра',
       unavailable: 'Отчетът не е достъпен',
       onlineRequired: 'За управленския отчет е необходим интернет.',
+      cloudRequired:
+        'Това устройство не е свързано с облачен бизнес акаунт. Свържете се от Настройки, за да видите отчета.',
       managerRequired: 'Този отчет е само за мениджъри.',
       loadFailed: 'Отчетът не можа да се зареди.',
       branch: 'Обект',
@@ -674,6 +686,8 @@ function reportCopy(language: 'tr' | 'bg' | 'en') {
     serverConfirmed: 'Server confirmed',
     unavailable: 'Report unavailable',
     onlineRequired: 'An internet connection is required for manager reporting.',
+    cloudRequired:
+      "This device isn't connected to a cloud business yet. Connect from Settings to see this report.",
     managerRequired: 'This report is available to managers only.',
     loadFailed: 'The manager report could not be loaded.',
     branch: 'Branch',

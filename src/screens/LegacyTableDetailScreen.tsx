@@ -51,6 +51,7 @@ export default function LegacyTableDetailScreen() {
   const table = useLayoutStore((state) =>
     state.tables.find((candidate) => candidate.id === route.params.tableId),
   );
+  const allTables = useLayoutStore((state) => state.tables);
   const categories = useMenuStore((state) => state.categories);
   const menuItems = useMenuStore((state) => state.menuItems);
   const openTickets = useOrderStore((state) => state.openTickets);
@@ -59,6 +60,7 @@ export default function LegacyTableDetailScreen() {
   const updateTicketLine = useOrderStore((state) => state.updateTicketLine);
   const updateLineQuantity = useOrderStore((state) => state.updateLineQuantity);
   const moveTicketLine = useOrderStore((state) => state.moveTicketLine);
+  const moveTicketToTable = useOrderStore((state) => state.moveTicketToTable);
   const payTicket = useOrderStore((state) => state.payTicket);
   const updateTicketName = useOrderStore((state) => state.updateTicketName);
   const deleteTicket = useOrderStore((state) => state.deleteTicket);
@@ -89,6 +91,7 @@ export default function LegacyTableDetailScreen() {
   const [lineActions, setLineActions] = useState<TicketLine>();
   const [ticketActions, setTicketActions] = useState<Ticket>();
   const [ticketNameInput, setTicketNameInput] = useState('');
+  const [movingTicket, setMovingTicket] = useState<Ticket>();
   const [editingLineNote, setEditingLineNote] = useState<TicketLine>();
   const [movingLine, setMovingLine] = useState<TicketLine>();
   const [moveQuantity, setMoveQuantity] = useState(1);
@@ -313,6 +316,24 @@ export default function LegacyTableDetailScreen() {
     moveLineToAccount(target);
   };
 
+  const availableTargetTables = allTables.filter(
+    (candidate) => candidate.id !== table?.id && !candidate.isOpen,
+  );
+
+  const moveTicketToAnotherTable = (targetTableId: string) => {
+    if (!movingTicket) return;
+    try {
+      moveTicketToTable(movingTicket.id, targetTableId);
+      setMovingTicket(undefined);
+      haptic('success');
+      show({ message: t.tableMoved, tone: 'success' });
+      navigation.replace('TableDetail', { tableId: targetTableId });
+    } catch {
+      haptic('error');
+      show({ message: t.genericError, tone: 'error' });
+    }
+  };
+
   if (!table) {
     return (
       <SafeAreaView style={{ backgroundColor: tokens.colors.bg, flex: 1 }}>
@@ -397,6 +418,16 @@ export default function LegacyTableDetailScreen() {
             />
           ) : null}
         </ScrollView>
+        {selectedTicket ? (
+          <ServiceIconButton
+            icon="create-outline"
+            label={`${t.edit}: ${selectedTicket.name || t.orderName}`}
+            onPress={() => {
+              setTicketActions(selectedTicket);
+              setTicketNameInput(selectedTicket.name ?? '');
+            }}
+          />
+        ) : null}
         <ServiceButton
           icon="add"
           label={t.addOrder}
@@ -968,6 +999,16 @@ export default function LegacyTableDetailScreen() {
             />
             <ServiceButton
               fullWidth
+              label={t.moveTable}
+              onPress={() => {
+                const ticket = ticketActions;
+                setTicketActions(undefined);
+                setMovingTicket(ticket);
+              }}
+              variant="outline"
+            />
+            <ServiceButton
+              fullWidth
               label={t.deleteOrder}
               onPress={() => {
                 const ticketId = ticketActions.id;
@@ -977,6 +1018,35 @@ export default function LegacyTableDetailScreen() {
               variant="danger"
             />
           </>
+        ) : null}
+      </LocalActionSheet>
+
+      <LocalActionSheet
+        onClose={() => setMovingTicket(undefined)}
+        title={t.moveTable}
+        visible={Boolean(movingTicket)}
+      >
+        {movingTicket ? (
+          availableTargetTables.length > 0 ? (
+            <View style={{ gap: tokens.space.xs }}>
+              <Text style={[tokens.typography.label, { color: tokens.colors.text }]}>
+                {t.selectTargetTable}
+              </Text>
+              {availableTargetTables.map((candidate) => (
+                <ServiceButton
+                  key={candidate.id}
+                  fullWidth
+                  label={candidate.label || `${t.table} ${candidate.seq}`}
+                  onPress={() => moveTicketToAnotherTable(candidate.id)}
+                  variant="outline"
+                />
+              ))}
+            </View>
+          ) : (
+            <Text style={[tokens.typography.body, { color: tokens.colors.textSubtle }]}>
+              {t.noAvailableTables}
+            </Text>
+          )
         ) : null}
       </LocalActionSheet>
 

@@ -26,6 +26,7 @@ export function OrderPane({
   checkName,
   checkTotal,
   items,
+  allItems,
   itemGroups,
   modifiers,
   conflicts,
@@ -50,6 +51,8 @@ export function OrderPane({
   readonly checkName: string;
   readonly checkTotal: number;
   readonly items: readonly OrderItem[];
+  /** Filtrelenmemiş tam liste: parti numaralandırması aktif görünüme göre kaymasın diye. */
+  readonly allItems: readonly OrderItem[];
   readonly itemGroups: Readonly<Record<string, FulfillmentGroup>>;
   readonly modifiers: TableWorkspaceSnapshot['orderItemModifiers'];
   readonly conflicts: TableWorkspaceSnapshot['conflicts'];
@@ -78,7 +81,7 @@ export function OrderPane({
   const { tokens } = useTheme();
   const hasLiveItems = items.some((item) => item.status !== 'cancelled');
   const batchNumberById = new Map<string, number>();
-  items.forEach((item) => {
+  allItems.forEach((item) => {
     if (!batchNumberById.has(item.orderBatchId)) {
       batchNumberById.set(item.orderBatchId, batchNumberById.size + 1);
     }

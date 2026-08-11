@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Check for import cycles
+        run: npm run check:cycles
+
       - name: Run unit tests
         run: npm run test:coverage
 

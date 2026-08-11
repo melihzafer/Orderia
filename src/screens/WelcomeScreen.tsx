@@ -1,7 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// Barrel üzerinden değil doğrudan: bkz. LoginScreen'deki aynı not (AuthGate döngüsü).
+import { BrandLogo } from '../components/BrandLogo';
 import LanguageSelector from '../components/LanguageSelector';
 import { useTheme } from '../contexts/ThemeContext';
 import { ServiceButton, ServiceSurface, useAdaptiveLayout } from '../design-system';
@@ -39,25 +40,7 @@ export default function WelcomeScreen({
         <LanguageSelector style={{ marginBottom: tokens.space.xl }} />
 
         <ServiceSurface style={{ padding: tokens.space.xl }}>
-          <View
-            style={{
-              alignItems: 'center',
-              backgroundColor: tokens.colors.accentSoft,
-              borderRadius: tokens.radius.full,
-              height: 72,
-              justifyContent: 'center',
-              marginBottom: tokens.space.md,
-              width: 72,
-            }}
-          >
-            <Ionicons color={tokens.colors.primary} name="restaurant-outline" size={36} />
-          </View>
-
-          <Text
-            style={[tokens.typography.title, { color: tokens.colors.text, textAlign: 'center' }]}
-          >
-            Orderia
-          </Text>
+          <BrandLogo markSize={64} style={{ marginBottom: tokens.space.md }} />
           <Text
             style={[
               tokens.typography.body,

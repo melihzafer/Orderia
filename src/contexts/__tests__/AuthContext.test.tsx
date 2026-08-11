@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { LocalizationProvider, translations } from '../../i18n';
 import { AuthWorkspace, OnboardingRole } from '../authTypes';
 import {
   AuthGateway,
@@ -43,9 +44,11 @@ describe('AuthProvider session restore', () => {
     );
     await AsyncStorage.setItem(`orderia.cloud.active_branch.${userId}`, 'branch-2');
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
@@ -65,9 +68,11 @@ describe('AuthProvider session restore', () => {
       createWorkspace([createMembership('membership-manager', null, 'manager')]),
     );
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
@@ -88,46 +93,52 @@ describe('AuthProvider session restore', () => {
     );
     gateway.registrationError = new Error('device_revoked');
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
       expect(screen.getByTestId('status').props.children).toBe('signed_out');
     });
     expect(gateway.signOutCount).toBe(1);
-    expect(screen.getByTestId('error').props.children).toMatch(/revoked/);
+    expect(screen.getByTestId('error').props.children).toBe(translations.tr.authDeviceRevokedMessage);
   });
 
   it('shows a recoverable error when the initial session lookup fails', async () => {
     const gateway = new FakeAuthGateway(null, createWorkspace([]));
     gateway.sessionError = new Error('network unavailable');
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
       expect(screen.getByTestId('status').props.children).toBe('error');
     });
-    expect(screen.getByTestId('error').props.children).toMatch(/saved session/i);
+    expect(screen.getByTestId('error').props.children).toBe(translations.tr.authSessionRestoreFailed);
   });
 
   it('surfaces a signup-request lookup failure instead of routing to onboarding', async () => {
     const gateway = new FakeAuthGateway(session, createWorkspace([]));
     gateway.signupRequestError = new Error('network unavailable');
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
       expect(screen.getByTestId('status').props.children).toBe('error');
     });
-    expect(screen.getByTestId('error').props.children).toMatch(/workspace could not be loaded/i);
+    expect(screen.getByTestId('error').props.children).toBe(translations.tr.authWorkspaceLoadFailed);
 
     gateway.signupRequestError = undefined;
     await fireEvent.press(screen.getByText('retry'));
@@ -139,9 +150,11 @@ describe('AuthProvider session restore', () => {
   it('routes an account without membership into role onboarding', async () => {
     const gateway = new FakeAuthGateway(session, createWorkspace([]));
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {
@@ -159,9 +172,11 @@ describe('AuthProvider session restore', () => {
   it('keeps the manager on onboarding after creating a restaurant until they continue', async () => {
     const gateway = new FakeAuthGateway(session, createWorkspace([]));
     const screen = await render(
+      <LocalizationProvider>
       <AuthProvider gateway={gateway}>
         <AuthProbe />
-      </AuthProvider>,
+      </AuthProvider>
+      </LocalizationProvider>,
     );
 
     await waitFor(() => {

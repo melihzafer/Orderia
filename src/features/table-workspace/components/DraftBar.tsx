@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { ServiceButton, ServiceIconButton, useAdaptiveLayout } from '../../../design-system';
@@ -11,7 +11,10 @@ import { draftLineTotal, formatMoney } from '../workspaceFormat';
 import { ModalActions, WorkspaceModal } from './WorkspaceModals';
 
 /**
- * Gönderilmemiş taslak şeridi ve onu açan alt sayfa.
+ * Gönderilmemiş taslak şeridi. Özet satırına dokunulunca eklenen ürünler
+ * kendi üstünde açılır bir listede görünür — garson taslağı görmek için ayrı
+ * bir modal açmak zorunda kalmaz. Ürün eklenince liste kendiliğinden açılır,
+ * taslak boşalınca kapanır.
  */
 
 export function DraftBar({
@@ -25,7 +28,8 @@ export function DraftBar({
   repeatAvailable,
   onUndo,
   onClear,
-  onOpenDraft,
+  onChangeQuantity,
+  onRemove,
   onRepeat,
   onSend,
 }: {
@@ -39,7 +43,8 @@ export function DraftBar({
   readonly repeatAvailable: boolean;
   readonly onUndo: () => void;
   readonly onClear: () => void;
-  readonly onOpenDraft: () => void;
+  readonly onChangeQuantity: (lineId: string, delta: number) => void;
+  readonly onRemove: (lineId: string) => void;
   readonly onRepeat: () => void;
   readonly onSend: () => void;
 }) {
@@ -47,6 +52,18 @@ export function DraftBar({
   const { mode } = useAdaptiveLayout();
   const compact = mode === 'compact';
   const count = draft.reduce((total, line) => total + line.quantity, 0);
+  const [expanded, setExpanded] = useState(false);
+  const previousCount = React.useRef(draft.length);
+
+  useEffect(() => {
+    if (draft.length === 0) {
+      setExpanded(false);
+    } else if (draft.length > previousCount.current) {
+      setExpanded(true);
+    }
+    previousCount.current = draft.length;
+  }, [draft.length]);
+
   return (
     <View
       style={[
@@ -63,8 +80,9 @@ export function DraftBar({
       <Pressable
         accessibilityHint={copy.editDraft}
         accessibilityRole="button"
+        accessibilityState={{ expanded, disabled: draft.length === 0 }}
         disabled={draft.length === 0}
-        onPress={onOpenDraft}
+        onPress={() => setExpanded((current) => !current)}
         style={{
           alignItems: 'center',
           backgroundColor: draft.length > 0 ? tokens.colors.accentSoft : 'transparent',
@@ -92,10 +110,76 @@ export function DraftBar({
             {count} {copy.products}
           </Text>
         </View>
-        <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
-          {formatMoney(totalMinor, currencyCode, language)}
-        </Text>
+        <View style={{ alignItems: 'center', flexDirection: 'row', gap: tokens.space.xs }}>
+          <Text style={[tokens.typography.subtitle, { color: tokens.colors.text }]}>
+            {formatMoney(totalMinor, currencyCode, language)}
+          </Text>
+          {draft.length > 0 ? (
+            <Ionicons
+              color={tokens.colors.accent}
+              name={expanded ? 'chevron-down' : 'chevron-up'}
+              size={18}
+            />
+          ) : null}
+        </View>
       </Pressable>
+      {expanded && draft.length > 0 ? (
+        <ScrollView style={{ maxHeight: 220 }}>
+          {draft.map((line) => {
+            const selectedOptions = line.product.modifierGroups
+              .flatMap((group) => group.options)
+              .filter((option) => line.selectedOptionIds.includes(option.id));
+            return (
+              <View
+                key={line.id}
+                style={{
+                  alignItems: 'center',
+                  borderBottomColor: tokens.colors.borderLight,
+                  borderBottomWidth: 1,
+                  flexDirection: 'row',
+                  gap: tokens.space.sm,
+                  paddingVertical: tokens.space.xs,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+                    {line.product.name}
+                  </Text>
+                  {selectedOptions.map((option) => (
+                    <Text
+                      key={option.id}
+                      style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}
+                    >
+                      + {option.name}
+                    </Text>
+                  ))}
+                  {line.note ? (
+                    <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
+                      {copy.note}: {line.note}
+                    </Text>
+                  ) : null}
+                  <Text style={[tokens.typography.caption, { color: tokens.colors.textMuted }]}>
+                    {formatMoney(draftLineTotal(line), currencyCode, language)}
+                  </Text>
+                </View>
+                <QuantityStepper
+                  compact
+                  decreaseLabel={`${copy.decrease}: ${line.product.name}`}
+                  increaseLabel={`${copy.increase}: ${line.product.name}`}
+                  onDecrease={() => onChangeQuantity(line.id, -1)}
+                  onIncrease={() => onChangeQuantity(line.id, 1)}
+                  quantity={line.quantity}
+                />
+                <ServiceIconButton
+                  icon="trash-outline"
+                  label={`${copy.clearDraft}: ${line.product.name}`}
+                  onPress={() => onRemove(line.id)}
+                />
+              </View>
+            );
+          })}
+        </ScrollView>
+      ) : null}
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: tokens.space.xs }}>
         <ServiceIconButton
           disabled={!undoAvailable}

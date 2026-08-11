@@ -557,15 +557,6 @@ export default function SettingsScreen() {
               <ServiceListRow
                 accessory="chevron"
                 compact={settings.compactDensity}
-                icon="qr-code-outline"
-                onPress={() => navigation.navigate('QRMenu')}
-                showSubtitle={managementDescriptionsRevealed}
-                subtitle={copy.qrMenuBody}
-                title={copy.qrMenu}
-              />
-              <ServiceListRow
-                accessory="chevron"
-                compact={settings.compactDensity}
                 icon="stats-chart-outline"
                 onPress={() => navigation.navigate('Analytics')}
                 showSubtitle={managementDescriptionsRevealed}
@@ -587,11 +578,20 @@ export default function SettingsScreen() {
                     accessory="chevron"
                     compact={settings.compactDensity}
                     icon="people-outline"
-                    last
                     onPress={() => navigation.navigate('Approvals')}
                     showSubtitle={managementDescriptionsRevealed}
                     subtitle={copy.approvalsBody}
                     title={t.approvalsTitle}
+                  />
+                  <ServiceListRow
+                    accessory="chevron"
+                    compact={settings.compactDensity}
+                    icon="close-circle-outline"
+                    last
+                    onPress={() => navigation.navigate('CancellationReasons')}
+                    showSubtitle={managementDescriptionsRevealed}
+                    subtitle={copy.cancellationReasonsBody}
+                    title={copy.cancellationReasons}
                   />
                 </>
               ) : null}

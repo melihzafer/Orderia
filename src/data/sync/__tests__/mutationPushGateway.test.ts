@@ -100,6 +100,28 @@ describe('SupabaseMutationPushGateway collaboration routes', () => {
     );
   });
 
+  it('routes a check rename through its own RPC instead of the generic mutation handler', async () => {
+    const rpc = jest.fn().mockResolvedValue({
+      data: {
+        status: 'applied',
+        repository: 'checks',
+        entityId: 'check-1',
+        serverVersion: 2,
+        committedAt: createdAt,
+      },
+      error: null,
+    });
+    const gateway = new SupabaseMutationPushGateway({ rpc } as never);
+
+    await expect(
+      gateway.push(mutation('checks', 'check-1', { name: 'Mehmet Ağa' }, 1)),
+    ).resolves.toMatchObject({ entityId: 'check-1', repository: 'checks' });
+    expect(rpc).toHaveBeenCalledWith(
+      'apply_check_rename_command',
+      expect.objectContaining({ requested_base_version: 1, requested_entity_id: 'check-1' }),
+    );
+  });
+
   it('separates a partial void from a plain quantity change', async () => {
     const rpc = jest.fn().mockResolvedValue({
       data: {

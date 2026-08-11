@@ -105,6 +105,8 @@ export default function AddHallScreenModern() {
         } else {
           addHall({ name: nextName });
         }
+        haptic('success');
+        show({ message: isEditing ? t.hallUpdated : t.hallAdded, tone: 'success' });
         navigation.goBack();
       } catch (error) {
         haptic('error');

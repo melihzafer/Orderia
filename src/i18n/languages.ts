@@ -200,6 +200,9 @@ export interface Translation {
   moveToOrder: string;
   newAccount: string;
   paymentUpdated: string;
+  moveTable: string;
+  selectTargetTable: string;
+  tableMoved: string;
 
   // Status
   open: string;
@@ -430,6 +433,22 @@ export interface Translation {
   workspaceUnavailable: string;
   workspaceUnavailableBody: string;
   tryAgain: string;
+  authInvalidCredentials: string;
+  authNetworkError: string;
+  authTooManyRequests: string;
+  authEmailInUse: string;
+  authWeakPassword: string;
+  authRegistrationFailed: string;
+  authDeviceRevokedMessage: string;
+  authWorkspaceLoadFailed: string;
+  authSessionRestoreFailed: string;
+  authBranchActivateFailed: string;
+  authDeviceListRefreshFailed: string;
+  authInvalidRestaurantCodeMessage: string;
+  authAlreadyMember: string;
+  authInvalidRestaurantName: string;
+  authInvalidBranchName: string;
+  authRestaurantSetupFailed: string;
   selectBranchTitle: string;
   selectBranchSubtitle: string;
   defaultOrganization: string;
@@ -446,6 +465,7 @@ export interface Translation {
   passwordTooShort: string;
   passwordsDoNotMatch: string;
   invalidEmail: string;
+  nameRequired: string;
   registerSuccessTitle: string;
   registerSuccessBody: string;
   pendingApprovalTitle: string;
@@ -687,6 +707,9 @@ export const translations: Record<string, Translation> = {
     editPayment: 'Ödemeyi düzenle',
     moveToOrder: 'Başka hesaba aktar',
     newAccount: 'Yeni hesap',
+    moveTable: 'Masayı taşı',
+    selectTargetTable: 'Hedef masa seç',
+    tableMoved: 'Masa taşındı',
     paymentUpdated: 'Ödeme güncellendi',
     addNote: 'Not Ekle',
     addNoteHint: 'Özel talimatlar veya notlar ekleyin...',
@@ -922,6 +945,22 @@ export const translations: Record<string, Translation> = {
     restoringWorkspace: 'Orderia çalışma alanınız geri yükleniyor…',
     workspaceUnavailable: 'Çalışma alanı kullanılamıyor',
     workspaceUnavailableBody: 'Orderia bu hesabı yükleyemedi.',
+    authInvalidCredentials: 'E-posta veya şifre hatalı.',
+    authNetworkError: 'Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.',
+    authTooManyRequests: 'Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar deneyin.',
+    authEmailInUse: 'Bu e-posta adresi zaten kayıtlı.',
+    authWeakPassword: 'Şifre çok zayıf. En az 6 karakter kullanın.',
+    authRegistrationFailed: 'Kayıt tamamlanamadı. Bilgilerinizi kontrol edip tekrar deneyin.',
+    authDeviceRevokedMessage: 'Bu cihaz bir yönetici tarafından iptal edildi. Yetkili bir cihazdan giriş yapın.',
+    authWorkspaceLoadFailed: 'Orderia çalışma alanınız yüklenemedi.',
+    authSessionRestoreFailed: 'Kayıtlı oturum geri yüklenemedi.',
+    authBranchActivateFailed: 'Seçilen şube etkinleştirilemedi.',
+    authDeviceListRefreshFailed: 'Cihaz listesi yenilenemedi.',
+    authInvalidRestaurantCodeMessage: 'Bu restoran kodu geçersiz veya artık aktif değil.',
+    authAlreadyMember: 'Bu hesap zaten bir restorana bağlı.',
+    authInvalidRestaurantName: '1-120 karakter arasında bir restoran adı girin.',
+    authInvalidBranchName: 'Geçerli bir şube adı girin.',
+    authRestaurantSetupFailed: 'Restoran kurulumu tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.',
     tryAgain: 'Tekrar dene',
     selectBranchTitle: 'Şube seçin',
     selectBranchSubtitle: 'Aktif masa ve raporlarınız bu seçime göre gösterilecek.',
@@ -939,6 +978,7 @@ export const translations: Record<string, Translation> = {
     passwordTooShort: 'Şifre en az 6 karakter olmalı',
     passwordsDoNotMatch: 'Şifreler eşleşmiyor',
     invalidEmail: 'Geçerli bir e-posta adresi girin',
+    nameRequired: 'Ad Soyad gerekli',
     registerSuccessTitle: 'Kayıt alındı',
     registerSuccessBody: 'Kaydınız yöneticiye iletildi. Onaylandığında giriş yapabilirsiniz.',
     pendingApprovalTitle: 'Onay bekleniyor',
@@ -1182,6 +1222,9 @@ export const translations: Record<string, Translation> = {
     moveToOrder: 'Премести в друга сметка',
     newAccount: 'Нова сметка',
     paymentUpdated: 'Плащането е обновено',
+    moveTable: 'Премести масата',
+    selectTargetTable: 'Изберете целева маса',
+    tableMoved: 'Масата е преместена',
     addNote: 'Добави Бележка',
     addNoteHint: 'Добавете специални инструкции или бележки...',
 
@@ -1417,6 +1460,22 @@ export const translations: Record<string, Translation> = {
     restoringWorkspace: 'Възстановяване на вашето Orderia работно пространство…',
     workspaceUnavailable: 'Работното пространство не е достъпно',
     workspaceUnavailableBody: 'Orderia не успя да зареди този акаунт.',
+    authInvalidCredentials: 'Имейлът или паролата са грешни.',
+    authNetworkError: 'Няма връзка. Проверете интернета си и опитайте отново.',
+    authTooManyRequests: 'Твърде много опити. Моля, изчакайте малко и опитайте отново.',
+    authEmailInUse: 'Този имейл вече е регистриран.',
+    authWeakPassword: 'Паролата е твърде слаба. Използвайте поне 6 знака.',
+    authRegistrationFailed: 'Регистрацията не бе завършена. Проверете данните си и опитайте отново.',
+    authDeviceRevokedMessage: 'Това устройство бе отменено от мениджър. Влезте от оторизирано устройство.',
+    authWorkspaceLoadFailed: 'Работното ви пространство в Orderia не можа да се зареди.',
+    authSessionRestoreFailed: 'Запазената сесия не можа да бъде възстановена.',
+    authBranchActivateFailed: 'Избраният филиал не можа да бъде активиран.',
+    authDeviceListRefreshFailed: 'Списъкът с устройства не можа да се опресни.',
+    authInvalidRestaurantCodeMessage: 'Този код на ресторант е невалиден или вече не е активен.',
+    authAlreadyMember: 'Този акаунт вече е свързан с ресторант.',
+    authInvalidRestaurantName: 'Въведете име на ресторант между 1 и 120 знака.',
+    authInvalidBranchName: 'Въведете валидно име на филиал.',
+    authRestaurantSetupFailed: 'Настройката на ресторанта не бе завършена. Проверете връзката си и опитайте отново.',
     tryAgain: 'Опитай отново',
     selectBranchTitle: 'Изберете обект',
     selectBranchSubtitle: 'Активните ви маси и отчети ще следват този избор.',
@@ -1434,6 +1493,7 @@ export const translations: Record<string, Translation> = {
     passwordTooShort: 'Паролата трябва да е поне 6 знака',
     passwordsDoNotMatch: 'Паролите не съвпадат',
     invalidEmail: 'Въведете валиден имейл адрес',
+    nameRequired: 'Име и фамилия са задължителни',
     registerSuccessTitle: 'Регистрацията е приета',
     registerSuccessBody: 'Заявката е изпратена на управителя. Ще можете да влезете след одобрение.',
     pendingApprovalTitle: 'Изчаква одобрение',
@@ -1673,6 +1733,9 @@ export const translations: Record<string, Translation> = {
     moveToOrder: 'Move to another check',
     newAccount: 'New check',
     paymentUpdated: 'Payment updated',
+    moveTable: 'Move table',
+    selectTargetTable: 'Select target table',
+    tableMoved: 'Table moved',
     addNote: 'Add Note',
     addNoteHint: 'Add special instructions or notes...',
 
@@ -1906,6 +1969,22 @@ export const translations: Record<string, Translation> = {
     restoringWorkspace: 'Restoring your Orderia workspace…',
     workspaceUnavailable: 'Workspace unavailable',
     workspaceUnavailableBody: 'Orderia could not load this account.',
+    authInvalidCredentials: 'Email or password is incorrect.',
+    authNetworkError: 'Could not connect. Check your internet connection and try again.',
+    authTooManyRequests: 'Too many attempts. Please wait a moment and try again.',
+    authEmailInUse: 'This email address is already registered.',
+    authWeakPassword: 'Password is too weak. Use at least 6 characters.',
+    authRegistrationFailed: 'Registration could not be completed. Check your details and try again.',
+    authDeviceRevokedMessage: 'This device was revoked by a manager. Sign in on an authorized device.',
+    authWorkspaceLoadFailed: 'Your Orderia workspace could not be loaded.',
+    authSessionRestoreFailed: 'The saved session could not be restored.',
+    authBranchActivateFailed: 'The selected branch could not be activated.',
+    authDeviceListRefreshFailed: 'The device list could not be refreshed.',
+    authInvalidRestaurantCodeMessage: 'That restaurant code is invalid or no longer active.',
+    authAlreadyMember: 'This account is already connected to a restaurant.',
+    authInvalidRestaurantName: 'Enter a restaurant name between 1 and 120 characters.',
+    authInvalidBranchName: 'Enter a valid branch name.',
+    authRestaurantSetupFailed: 'Restaurant setup could not be completed. Check your connection and try again.',
     tryAgain: 'Try again',
     selectBranchTitle: 'Select a branch',
     selectBranchSubtitle: 'Your active tables and reports will follow this selection.',
@@ -1923,6 +2002,7 @@ export const translations: Record<string, Translation> = {
     passwordTooShort: 'Password must be at least 6 characters',
     passwordsDoNotMatch: 'Passwords do not match',
     invalidEmail: 'Enter a valid email address',
+    nameRequired: 'Full name is required',
     registerSuccessTitle: 'Registration received',
     registerSuccessBody: 'Your request was sent to the manager. You can sign in once approved.',
     pendingApprovalTitle: 'Waiting for approval',

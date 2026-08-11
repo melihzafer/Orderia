@@ -105,7 +105,7 @@ export default function HistoryScreen() {
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);
-        setErrorMessage(copy.onlineRequired);
+        setErrorMessage(cloudReady ? copy.onlineRequired : copy.cloudRequired);
         return;
       }
       if (append) {
@@ -130,7 +130,15 @@ export default function HistoryScreen() {
         }
       }
     },
-    [cloudReady, copy.loadFailed, copy.onlineRequired, filters, searchReceiptArchive, sync.online],
+    [
+      cloudReady,
+      copy.cloudRequired,
+      copy.loadFailed,
+      copy.onlineRequired,
+      filters,
+      searchReceiptArchive,
+      sync.online,
+    ],
   );
 
   useEffect(() => {
@@ -516,6 +524,8 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
       cloudArchive: 'Bulut arşivi',
       offline: 'Çevrimdışı',
       onlineRequired: 'Tüm arşivde arama yapmak için internet bağlantısı gerekli.',
+      cloudRequired:
+        "Bu cihaz bir bulut işletmesine bağlı değil. Fiş arşivini görmek için Ayarlar'dan bulut hesabına bağlanın.",
       loadFailed: 'Fiş arşivi yüklenemedi.',
       loading: 'Fişler yükleniyor',
       unavailable: 'Arşiv şu anda kullanılamıyor',
@@ -549,6 +559,8 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
       cloudArchive: 'Облачен архив',
       offline: 'Офлайн',
       onlineRequired: 'За търсене в целия архив е необходим интернет.',
+      cloudRequired:
+        'Това устройство не е свързано с облачен бизнес акаунт. Свържете се от Настройки, за да видите архива на разписките.',
       loadFailed: 'Архивът не можа да се зареди.',
       loading: 'Зареждане на разписки',
       unavailable: 'Архивът не е достъпен',
@@ -581,6 +593,8 @@ function archiveCopy(language: 'tr' | 'bg' | 'en') {
     cloudArchive: 'Cloud archive',
     offline: 'Offline',
     onlineRequired: 'An internet connection is required to search the complete archive.',
+    cloudRequired:
+      "This device isn't connected to a cloud business yet. Connect from Settings to see the receipt archive.",
     loadFailed: 'The receipt archive could not be loaded.',
     loading: 'Loading receipts',
     unavailable: 'Archive unavailable',

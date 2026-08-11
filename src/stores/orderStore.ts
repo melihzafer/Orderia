@@ -18,6 +18,7 @@ interface OrderState {
   closeTicket: (ticketId: string, paymentInfo?: PaymentInfo) => void;
   deleteTicket: (ticketId: string) => void;
   updateTicketName: (ticketId: string, name: string) => void;
+  moveTicketToTable: (ticketId: string, targetTableId: string) => void;
   setTicketDeliveryTime: (ticketId: string, minutes: number) => void;
   clearTicketDeliveryTime: (ticketId: string) => void;
 
@@ -161,6 +162,43 @@ export const useOrderStore = create<OrderState>()(
             },
           },
         }));
+      },
+
+      moveTicketToTable: (ticketId, targetTableId) => {
+        const ticket = get().openTickets[ticketId];
+        if (!ticket || ticket.tableId === targetTableId) return;
+        const sourceTableId = ticket.tableId;
+
+        set((state) => ({
+          openTickets: {
+            ...state.openTickets,
+            [ticketId]: {
+              ...state.openTickets[ticketId],
+              tableId: targetTableId,
+            },
+          },
+        }));
+
+        const layoutStore = useLayoutStore.getState();
+        const sourceTable = layoutStore.tables.find((t) => t.id === sourceTableId);
+        if (sourceTable) {
+          const updatedSourceIds = (sourceTable.activeTicketIds || []).filter(
+            (id) => id !== ticketId,
+          );
+          layoutStore.updateTable(sourceTableId, {
+            isOpen: updatedSourceIds.length > 0,
+            activeTicketIds: updatedSourceIds,
+          });
+        }
+
+        const targetTable = layoutStore.tables.find((t) => t.id === targetTableId);
+        if (targetTable) {
+          const updatedTargetIds = [...(targetTable.activeTicketIds || []), ticketId];
+          layoutStore.updateTable(targetTableId, {
+            isOpen: true,
+            activeTicketIds: updatedTargetIds,
+          });
+        }
       },
 
       setTicketDeliveryTime: (ticketId, minutes) => {

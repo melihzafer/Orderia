@@ -10,6 +10,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// Barrel üzerinden değil doğrudan: `components/index.ts` AuthGate'i de dışa
+// aktarıyor, AuthGate ise bu ekranı içe aktarıyor — barrel'dan almak döngü kurar.
+import { BrandLogo } from '../components/BrandLogo';
 import LanguageSelector from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -64,7 +67,7 @@ export default function LoginScreen({
                 },
               ]}
             >
-              <Text style={[styles.brand, { color: colors.primary }]}>Orderia</Text>
+              <BrandLogo markSize={44} style={styles.brand} />
               <Text style={[styles.title, { color: colors.text }]}>{t.signInTitle}</Text>
               <Text style={[styles.subtitle, { color: colors.textSubtle }]}>
                 {t.signInSubtitle}
@@ -199,8 +202,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   brand: {
-    fontSize: 26,
-    fontWeight: '800',
     marginBottom: 28,
   },
   title: {

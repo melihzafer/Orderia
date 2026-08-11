@@ -1,5 +1,6 @@
 export * from './AppErrorBoundary';
 export * from './redaction';
+export * from './ScreenErrorBoundary';
 export * from './telemetry';
 
 // TelemetryIdentityBridge kasıtlı olarak burada yok: `useAuth` çağırıyor ve

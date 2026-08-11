@@ -31,7 +31,8 @@ export type RootStackParamList = {
   // navigation.navigate('MainTabs', { screen: 'Menu' })
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   NewOrder: undefined;
-  TableDetail: { tableId: string };
+  TableDetail: { tableId: string; selectCheckId?: string };
+  AddProduct: { tableId: string; checkId?: string; pendingCheckName?: string };
   Tables: undefined;
   HallTables: { hallId: string };
   AddMenuItem: { categoryId?: string; itemId?: string };
@@ -44,5 +45,6 @@ export type RootStackParamList = {
   Approvals: undefined;
   QRMenu: undefined;
   Devices: undefined;
+  CancellationReasons: undefined;
   Settings: undefined;
 };

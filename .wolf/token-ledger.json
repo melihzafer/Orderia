@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-08-06T09:09:05.336Z",
   "lifetime": {
-    "total_tokens_estimated": 528193,
-    "total_reads": 155,
-    "total_writes": 298,
-    "total_sessions": 7,
-    "anatomy_hits": 143,
-    "anatomy_misses": 3,
-    "repeated_reads_blocked": 106,
-    "estimated_savings_vs_bare_cli": 625701
+    "total_tokens_estimated": 1095562,
+    "total_reads": 384,
+    "total_writes": 803,
+    "total_sessions": 19,
+    "anatomy_hits": 189,
+    "anatomy_misses": 185,
+    "repeated_reads_blocked": 271,
+    "estimated_savings_vs_bare_cli": 2031027
   },
   "sessions": [
     {
@@ -2564,6 +2564,4124 @@
         "writes_count": 5,
         "repeated_reads_blocked": 0,
         "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-08-06-1839",
+      "started": "2026-08-06T15:39:09.200Z",
+      "ended": "2026-08-06T15:54:02.007Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/config/environment.ts",
+          "tokens_estimated": 255,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 4878,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 1524,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/.env.example",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/config.toml",
+          "tokens_estimated": 4604,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 884,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/menu-ai-draft/index.ts",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/functions/README.md",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/vercel.json",
+          "tokens_estimated": 54,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 11261,
+        "output_tokens_estimated": 1238,
+        "reads_count": 5,
+        "writes_count": 6,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-08-06-1919",
+      "started": "2026-08-06T16:19:24.661Z",
+      "ended": "2026-08-06T16:53:07.375Z",
+      "reads": [
+        {
+          "file": "C:/Users/melih/Downloads/Group 5.png",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/Downloads/Group 6.png",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 3130,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 10107,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2725,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/orderStore.ts",
+          "tokens_estimated": 3983,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 4971,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 1722,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 7934,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 3632,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/haptics.ts",
+          "tokens_estimated": 548,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspacePreferences.ts",
+          "tokens_estimated": 390,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1996,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 476,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 3396,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 3843,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 2366,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/draftStore.ts",
+          "tokens_estimated": 671,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useTableWorkspace.ts",
+          "tokens_estimated": 1618,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useWorkspaceDraft.ts",
+          "tokens_estimated": 3370,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 1936,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 131,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 122,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 131,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 3387,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 25,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 103,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 10131,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/draftStore.test.ts",
+          "tokens_estimated": 698,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 48853,
+        "output_tokens_estimated": 25441,
+        "reads_count": 16,
+        "writes_count": 25,
+        "repeated_reads_blocked": 5,
+        "anatomy_lookups": 14
+      }
+    },
+    {
+      "id": "session-2026-08-06-1919",
+      "started": "2026-08-06T16:19:24.661Z",
+      "ended": "2026-08-06T22:02:35.717Z",
+      "reads": [
+        {
+          "file": "C:/Users/melih/Downloads/Group 5.png",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/Downloads/Group 6.png",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 3130,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 10743,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2725,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/orderStore.ts",
+          "tokens_estimated": 3983,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 5082,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 1722,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 7934,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 3708,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/haptics.ts",
+          "tokens_estimated": 548,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspacePreferences.ts",
+          "tokens_estimated": 390,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 1996,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 476,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 3396,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 3843,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 2071,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 3873,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 2366,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/draftStore.ts",
+          "tokens_estimated": 671,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useTableWorkspace.ts",
+          "tokens_estimated": 1618,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useWorkspaceDraft.ts",
+          "tokens_estimated": 3370,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 1936,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 131,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 122,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 131,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 3387,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 25,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 103,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 10131,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/draftStore.test.ts",
+          "tokens_estimated": 698,
+          "action": "create"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 2051,
+          "action": "create"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 128,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 186,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 135,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkCommands.ts",
+          "tokens_estimated": 1783,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/checkCommands.test.ts",
+          "tokens_estimated": 2502,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 50,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/checkCommands.test.ts",
+          "tokens_estimated": 46,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/checkCommands.test.ts",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/checkCommands.test.ts",
+          "tokens_estimated": 186,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 306,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 553,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 101,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 160,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 134,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 318,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 572,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 1067,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 224,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 55620,
+        "output_tokens_estimated": 36781,
+        "reads_count": 18,
+        "writes_count": 52,
+        "repeated_reads_blocked": 13,
+        "anatomy_lookups": 16
+      }
+    },
+    {
+      "id": "session-2026-08-07-0722",
+      "started": "2026-08-07T04:22:14.526Z",
+      "ended": "2026-08-07T09:54:08.997Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/observability/AppErrorBoundary.tsx",
+          "tokens_estimated": 710,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/observability/telemetry.ts",
+          "tokens_estimated": 1166,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/scripts/verify-release-env.mjs",
+          "tokens_estimated": 454,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/.env.example",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 3409,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+          "tokens_estimated": 2516,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/scripts/verify-release-env.mjs",
+          "tokens_estimated": 112,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/scripts/verify-release-env.mjs",
+          "tokens_estimated": 193,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/package.json",
+          "tokens_estimated": 71,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/.github/workflows/quality.yml",
+          "tokens_estimated": 55,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/observability/ScreenErrorBoundary.tsx",
+          "tokens_estimated": 973,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/observability/index.ts",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 497,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/RegisterScreen.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/WelcomeScreen.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/seedTableWorkspace.ts",
+          "tokens_estimated": 1478,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 1487,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 2402,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 339,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 136,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.setup.js",
+          "tokens_estimated": 138,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 2382,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 61,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.setup.js",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 115,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 215,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.setup.js",
+          "tokens_estimated": 12,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.setup.after-env.js",
+          "tokens_estimated": 143,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.config.js",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 113,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 77,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.config.js",
+          "tokens_estimated": 105,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 79,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 114,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 193,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 76,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 198,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 140,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 141,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 76,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddProductScreen.tsx",
+          "tokens_estimated": 198,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AddProductScreen.test.tsx",
+          "tokens_estimated": 1120,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AddProductScreen.test.tsx",
+          "tokens_estimated": 112,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AddProductScreen.test.tsx",
+          "tokens_estimated": 383,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AddProductScreen.test.tsx",
+          "tokens_estimated": 159,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AddProductScreen.test.tsx",
+          "tokens_estimated": 76,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/screens.smoke.test.tsx",
+          "tokens_estimated": 1025,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 190,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/svgMock.tsx",
+          "tokens_estimated": 155,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/jest.config.js",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/screens.smoke.test.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/screens.smoke.test.tsx",
+          "tokens_estimated": 57,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 5739,
+        "output_tokens_estimated": 19586,
+        "reads_count": 5,
+        "writes_count": 61,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-08-07-1725",
+      "started": "2026-08-07T14:25:06.049Z",
+      "ended": "2026-08-07T14:47:14.872Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/package.json",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bvr3wlxf2.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bytdqtdds.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-08-07-1725",
+      "started": "2026-08-07T14:25:06.049Z",
+      "ended": "2026-08-07T14:47:39.785Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/package.json",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bvr3wlxf2.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bytdqtdds.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 3,
+        "writes_count": 0,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-08-07-1725",
+      "started": "2026-08-07T14:25:06.049Z",
+      "ended": "2026-08-07T15:07:19.340Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/package.json",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bvr3wlxf2.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bytdqtdds.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/historyStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 7782,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/LegacyMigrationCard.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/screens.smoke.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 96,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 67,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 48,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AnalyticsScreen.test.tsx",
+          "tokens_estimated": 693,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/HistoryScreen.test.tsx",
+          "tokens_estimated": 721,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AnalyticsScreen.test.tsx",
+          "tokens_estimated": 81,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 7782,
+        "output_tokens_estimated": 2221,
+        "reads_count": 12,
+        "writes_count": 13,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-08-07-1725",
+      "started": "2026-08-07T14:25:06.049Z",
+      "ended": "2026-08-08T00:17:47.695Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/package.json",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bvr3wlxf2.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "C:/Users/melih/AppData/Local/Temp/claude/D--Projects-Orderia/8d232079-629b-4a99-8a89-7cbc52f88c8f/tasks/bytdqtdds.output",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/historyStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 7782,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/LegacyMigrationCard.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/test-support/renderScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/TableDetailScreen.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/screens.smoke.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-operations/TableOperationSheet.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceIconButton.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 15031,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/orderStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 19801,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/haptics.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/__tests__/financialBehavior.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddMenuItemScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 8464,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/QRMenuScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/QRMenuContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/AuthGate.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/RegisterScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 96,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 87,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AnalyticsScreen.tsx",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 67,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 48,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HistoryScreen.tsx",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AnalyticsScreen.test.tsx",
+          "tokens_estimated": 693,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/HistoryScreen.test.tsx",
+          "tokens_estimated": 721,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/AnalyticsScreen.test.tsx",
+          "tokens_estimated": 81,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 132,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 62,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 81,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/orderStore.ts",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/orderStore.ts",
+          "tokens_estimated": 381,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 295,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 230,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 512,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/__tests__/financialBehavior.test.ts",
+          "tokens_estimated": 456,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LegacyTableDetailScreen.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 103,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 77,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/MenuAssistantScreen.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/__tests__/MenuAssistantScreen.test.tsx",
+          "tokens_estimated": 788,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 9,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/RegisterScreen.tsx",
+          "tokens_estimated": 15,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 51078,
+        "output_tokens_estimated": 6124,
+        "reads_count": 32,
+        "writes_count": 42,
+        "repeated_reads_blocked": 23,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-08-08-1402",
+      "started": "2026-08-08T11:02:12.948Z",
+      "ended": "2026-08-08T11:17:06.783Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 5747,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/authGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSnackbar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21119,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 3710,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 180,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 389,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 418,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 410,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 125,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 150,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 41,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 104,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 143,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 30576,
+        "output_tokens_estimated": 3968,
+        "reads_count": 12,
+        "writes_count": 36,
+        "repeated_reads_blocked": 11,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-08-08-1402",
+      "started": "2026-08-08T11:02:12.948Z",
+      "ended": "2026-08-08T13:08:50.391Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 5747,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/authGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSnackbar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21119,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 3710,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 180,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 389,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 418,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 410,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 125,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 150,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 41,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 104,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 143,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 30576,
+        "output_tokens_estimated": 3968,
+        "reads_count": 12,
+        "writes_count": 36,
+        "repeated_reads_blocked": 11,
+        "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-08-08-1402",
+      "started": "2026-08-08T11:02:12.948Z",
+      "ended": "2026-08-08T14:42:59.602Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 5747,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/authGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSnackbar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2194,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21108,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 3710,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 11129,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitCommands.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731090000_check_split_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731240000_table_session_note_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260802150000_restaurant_onboarding.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/layoutGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 2702,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7958,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 6242,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/runtime/syncInspection.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/syncStatus.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/tokens.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 180,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 389,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 418,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 410,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 125,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 150,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 41,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 104,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 143,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 78,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808120000_check_rename_command.sql",
+          "tokens_estimated": 1869,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 88,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 242,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808130000_seed_cancellation_reasons.sql",
+          "tokens_estimated": 1328,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/cancellationReasonGateway.ts",
+          "tokens_estimated": 754,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/index.ts",
+          "tokens_estimated": 13,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 70,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 270,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 206,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 227,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/CancellationReasonsScreen.tsx",
+          "tokens_estimated": 1751,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 808,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 412,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 598,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 309,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 60790,
+        "output_tokens_estimated": 14729,
+        "reads_count": 37,
+        "writes_count": 78,
+        "repeated_reads_blocked": 33,
+        "anatomy_lookups": 2
+      }
+    },
+    {
+      "id": "session-2026-08-08-1402",
+      "started": "2026-08-08T11:02:12.948Z",
+      "ended": "2026-08-09T15:56:16.498Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 5747,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/authGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSnackbar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2194,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21108,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 3710,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 11129,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitCommands.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731090000_check_split_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731240000_table_session_note_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260802150000_restaurant_onboarding.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/layoutGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 2702,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7958,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 6242,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/runtime/syncInspection.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/syncStatus.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/tokens.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 180,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 389,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 418,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 410,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 125,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 150,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 41,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 104,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 143,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 78,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808120000_check_rename_command.sql",
+          "tokens_estimated": 1869,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 88,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 242,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808130000_seed_cancellation_reasons.sql",
+          "tokens_estimated": 1328,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/cancellationReasonGateway.ts",
+          "tokens_estimated": 754,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/index.ts",
+          "tokens_estimated": 13,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 70,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 270,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 206,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 227,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/CancellationReasonsScreen.tsx",
+          "tokens_estimated": 1751,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 808,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 412,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 598,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 309,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 60790,
+        "output_tokens_estimated": 14729,
+        "reads_count": 37,
+        "writes_count": 78,
+        "repeated_reads_blocked": 33,
+        "anatomy_lookups": 2
+      }
+    },
+    {
+      "id": "session-2026-08-08-1402",
+      "started": "2026-08-08T11:02:12.948Z",
+      "ended": "2026-08-09T15:57:03.035Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 5747,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/authGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/LoginScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceSnackbar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 2194,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21108,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 3710,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 11129,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/NewOrderScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitCommands.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731090000_check_split_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731240000_table_session_note_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260802150000_restaurant_onboarding.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/layoutGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 2702,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/DeviceManagementScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 7958,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 6242,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/runtime/syncInspection.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/syncStatus.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/tokens.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 180,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 389,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 418,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 410,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 125,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 150,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 41,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 104,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 143,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 589,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddCategoryScreenModern.tsx",
+          "tokens_estimated": 178,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 80,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 75,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/__tests__/AuthContext.test.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 78,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808120000_check_rename_command.sql",
+          "tokens_estimated": 1869,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 88,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/__tests__/mutationPushGateway.test.ts",
+          "tokens_estimated": 242,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260808130000_seed_cancellation_reasons.sql",
+          "tokens_estimated": 1328,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 84,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 53,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/cancellationReasonGateway.ts",
+          "tokens_estimated": 754,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/cancellation-reasons/index.ts",
+          "tokens_estimated": 13,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 70,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 59,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 270,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 206,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 227,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 212,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/CancellationReasonsScreen.tsx",
+          "tokens_estimated": 1751,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 42,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 133,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 31,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 231,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 808,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 412,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/index.ts",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 33,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 598,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/SyncStatusBanner.tsx",
+          "tokens_estimated": 83,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 309,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 60790,
+        "output_tokens_estimated": 14729,
+        "reads_count": 37,
+        "writes_count": 78,
+        "repeated_reads_blocked": 33,
+        "anatomy_lookups": 2
       }
     }
   ],

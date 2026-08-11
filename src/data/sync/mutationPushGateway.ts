@@ -56,6 +56,9 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
       if (mutation.repository === 'checks' && hasKey(payload, 'kind')) {
         return this.client.rpc('apply_check_split_command', versioned);
       }
+      if (mutation.repository === 'checks' && hasKey(payload, 'name')) {
+        return this.client.rpc('apply_check_rename_command', versioned);
+      }
       if (mutation.repository === 'orderItems') {
         if (hasKey(payload, 'voidQuantity')) {
           return this.client.rpc('apply_order_item_void_command', versioned);

@@ -1,4 +1,5 @@
 export * from './CheckSplitSheet';
+export * from './checkCommands';
 export * from './checkSplitCommands';
 export * from './checkSplitPlanner';
 export * from './orderCommands';
@@ -7,6 +8,9 @@ export * from './workspacePreferences';
 export * from './fulfillment';
 export * from './workspaceCopy';
 export * from './workspaceFormat';
+export * from './draftStore';
+export * from './useTableWorkspace';
+export * from './useWorkspaceDraft';
 export * from './components/DraftBar';
 export * from './components/OrderPane';
 export * from './components/PalettePane';

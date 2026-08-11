@@ -752,6 +752,867 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-06T15:42:14.527Z"
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-08-06T16:43:11.197Z",
+      "error_message": "CSS fix: gap, color",
+      "file": "src/features/table-workspace/components/DraftBar.tsx",
+      "root_cause": "gap: compact ? tokens.space.xs : tokens.space.sm, → tokens.space.sm,; color: tokens.colors.text → tokens.colors.textMuted",
+      "fix": "Changed gap: compact ? tokens.space.xs : tokens.space.sm, → tokens.space.sm,; color: tokens.colors.text → tokens.colors.textMuted",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T16:43:11.197Z"
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-08-06T16:48:51.332Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6→4 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T16:48:51.332Z"
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-08-06T21:49:37.632Z",
+      "error_message": "Incorrect value in code",
+      "file": "C:/Users/melih/.claude/plans/cached-forging-spark.md",
+      "root_cause": "Had `) → onay için `",
+      "fix": "Changed to `) → `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-08-06T21:49:58.113Z"
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-08-06T21:52:54.047Z",
+      "error_message": "Wrong return value",
+      "file": "src/features/table-workspace/__tests__/checkCommands.test.ts",
+      "root_cause": "Was returning: () => `generated-${++index}`;",
+      "fix": "Now returns: () => `${prefix}-${++index}`;",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T21:52:54.047Z"
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-08-06T21:53:37.412Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/features/table-workspace/__tests__/checkCommands.test.ts",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 5→9 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T21:53:37.412Z"
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-08-06T21:54:27.154Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/features/table-workspace/components/WorkspaceModals.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: /**; * Hesabın tamamını iptal eden onay akışı. `CancellationModal",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-06T21:54:51.728Z"
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-08-06T21:56:51.045Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-06T21:56:51.045Z"
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-08-06T21:57:07.384Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Condition was: if (!database || !scope || !renamingCheck)",
+      "fix": "Changed to: if (!database || !scope || !renamingCheck || renameChe)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-06T21:57:16.455Z"
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-08-07T09:02:57.232Z",
+      "error_message": "Null/undefined access in ",
+      "file": "scripts/verify-release-env.mjs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "mjs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:02:57.232Z"
+    },
+    {
+      "id": "bug-057",
+      "timestamp": "2026-08-07T09:03:17.527Z",
+      "error_message": "Incorrect value in code",
+      "file": "package.json",
+      "root_cause": "Had \"build:web\"",
+      "fix": "Changed to \"prebuild:web\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:03:17.527Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-08-07T09:04:27.674Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:04:27.674Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-08-07T09:06:06.347Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/LoginScreen.tsx",
+      "root_cause": "Had '../components'",
+      "fix": "Changed to `components/index.ts`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:06:06.347Z"
+    },
+    {
+      "id": "bug-060",
+      "timestamp": "2026-08-07T09:06:16.613Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/RegisterScreen.tsx",
+      "root_cause": "Had '../components'",
+      "fix": "Changed to 'deki aynı not (AuthGate döngüsü).\nimport { BrandL",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:06:16.613Z"
+    },
+    {
+      "id": "bug-061",
+      "timestamp": "2026-08-07T09:06:23.309Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/WelcomeScreen.tsx",
+      "root_cause": "Had '../components'",
+      "fix": "Changed to 'deki aynı not (AuthGate döngüsü).\nimport { BrandL",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:06:23.309Z"
+    },
+    {
+      "id": "bug-062",
+      "timestamp": "2026-08-07T09:11:11.985Z",
+      "error_message": "Missing await",
+      "file": "src/test-support/renderScreen.tsx",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:11:11.985Z"
+    },
+    {
+      "id": "bug-063",
+      "timestamp": "2026-08-07T09:15:19.047Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/__tests__/TableDetailScreen.test.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:15:19.047Z"
+    },
+    {
+      "id": "bug-064",
+      "timestamp": "2026-08-07T09:31:41.983Z",
+      "error_message": "Type error",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:31:41.983Z"
+    },
+    {
+      "id": "bug-065",
+      "timestamp": "2026-08-07T09:31:50.805Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Condition was: if (!snapshot || pendingCheckName)",
+      "fix": "Changed to: if (!snapshot || startingNewCheck)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:31:50.805Z"
+    },
+    {
+      "id": "bug-066",
+      "timestamp": "2026-08-07T09:32:51.552Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/screens/AddProductScreen.tsx",
+      "root_cause": "Condition was: if (!snapshot || pendingCheckName)",
+      "fix": "Changed to: if (!snapshot || startingNewCheck)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:32:51.552Z"
+    },
+    {
+      "id": "bug-067",
+      "timestamp": "2026-08-07T09:35:39.061Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/screens/__tests__/AddProductScreen.test.tsx",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 9→8 lines (3 removed) | Also: it('keeps the draft in the store so it survives le; // Sayaç göründüyse taslak zaten depoya işlenmişti",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-07T09:36:13.158Z"
+    },
+    {
+      "id": "bug-068",
+      "timestamp": "2026-08-07T09:36:39.280Z",
+      "error_message": "CSS fix: draftsByTable",
+      "file": "src/screens/__tests__/AddProductScreen.test.tsx",
+      "root_cause": "draftsByTable: { [seedIds.tableId]: draft → {",
+      "fix": "Changed draftsByTable: { [seedIds.tableId]: draft → {",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:36:39.280Z"
+    },
+    {
+      "id": "bug-069",
+      "timestamp": "2026-08-07T09:36:45.754Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/screens/__tests__/AddProductScreen.test.tsx",
+      "root_cause": "Had '../../test-support/seedTableWorkspace'",
+      "fix": "Changed to '../../features/table-workspace/workspaceModel'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T09:36:45.754Z"
+    },
+    {
+      "id": "bug-070",
+      "timestamp": "2026-08-07T09:45:20.315Z",
+      "error_message": "Type error",
+      "file": "src/screens/__tests__/screens.smoke.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation | Also: const screen = await renderWithProviders(<Screen {...({} as ",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-07T09:45:28.040Z"
+    },
+    {
+      "id": "bug-071",
+      "timestamp": "2026-08-07T00:00:00.000Z",
+      "error_message": "crash when i click (Masa 1 ekraninda sag ustteki \"...\" butonu)",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "@gorhom/bottom-sheet BottomSheetModal projede yalnizca bu islemler menusunde kullaniliyordu ve web/PWA derlemesinde cokuyordu. Ayni ekrandaki diger sayfalar (PaymentSheet, CheckSplitSheet, TableOperationSheet) duz RN Modal (WorkspaceModal) kullaniyor ve sorunsuz calisiyordu.",
+      "fix": "Islemler menusu WorkspaceModal + ScrollView + ServiceListRow yapisina cevrildi; BottomSheetModal/BottomSheetScrollView/backdrop artik src icinde hic kullanilmiyor. Regresyon testi: src/screens/__tests__/TableDetailScreen.test.tsx > \"opens the actions menu without crashing\".",
+      "tags": [
+        "crash",
+        "pwa",
+        "web",
+        "bottom-sheet",
+        "table-detail",
+        "regression-test-added"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "bug-073",
+      "timestamp": "2026-08-07T00:00:00.000Z",
+      "error_message": "i cannot add order with new name (+ Nova smetka butonu gorunurde hicbir sey yapmiyor)",
+      "file": "src/features/table-workspace/components/WorkspaceChrome.tsx, src/screens/TableDetailScreen.tsx",
+      "root_cause": "Iki katmanli hata: (1) CheckStrip bekleyen hesap cipini yalnizca pendingCheckName doluyken gosteriyordu, namedOrders varsayilan kapali oldugu icin isim hic sorulmuyor ve cip hic cikmiyordu. (2) Otomatik secim efekti selectedCheckId temizlenince hemen ilk hesabi geri seciyordu, yani cip gosterilse bile aninda kayboluyordu.",
+      "fix": "CheckStrip artik pendingCheck bool propu aliyor. TableDetailScreen ve AddProductScreen startingNewCheck state tutuyor; otomatik secim efekti bu bayrak aciksa calismiyor. Regresyon testi: \"shows a pending check chip after tapping new check even when named orders are off\".",
+      "tags": [
+        "ui",
+        "dead-button",
+        "check-strip",
+        "named-orders",
+        "regression-test-added"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "bug-075",
+      "timestamp": "2026-08-07T00:00:00.000Z",
+      "error_message": "i cannot delete order wtf (hesap silme/yeniden adlandirma yok)",
+      "file": "src/features/table-workspace/checkCommands.ts",
+      "root_cause": "renameCheck/voidCheck komutlari kod tabaninda hic yazilmamisti; domain (stateTransitions.ts checkTransitions.open -> voided) izin verdigi halde UI ve komut katmani eksikti.",
+      "fix": "Yeni checkCommands.ts (renameCheck + voidCheck), DeleteCheckModal, islemler menusunde iki yeni satir. Onaylanmis odemesi olan hesap silinemiyor. Testler: __tests__/checkCommands.test.ts ve TableDetailScreen.test.tsx.",
+      "tags": [
+        "missing-feature",
+        "check",
+        "crud",
+        "audit-trail"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "bug-077",
+      "timestamp": "2026-08-07T00:00:00.000Z",
+      "error_message": "Uretimde cokme gorunurlugu yok; hatalari yalnizca kullanici fark ediyor",
+      "file": "scripts/verify-release-env.mjs, package.json, .env.example",
+      "root_cause": "telemetry.ts Sentry'yi enabled: Boolean(dsn) ile aciyor; EXPO_PUBLIC_SENTRY_DSN .env icinde bos ve vercel.json build komutu release:env dogrulamasini hic calistirmiyordu.",
+      "fix": "verify-release-env.mjs'e --warn-only bayragi eklendi ve prebuild:web adimina baglandi: eksik env derlemeyi durdurmuyor ama log'da acikca uyariyor. DSN Vercel'e eklendiginde Sentry kendiliginden aktiflesiyor.",
+      "tags": [
+        "observability",
+        "sentry",
+        "deploy",
+        "vercel"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "bug-078",
+      "timestamp": "2026-08-07T00:00:00.000Z",
+      "error_message": "Red-team QA (device-local web build): after a real payment + void on a table check, Receipts (Kasovi belejki) and Analitika (Отчети) both show '0 results / not available' instead of the data, even though the paid+voided ticket is verifiably persisted in localStorage history-storage.",
+      "file": "src/features/receipt-archive/*, Analytics screen (Отчети)",
+      "root_cause": "Deeper root cause found during fix: this is NOT a missing fallback, it's two separate, incompatible data architectures. The order/table/payment/void flow tested (TableDetailScreen) runs on legacy zustand stores (orderStore/historyStore, localStorage 'history-storage') used only for the pre-cloud onboarding sandbox. HistoryScreen and AnalyticsScreen were already migrated to the new domain-driven useOrderiaData() layer, which is cloud-only by design; local_only mode there is for an offline-but-paired device, not for the legacy sandbox. The two never merge automatically — migration from legacy to cloud is an explicit one-time JSON-file import (src/features/legacy-migration, Settings screen), not a live read path. Merging historyStore reads into these screens would conflate two incompatible data models and was judged out of scope for a safe fix. What WAS a real, fixable bug: both screens blamed 'internet required' even when mode !== 'cloud' on a device that has real internet (sync.online true) — factually misleading, since the actual blocker is 'not connected to a cloud business yet', unrelated to connectivity.",
+      "fix": "Fixed the misleading-message bug: src/screens/HistoryScreen.tsx and src/screens/AnalyticsScreen.tsx now distinguish mode !== 'cloud' (shows new copy.cloudRequired, pointing to Settings) from sync.online === false (shows the original copy.onlineRequired) in tr/bg/en. Added regression tests (AnalyticsScreen.test.tsx, HistoryScreen.test.tsx) asserting the two states render distinct copy. Did NOT attempt to surface legacy sandbox data in these screens — see root_cause for why that was scoped out. tsc/lint/full jest (64 suites, 319 tests) all pass.",
+      "tags": [
+        "app-red-team-qa",
+        "receipts",
+        "analytics",
+        "offline",
+        "device-local",
+        "cross-feature"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "bug-076",
+      "timestamp": "2026-08-07T15:03:22.655Z",
+      "error_message": "CSS fix: auth",
+      "file": "src/screens/__tests__/AnalyticsScreen.test.tsx",
+      "root_cause": "auth: mockAuth({ activeMembership: { role: 'manager' → mockAuth({",
+      "fix": "Changed auth: mockAuth({ activeMembership: { role: 'manager' → mockAuth({",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T15:03:22.655Z"
+    },
+    {
+      "id": "bug-077",
+      "timestamp": "2026-08-07T23:25:00.040Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/LegacyTableDetailScreen.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T23:25:00.040Z"
+    },
+    {
+      "id": "bug-078",
+      "timestamp": "2026-08-07T23:26:58.088Z",
+      "error_message": "Missing guard clause",
+      "file": "src/stores/orderStore.ts",
+      "root_cause": "No early return/throw for edge case: !ticket || ticket.tableId === targetTableId",
+      "fix": "Added guard clause: if (!ticket || ticket.tableId === targetTabl)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T23:26:58.088Z"
+    },
+    {
+      "id": "bug-079",
+      "timestamp": "2026-08-07T23:28:07.900Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/screens/LegacyTableDetailScreen.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T23:28:07.900Z"
+    },
+    {
+      "id": "bug-080",
+      "timestamp": "2026-08-07T23:32:23.070Z",
+      "error_message": "Type error",
+      "file": "src/stores/__tests__/financialBehavior.test.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-07T23:32:23.070Z"
+    },
+    {
+      "id": "bug-081",
+      "timestamp": "2026-08-08T00:00:00.000Z",
+      "error_message": "Red-team QA (device-local/legacy mode): a waiter has no way to move an open check to a different table (e.g. customer moved seats) - the feature exists in cloud mode (TableOperationSheet/transferOrMergeTableSession) but is unreachable in local mode because TableDetailScreen delegates entirely to a separate LegacyTableDetailScreen when there is no cloud session.",
+      "file": "src/screens/LegacyTableDetailScreen.tsx, src/stores/orderStore.ts, src/i18n/languages.ts",
+      "root_cause": "Two non-communicating data architectures (see cerebrum.md two-architecture note): TableDetailScreen renders <LegacyTableDetailScreen/> whenever data.client||data.scope is falsy (local_only mode), and the legacy screen's orderStore/layoutStore never had a move-table primitive at all - not a broken button, a genuine feature gap in the legacy code path.",
+      "fix": "Added moveTicketToTable(ticketId, targetTableId) to orderStore.ts (keeps source/target Table.isOpen and activeTicketIds in sync, mirrors the existing openTable/closeTicket pattern). Wired a 'Премести масата' (Move table) option into the existing per-check action sheet, opening a target-table picker limited to tables that are not already open. Added moveTable/selectTargetTable/tableMoved i18n keys (tr/bg/en), reused the existing noAvailableTables key. Verified end-to-end live (localStorage inspection: ticket.tableId updated, source table isOpen->false/activeTicketIds->[], target table isOpen->true/activeTicketIds->[ticketId]). Regression tests added in financialBehavior.test.ts.",
+      "tags": [
+        "app-red-team-qa",
+        "rtq-003",
+        "table-transfer",
+        "device-local",
+        "legacy-architecture"
+      ],
+      "related_bugs": [
+        "bug-078"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "id": "bug-082",
+      "timestamp": "2026-08-08T00:00:00.000Z",
+      "error_message": "Red-team QA (device-local/legacy mode): renaming a check is only reachable via a long-press on the check-tab chip, with no visible icon or hint that the gesture exists - a discoverability gap (hidden gesture without an accessible alternative).",
+      "file": "src/screens/LegacyTableDetailScreen.tsx",
+      "root_cause": "The rename/delete action sheet (ticketActions) was only opened via LocalChip's onLongPress; no visible affordance existed for the same action.",
+      "fix": "Added a visible pencil/edit ServiceIconButton next to the check-tab row (shown when a check is selected) that opens the same action sheet as the long-press. Long-press still works; this adds a discoverable alternative, not a replacement.",
+      "tags": [
+        "app-red-team-qa",
+        "rtq-004",
+        "accessibility",
+        "discoverability",
+        "device-local"
+      ],
+      "related_bugs": [
+        "bug-078"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "id": "bug-083",
+      "timestamp": "2026-08-08T00:00:00.000Z",
+      "error_message": "Red-team QA (menu & catalog): the AI menu draft assistant (MenuAssistantScreen) shows 'internet connection required' even when the device has real internet but was simply never connected to a cloud business (mode !== 'cloud') - same misleading-message class as bug-078/RTQ-002.",
+      "file": "src/screens/MenuAssistantScreen.tsx",
+      "root_cause": "Same pattern as RTQ-002: cloudReady = mode === 'cloud' && sync.online, but the error/warning copy only ever said 'internet required' regardless of which half of that condition failed.",
+      "fix": "Added copy.cloudRequired (tr/bg/en) and branched: !isManager -> managerOnly, mode !== 'cloud' -> cloudRequired, else -> onlineOnly. Applied to both the inline error on submit and the persistent warning caption under the Generate button. Note: unlike Receipts/Analytics, MenuScreen and AddMenuItemScreen already had a working legacy-store fallback for browsing/adding menu items in local mode - only the AI-draft feature is genuinely cloud-only (calls an OpenAI/NVIDIA-backed Supabase edge function), so no local fallback was attempted there, only the message fix. Regression tests added: MenuAssistantScreen.test.tsx.",
+      "tags": [
+        "app-red-team-qa",
+        "rtq-005",
+        "menu-ai",
+        "device-local",
+        "misleading-message"
+      ],
+      "related_bugs": [
+        "bug-078"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "id": "bug-084",
+      "timestamp": "2026-08-08T00:00:00.000Z",
+      "error_message": "Red-team QA (QR ordering / customer-facing flow): the entire 'QR Menu' feature (Settings > QR Menu, toggle 'Allow direct ordering' ON by default) is a fake implementation - a manager can generate and print/share a QR code per table that customers would scan, but nothing behind it works.",
+      "file": "src/contexts/QRMenuContext.tsx, src/screens/QRMenuScreenModern.tsx, src/screens/SettingsScreen.tsx",
+      "root_cause": "getMenuUrl() builds a URL to a hardcoded, non-configurable domain (https://orderia-menu.app/menu/{tableId}) with no settings UI to change it and no env var. That domain has no relationship to this codebase: AppNavigator.tsx has no React Navigation `linking` config at all, so even if that domain pointed at this app's own web deployment there is no route handler for /menu/:tableId. The QR image itself is generated by sending the URL to a third-party service (api.qrserver.com) instead of the react-native-qrcode-svg package that's imported for it. validateQRAccess/getQRMenuData exist and look plausible but are never called by anything reachable from outside the app's own JS runtime - there is no server endpoint anywhere to receive a scan. addTicketLine is imported specifically to receive guest orders and is never invoked. A customer scanning a real printed QR code from this feature hits a dead/unrelated domain with zero indication anything is wrong.",
+      "fix": "Per explicit user decision (asked directly, not assumed): disabled/hid the feature rather than building the real guest-ordering flow (a substantial new feature: public web page + order-ingestion endpoint) or leaving it silently broken. Removed the only entry point - the 'QR Menu' ServiceListRow in SettingsScreen.tsx (Yönetim/management section) that navigated to QRMenuScreenModern. The QRMenu route registration, QRMenuScreenModern, and QRMenuContext.tsx were left in place (not deleted, per user's global 'prefer edit over delete' rule) - they are simply unreachable from any UI now. tsc/lint/full jest (65 suites, 323 tests) all pass; verified live that no 'QR' text/entry remains anywhere in the Settings screen.",
+      "tags": [
+        "app-red-team-qa",
+        "rtq-006",
+        "fake-implementation",
+        "qr-menu",
+        "customer-facing",
+        "p1"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "id": "bug-085",
+      "timestamp": "2026-08-08T00:13:12.866Z",
+      "error_message": "Wrong reference: displayNameLabel should be nameRequired",
+      "file": "src/screens/RegisterScreen.tsx",
+      "root_cause": "Used \"displayNameLabel\" instead of \"nameRequired\"",
+      "fix": "Changed displayNameLabel → nameRequired",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:13:12.866Z"
+    },
+    {
+      "id": "bug-086",
+      "timestamp": "2026-08-08T00:00:00.000Z",
+      "error_message": "Red-team QA (auth & onboarding, code review only - cloud auth screens are unreachable without a real/local Supabase project). RegisterScreen's validate() returned t.displayNameLabel (the field's own label text, e.g. 'Full name') as the error message when the name field was left empty, instead of an actual required-field message (see bug-085 for the mechanical diff).",
+      "file": "src/screens/RegisterScreen.tsx, src/i18n/languages.ts",
+      "root_cause": "Copy-paste/placeholder gap: every other validation branch had a dedicated message key (passwordTooShort, passwordsDoNotMatch, invalidEmail) but the empty-name branch reused the label key instead of a proper required-field message.",
+      "fix": "Added nameRequired i18n key (tr/bg/en) and used it in RegisterScreen.tsx's validate(). tsc/lint/full jest (65 suites, 323 tests) all pass. NOT verified live - AuthGate only renders LoginScreen/RegisterScreen/RoleSelectionScreen/BranchSelectionScreen/PendingApprovalScreen when status !== 'unconfigured', which never happens with the empty-Supabase-env device-local setup used throughout this whole QA sweep. A real or local Supabase project would be needed to actually exercise this screen; flagged as an untested area in the final report rather than faked.",
+      "tags": [
+        "app-red-team-qa",
+        "rtq-007",
+        "auth",
+        "validation",
+        "code-review-only"
+      ],
+      "related_bugs": [
+        "bug-085"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T00:00:00.000Z"
+    },
+    {
+      "id": "bug-087",
+      "timestamp": "2026-08-08T11:06:50.261Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Had '../i18n'",
+      "fix": "Changed to '../i18n/languages'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-08T11:07:17.064Z"
+    },
+    {
+      "id": "bug-088",
+      "timestamp": "2026-08-08T11:08:45.212Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T11:08:45.212Z"
+    },
+    {
+      "id": "bug-089",
+      "timestamp": "2026-08-08T11:09:20.784Z",
+      "error_message": "CSS fix: message",
+      "file": "src/screens/AddCategoryScreenModern.tsx",
+      "root_cause": "message: t.deleteCategory, tone: 'success' → t.categoryDeleted, tone: 'success'",
+      "fix": "Changed message: t.deleteCategory, tone: 'success' → t.categoryDeleted, tone: 'success'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T11:09:20.784Z"
+    },
+    {
+      "id": "bug-090",
+      "timestamp": "2026-08-08T13:27:10.738Z",
+      "error_message": "Missing await",
+      "file": "src/data/sync/__tests__/mutationPushGateway.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:27:10.738Z"
+    },
+    {
+      "id": "bug-091",
+      "timestamp": "2026-08-08T13:40:32.477Z",
+      "error_message": "Type error",
+      "file": "src/services/supabase/database.types.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:40:32.477Z"
+    },
+    {
+      "id": "bug-092",
+      "timestamp": "2026-08-08T13:46:55.851Z",
+      "error_message": "Wrong reference: Settings should be CancellationReasons",
+      "file": "src/navigation/routes.ts",
+      "root_cause": "Used \"Settings\" instead of \"CancellationReasons\"",
+      "fix": "Changed Settings → CancellationReasons",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:46:55.851Z"
+    },
+    {
+      "id": "bug-093",
+      "timestamp": "2026-08-08T13:50:33.362Z",
+      "error_message": "Wrong reference: DeviceManagementScreen should be CancellationReasonsScreen",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "Used \"DeviceManagementScreen\" instead of \"CancellationReasonsScreen\"",
+      "fix": "Changed DeviceManagementScreen → CancellationReasonsScreen",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:50:33.362Z"
+    },
+    {
+      "id": "bug-094",
+      "timestamp": "2026-08-08T13:50:43.852Z",
+      "error_message": "CSS fix: title",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "title: t.pendingApprovalTitle ?? 'Approvals', → settingsCopy(language).cancellationReasonsTitle,",
+      "fix": "Changed title: t.pendingApprovalTitle ?? 'Approvals', → settingsCopy(language).cancellationReasonsTitle,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:50:43.852Z"
+    },
+    {
+      "id": "bug-095",
+      "timestamp": "2026-08-08T13:51:22.793Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "Had '../i18n'",
+      "fix": "Changed to '../features/app-settings'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T13:51:22.793Z"
+    },
+    {
+      "id": "bug-096",
+      "timestamp": "2026-08-08T14:00:34.924Z",
+      "error_message": "CSS fix: background, foreground",
+      "file": "src/design-system/components/SyncStatusBanner.tsx",
+      "root_cause": "background: '#1d4ed8', → tokens.colors.info,; foreground: '#ffffff', → tokens.colors.onInfo,",
+      "fix": "Changed background: '#1d4ed8', → tokens.colors.info,; foreground: '#ffffff', → tokens.colors.onInfo,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T14:00:34.924Z"
+    },
+    {
+      "id": "bug-097",
+      "timestamp": "2026-08-08T14:01:40.532Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "Had '../contexts/AuthContext'",
+      "fix": "Changed to 'react-native'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T14:01:40.532Z"
+    },
+    {
+      "id": "bug-098",
+      "timestamp": "2026-08-08T14:01:49.402Z",
+      "error_message": "Type error",
+      "file": "src/navigation/AppNavigator.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T14:01:49.402Z"
+    },
+    {
+      "id": "bug-099",
+      "timestamp": "2026-08-08T14:04:05.415Z",
+      "error_message": "Type error",
+      "file": "src/design-system/components/SyncStatusBanner.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-08T14:04:05.415Z"
     }
   ]
 }

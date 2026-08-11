@@ -10,6 +10,7 @@
     "web:webpack": "expo start --web --bundler webpack",
     "export:web": "npm run build:web",
     "build:web:bundle": "expo export --platform web",
+    "prebuild:web": "node scripts/verify-release-env.mjs --warn-only",
     "build:web": "npm run build:web:bundle && workbox generateSW workbox-config.cjs && node scripts/verify-pwa-build.mjs",
     "serve:web": "expo serve",
     "typecheck": "tsc --noEmit",

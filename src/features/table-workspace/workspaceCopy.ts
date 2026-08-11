@@ -112,6 +112,15 @@ export interface WorkspaceCopy {
   readonly voidQuantityTitle: string;
   readonly voidQuantityLabel: string;
   readonly notePresets: readonly string[];
+  readonly addProduct: string;
+  readonly addProductTo: (tableLabel: string) => string;
+  readonly renameCheck: string;
+  readonly renameCheckSave: string;
+  readonly renameCheckFailed: string;
+  readonly deleteCheck: string;
+  readonly deleteCheckConfirmBody: string;
+  readonly deleteCheckFailed: string;
+  readonly deleteCheckHasPayments: string;
 }
 
 function buildWorkspaceCopy(language: Language): WorkspaceCopy {
@@ -220,6 +229,16 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       voidQuantityTitle: 'Kaç adet iptal edilsin?',
       voidQuantityLabel: 'İptal edilecek adet',
       notePresets: ['Acil', 'Soğansız', 'Az pişmiş', 'İyi pişmiş', 'Acılı', 'Sos ayrıda'],
+      addProduct: 'Ürün ekle',
+      addProductTo: (tableLabel) => `Ürün ekle: ${tableLabel}`,
+      renameCheck: 'Hesabı yeniden adlandır',
+      renameCheckSave: 'Kaydet',
+      renameCheckFailed: 'Hesap adı değiştirilemedi',
+      deleteCheck: 'Hesabı sil',
+      deleteCheckConfirmBody:
+        'Hesaptaki tüm ürünler iptal edilir ve hesap kapanır. Gönderilmiş sipariş silinmez, iptal olarak işaretlenir. Bir neden seçin.',
+      deleteCheckFailed: 'Hesap silinemedi',
+      deleteCheckHasPayments: 'Onaylanmış ödemesi olan bir hesap silinemez',
     };
   }
   if (language === 'bg') {
@@ -334,6 +353,16 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
         'Пикантно',
         'Сосът отделно',
       ],
+      addProduct: 'Добави продукт',
+      addProductTo: (tableLabel) => `Добави продукт към ${tableLabel}`,
+      renameCheck: 'Преименувай сметката',
+      renameCheckSave: 'Запази',
+      renameCheckFailed: 'Името на сметката не бе променено',
+      deleteCheck: 'Изтрий сметката',
+      deleteCheckConfirmBody:
+        'Всички продукти в сметката ще бъдат отказани и сметката ще се затвори. Изпратената поръчка не се изтрива, а се маркира като отказана. Изберете причина.',
+      deleteCheckFailed: 'Сметката не бе изтрита',
+      deleteCheckHasPayments: 'Сметка с потвърдено плащане не може да бъде изтрита',
     };
   }
   return {
@@ -440,6 +469,16 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
     voidQuantityTitle: 'How many should be voided?',
     voidQuantityLabel: 'Units to void',
     notePresets: ['Rush', 'No onion', 'Rare', 'Well done', 'Spicy', 'Sauce on the side'],
+    addProduct: 'Add product',
+    addProductTo: (tableLabel) => `Add product to ${tableLabel}`,
+    renameCheck: 'Rename check',
+    renameCheckSave: 'Save',
+    renameCheckFailed: 'Check name could not be changed',
+    deleteCheck: 'Delete check',
+    deleteCheckConfirmBody:
+      'Every item on this check will be cancelled and the check will close. A sent order is never deleted, only marked cancelled. Choose a reason.',
+    deleteCheckFailed: 'Check could not be deleted',
+    deleteCheckHasPayments: 'A check with a confirmed payment cannot be deleted',
   };
 }
 

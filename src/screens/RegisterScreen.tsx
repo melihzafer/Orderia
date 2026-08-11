@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// Barrel üzerinden değil doğrudan: bkz. LoginScreen'deki aynı not (AuthGate döngüsü).
+import { BrandLogo } from '../components/BrandLogo';
 import LanguageSelector from '../components/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -35,7 +37,7 @@ export default function RegisterScreen({
   const [validationError, setValidationError] = useState<string>();
 
   const validate = (): string | undefined => {
-    if (!displayName.trim()) return t.displayNameLabel;
+    if (!displayName.trim()) return t.nameRequired;
     if (!emailPattern.test(email.trim())) return t.invalidEmail;
     if (password.length < 6) return t.passwordTooShort;
     if (password !== confirmPassword) return t.passwordsDoNotMatch;
@@ -89,7 +91,7 @@ export default function RegisterScreen({
                 },
               ]}
             >
-              <Text style={[styles.brand, { color: colors.primary }]}>Orderia</Text>
+              <BrandLogo markSize={44} style={styles.brand} />
               <Text style={[styles.title, { color: colors.text }]}>{t.registerTitle}</Text>
               <Text style={[styles.subtitle, { color: colors.textSubtle }]}>
                 {t.registerSubtitle}
@@ -246,8 +248,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   brand: {
-    fontSize: 26,
-    fontWeight: '800',
     marginBottom: 28,
   },
   title: {

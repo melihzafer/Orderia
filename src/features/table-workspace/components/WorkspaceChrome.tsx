@@ -98,6 +98,7 @@ export function CheckStrip({
   checks,
   selectedCheckId,
   pendingCheckName,
+  pendingCheck,
   copy,
   onSelect,
   onSelectPending,
@@ -106,6 +107,12 @@ export function CheckStrip({
   readonly checks: readonly Check[];
   readonly selectedCheckId?: CheckId;
   readonly pendingCheckName: string;
+  /**
+   * Garson "yeni hesap"a bastı ve henüz gönderilmedi. Adın girilmiş olması
+   * şart değil: `namedOrders` kapalıyken hiç ad sorulmuyor ve eskiden şerit
+   * bu durumda hiçbir şey göstermiyordu — buton görünürde ölüydü.
+   */
+  readonly pendingCheck: boolean;
   readonly copy: WorkspaceCopy;
   readonly onSelect: (id: CheckId) => void;
   readonly onSelectPending: () => void;
@@ -138,9 +145,9 @@ export function CheckStrip({
             onPress={() => onSelect(check.id)}
           />
         ))}
-        {pendingCheckName ? (
+        {pendingCheck ? (
           <Chip
-            label={pendingCheckName}
+            label={pendingCheckName || copy.newCheck}
             role="tab"
             selected={!selectedCheckId}
             onPress={onSelectPending}

@@ -61,6 +61,8 @@ export interface SettingsCopy {
   readonly devicesBody: string;
   readonly approvals: string;
   readonly approvalsBody: string;
+  readonly cancellationReasons: string;
+  readonly cancellationReasonsBody: string;
   readonly managerPin: string;
   readonly managerPinBody: string;
   readonly managerPinPlaceholder: string;
@@ -84,6 +86,20 @@ export interface SettingsCopy {
   readonly operations: Readonly<Record<keyof OperationsPreferences, OperationCopy>>;
   readonly quickActions: Readonly<Record<QuickActionId, QuickActionCopy>>;
   readonly modeSummary: (mode: ServiceMode) => string;
+
+  readonly cancellationReasonsTitle: string;
+  readonly cancellationReasonsAccessRequired: string;
+  readonly cancellationReasonsEmpty: string;
+  readonly reasonNameLabel: string;
+  readonly reasonNamePlaceholder: string;
+  readonly requiresManagerLabel: string;
+  readonly requiresManagerBody: string;
+  readonly addReason: string;
+  readonly reasonAdded: string;
+  readonly reasonUpdated: string;
+  readonly enterReasonName: string;
+  readonly reasonActive: string;
+  readonly reasonInactive: string;
 }
 
 export interface OperationCopy {
@@ -174,6 +190,8 @@ const tr: SettingsCopy = {
   devicesBody: 'Bu şubeye bağlı telefon ve tabletler',
   approvals: 'Personel onayları',
   approvalsBody: 'Katılmayı bekleyen kullanıcılar',
+  cancellationReasons: 'İptal sebepleri',
+  cancellationReasonsBody: 'Ürün veya hesap iptal edilirken seçilecek sebep listesi',
   managerPin: 'Yönetici PIN’i',
   managerPinBody: 'Kapalı siparişi yeniden açarken 4 veya 6 haneli PIN iste.',
   managerPinPlaceholder: '4 veya 6 hane',
@@ -253,6 +271,20 @@ const tr: SettingsCopy = {
   },
 
   modeSummary: (mode) => (mode === 'festival' ? 'Festival modu açık' : 'Restoran modu açık'),
+
+  cancellationReasonsTitle: 'İptal sebepleri',
+  cancellationReasonsAccessRequired: 'Bu ekran yalnızca yöneticiler içindir.',
+  cancellationReasonsEmpty: 'Henüz sebep eklenmedi. Aşağıdan ilkini ekle.',
+  reasonNameLabel: 'Sebep adı',
+  reasonNamePlaceholder: 'Örn. Müşteri vazgeçti',
+  requiresManagerLabel: 'Yönetici onayı gerektirir',
+  requiresManagerBody: 'İkram veya personel yemeği gibi mali etkisi olan sebepler için',
+  addReason: 'Sebep ekle',
+  reasonAdded: 'Sebep eklendi',
+  reasonUpdated: 'Sebep güncellendi',
+  enterReasonName: 'Bir sebep adı girin',
+  reasonActive: 'Aktif',
+  reasonInactive: 'Pasif',
 };
 
 const bg: SettingsCopy = {
@@ -309,6 +341,8 @@ const bg: SettingsCopy = {
   devicesBody: 'Телефони и таблети към този обект',
   approvals: 'Одобрения на персонал',
   approvalsBody: 'Чакащи потребители',
+  cancellationReasons: 'Причини за отказ',
+  cancellationReasonsBody: 'Списък с причини при отказ на продукт или сметка',
   managerPin: 'PIN на управителя',
   managerPinBody: 'Изисквай 4 или 6 цифри при повторно отваряне на сметка.',
   managerPinPlaceholder: '4 или 6 цифри',
@@ -389,6 +423,20 @@ const bg: SettingsCopy = {
 
   modeSummary: (mode) =>
     mode === 'festival' ? 'Фестивален режим е включен' : 'Ресторантски режим е включен',
+
+  cancellationReasonsTitle: 'Причини за отказ',
+  cancellationReasonsAccessRequired: 'Този екран е само за мениджъри.',
+  cancellationReasonsEmpty: 'Все още няма причини. Добавете първата по-долу.',
+  reasonNameLabel: 'Име на причината',
+  reasonNamePlaceholder: 'Напр. Клиентът се отказа',
+  requiresManagerLabel: 'Изисква одобрение от мениджър',
+  requiresManagerBody: 'За причини с финансов ефект — ikram, храна за персонала',
+  addReason: 'Добави причина',
+  reasonAdded: 'Причината е добавена',
+  reasonUpdated: 'Причината е обновена',
+  enterReasonName: 'Въведете име на причината',
+  reasonActive: 'Активна',
+  reasonInactive: 'Неактивна',
 };
 
 const en: SettingsCopy = {
@@ -445,6 +493,8 @@ const en: SettingsCopy = {
   devicesBody: 'Phones and tablets bound to this branch',
   approvals: 'Staff approvals',
   approvalsBody: 'People waiting to join',
+  cancellationReasons: 'Cancellation reasons',
+  cancellationReasonsBody: 'Reasons staff can pick when voiding an item or check',
   managerPin: 'Manager PIN',
   managerPinBody: 'Require a 4 or 6 digit PIN before reopening a closed order.',
   managerPinPlaceholder: '4 or 6 digits',
@@ -524,6 +574,20 @@ const en: SettingsCopy = {
   },
 
   modeSummary: (mode) => (mode === 'festival' ? 'Festival mode is on' : 'Restaurant mode is on'),
+
+  cancellationReasonsTitle: 'Cancellation reasons',
+  cancellationReasonsAccessRequired: 'This screen is for managers only.',
+  cancellationReasonsEmpty: 'No reasons yet. Add the first one below.',
+  reasonNameLabel: 'Reason name',
+  reasonNamePlaceholder: 'e.g. Customer changed their mind',
+  requiresManagerLabel: 'Requires manager approval',
+  requiresManagerBody: 'For reasons with a financial impact — comps, staff meals',
+  addReason: 'Add reason',
+  reasonAdded: 'Reason added',
+  reasonUpdated: 'Reason updated',
+  enterReasonName: 'Enter a reason name',
+  reasonActive: 'Active',
+  reasonInactive: 'Inactive',
 };
 
 const dictionaries: Readonly<Record<string, SettingsCopy>> = { tr, bg, en };

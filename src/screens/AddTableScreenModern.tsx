@@ -97,6 +97,8 @@ export default function AddTableScreenModern() {
         } else {
           addTable({ hallId: displayHall.id, label: nextName || undefined });
         }
+        haptic('success');
+        show({ message: isEditing ? t.tableUpdated : t.tableAdded, tone: 'success' });
         navigation.goBack();
       } catch (error) {
         haptic('error');

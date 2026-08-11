@@ -101,6 +101,39 @@ describe('legacy financial behavior', () => {
     expect(useHistoryStore.getState().getTotalGrossForDate(generateDateKey(now))).toBe(2500);
   });
 
+  it('moves a ticket to another table and keeps both tables activeTicketIds/isOpen in sync', () => {
+    const ticket = createTicket({ tableId: 'table-1' });
+    useLayoutStore.setState({
+      tables: [
+        { id: 'table-1', hallId: 'hall-1', seq: 1, isOpen: true, activeTicketIds: [ticket.id] },
+        { id: 'table-2', hallId: 'hall-1', seq: 2, isOpen: false, activeTicketIds: [] },
+      ],
+    });
+    useOrderStore.setState({ openTickets: { [ticket.id]: ticket } });
+
+    useOrderStore.getState().moveTicketToTable(ticket.id, 'table-2');
+
+    expect(useOrderStore.getState().openTickets[ticket.id].tableId).toBe('table-2');
+    const [sourceTable, targetTable] = useLayoutStore.getState().tables;
+    expect(sourceTable.isOpen).toBe(false);
+    expect(sourceTable.activeTicketIds).toEqual([]);
+    expect(targetTable.isOpen).toBe(true);
+    expect(targetTable.activeTicketIds).toEqual([ticket.id]);
+  });
+
+  it('does nothing when moving a ticket to its current table', () => {
+    const ticket = createTicket({ tableId: 'table-1' });
+    useLayoutStore.setState({
+      tables: [{ id: 'table-1', hallId: 'hall-1', seq: 1, isOpen: true, activeTicketIds: [ticket.id] }],
+    });
+    useOrderStore.setState({ openTickets: { [ticket.id]: ticket } });
+
+    useOrderStore.getState().moveTicketToTable(ticket.id, 'table-1');
+
+    expect(useOrderStore.getState().openTickets[ticket.id].tableId).toBe('table-1');
+    expect(useLayoutStore.getState().tables[0].activeTicketIds).toEqual([ticket.id]);
+  });
+
   it('preserves historical item name and price snapshots after menu mutations', () => {
     useMenuStore.setState({
       categories: [{ id: 'category-1', name: 'Atıştırmalık', order: 0 }],

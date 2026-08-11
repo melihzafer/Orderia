@@ -94,6 +94,19 @@ export type RestaurantTableRow = {
   deleted_at: string | null;
 };
 
+export type CancellationReasonRow = {
+  id: string;
+  organization_id: string;
+  branch_id: string;
+  name: string;
+  requires_manager: boolean;
+  is_active: boolean;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
 export type TableSessionRow = {
   id: string;
   organization_id: string;
@@ -280,6 +293,7 @@ export type Database = {
       devices: TableDefinition<DeviceRow>;
       halls: TableDefinition<HallRow>;
       restaurant_tables: TableDefinition<RestaurantTableRow>;
+      cancellation_reasons: TableDefinition<CancellationReasonRow>;
       table_sessions: TableDefinition<TableSessionRow>;
       sync_events: TableDefinition<SyncEventRow>;
       menu_categories: TableDefinition<MenuCategoryRow>;
@@ -401,6 +415,18 @@ export type Database = {
         Returns: Json;
       };
       apply_check_split_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
+      apply_check_rename_command: {
         Args: {
           requested_organization_id: string;
           requested_branch_id: string;

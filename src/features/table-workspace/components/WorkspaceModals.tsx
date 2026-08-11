@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheetBackdrop, BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { ServiceButton, ServiceEmptyState, ServiceTextField } from '../../../design-system';
-import { CancellationReason, ModifierOptionId, OrderItem } from '../../../domain';
+import { CancellationReason, Check, ModifierOptionId, OrderItem } from '../../../domain';
 import type { WorkspaceProduct } from '../workspaceModel';
 import { QuantityStepper } from '../../../components/QuantityStepper';
 import type { WorkspaceCopy } from '../workspaceCopy';
@@ -21,6 +21,8 @@ export function NameCheckModal({
   visible,
   name,
   copy,
+  title,
+  confirmLabel,
   onChange,
   onClose,
   onConfirm,
@@ -28,12 +30,16 @@ export function NameCheckModal({
   readonly visible: boolean;
   readonly name: string;
   readonly copy: WorkspaceCopy;
+  /** Var sayılan "Yeni hesap" başlığını değiştirir — örn. yeniden adlandırma için. */
+  readonly title?: string;
+  /** Var sayılan "Oluştur" etiketini değiştirir — örn. "Kaydet". */
+  readonly confirmLabel?: string;
   readonly onChange: (value: string) => void;
   readonly onClose: () => void;
   readonly onConfirm: () => void;
 }) {
   return (
-    <WorkspaceModal title={copy.newCheck} visible={visible} onClose={onClose}>
+    <WorkspaceModal title={title ?? copy.newCheck} visible={visible} onClose={onClose}>
       <ServiceTextField
         autoFocus
         label={copy.checkName}
@@ -44,7 +50,7 @@ export function NameCheckModal({
       />
       <ModalActions
         cancel={copy.close}
-        confirm={copy.create}
+        confirm={confirmLabel ?? copy.create}
         confirmDisabled={!name.trim()}
         onCancel={onClose}
         onConfirm={onConfirm}
@@ -336,6 +342,67 @@ export function CancellationModal({
               icon={reason.requiresManager ? 'shield-checkmark-outline' : 'close-circle-outline'}
               label={`${reason.name}${reason.requiresManager ? ` · ${copy.manager}` : ''}`}
               onPress={() => onCancel(reason, quantity)}
+              variant="outline"
+            />
+          ))}
+        </View>
+      )}
+      <ModalActions cancel={copy.close} onCancel={onClose} />
+    </WorkspaceModal>
+  );
+}
+
+/**
+ * Hesabın tamamını iptal eden onay akışı. `CancellationModal`'ın aynısı ama
+ * tek bir satır değil, tüm hesap için — bu yüzden adet steppera gerek yok,
+ * ama denetim izi tutarlılığı için aynı gerekçe listesi zorunlu kalıyor.
+ */
+export function DeleteCheckModal({
+  check,
+  reasons,
+  isManager,
+  copy,
+  onClose,
+  onConfirm,
+}: {
+  readonly check?: Check;
+  readonly reasons: readonly CancellationReason[];
+  readonly isManager: boolean;
+  readonly copy: WorkspaceCopy;
+  readonly onClose: () => void;
+  readonly onConfirm: (reason: CancellationReason) => void;
+}) {
+  const { tokens } = useTheme();
+  return (
+    <WorkspaceModal
+      title={`${copy.deleteCheck}: ${check?.name ?? ''}`}
+      visible={Boolean(check)}
+      onClose={onClose}
+    >
+      <Text
+        style={[
+          tokens.typography.body,
+          { color: tokens.colors.textSubtle, marginBottom: tokens.space.sm },
+        ]}
+      >
+        {copy.deleteCheckConfirmBody}
+      </Text>
+      {reasons.length === 0 ? (
+        <ServiceEmptyState
+          body={copy.askManagerReasons}
+          icon="alert-circle-outline"
+          title={copy.noReasons}
+        />
+      ) : (
+        <View style={{ gap: tokens.space.xs }}>
+          {reasons.map((reason) => (
+            <ServiceButton
+              key={reason.id}
+              disabled={reason.requiresManager && !isManager}
+              fullWidth
+              icon={reason.requiresManager ? 'shield-checkmark-outline' : 'close-circle-outline'}
+              label={`${reason.name}${reason.requiresManager ? ` · ${copy.manager}` : ''}`}
+              onPress={() => onConfirm(reason)}
               variant="outline"
             />
           ))}

@@ -63,7 +63,7 @@ export default function MenuAssistantScreen() {
       return;
     }
     if (!cloudReady) {
-      setError(copy.onlineOnly);
+      setError(mode !== 'cloud' ? copy.cloudRequired : copy.onlineOnly);
       return;
     }
     if (prompt.trim().length < 3) {
@@ -198,7 +198,11 @@ export default function MenuAssistantScreen() {
             />
             {!cloudReady || !isManager ? (
               <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
-                {isManager ? copy.onlineOnly : copy.managerOnly}
+                {!isManager
+                  ? copy.managerOnly
+                  : mode !== 'cloud'
+                    ? copy.cloudRequired
+                    : copy.onlineOnly}
               </Text>
             ) : null}
           </ServiceSurface>
@@ -618,6 +622,8 @@ function assistantCopy(language: 'tr' | 'bg' | 'en') {
       generate: 'Taslak oluştur',
       managerOnly: 'AI menü asistanını yalnız yöneticiler kullanabilir.',
       onlineOnly: 'AI taslağı için internet bağlantısı gerekli.',
+      cloudRequired:
+        "Bu cihaz bir bulut işletmesine bağlı değil. AI taslağı için Ayarlar'dan bulut hesabına bağlanın.",
       promptRequired: 'En az 3 karakter yaz.',
       unavailable: 'AI şu anda kullanılamıyor',
       manualUnaffected: 'Normal menü düzenleme çalışmaya devam eder.',
@@ -666,6 +672,8 @@ function assistantCopy(language: 'tr' | 'bg' | 'en') {
       generate: 'Създай чернова',
       managerOnly: 'Само мениджъри могат да използват AI асистента.',
       onlineOnly: 'За AI чернова е необходим интернет.',
+      cloudRequired:
+        'Това устройство не е свързано с облачен бизнес акаунт. Свържете се от Настройки за AI чернова.',
       promptRequired: 'Въведете поне 3 знака.',
       unavailable: 'AI не е достъпен',
       manualUnaffected: 'Обикновеното редактиране на менюто остава достъпно.',
@@ -713,6 +721,8 @@ function assistantCopy(language: 'tr' | 'bg' | 'en') {
     generate: 'Generate draft',
     managerOnly: 'Only managers can use the AI menu assistant.',
     onlineOnly: 'An internet connection is required for an AI draft.',
+    cloudRequired:
+      "This device isn't connected to a cloud business yet. Connect from Settings for an AI draft.",
     promptRequired: 'Enter at least 3 characters.',
     unavailable: 'AI is unavailable',
     manualUnaffected: 'Normal menu editing remains available.',
