@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-08-06T09:09:05.336Z",
   "lifetime": {
-    "total_tokens_estimated": 1119954,
-    "total_reads": 402,
-    "total_writes": 805,
+    "total_tokens_estimated": 1147742,
+    "total_reads": 420,
+    "total_writes": 822,
     "total_sessions": 19,
-    "anatomy_hits": 192,
-    "anatomy_misses": 200,
-    "repeated_reads_blocked": 271,
-    "estimated_savings_vs_bare_cli": 2031627
+    "anatomy_hits": 196,
+    "anatomy_misses": 214,
+    "repeated_reads_blocked": 279,
+    "estimated_savings_vs_bare_cli": 2097526
   },
   "sessions": [
     {
@@ -6850,6 +6850,216 @@
         "writes_count": 1,
         "repeated_reads_blocked": 0,
         "anatomy_lookups": 1
+      }
+    },
+    {
+      "id": "session-2026-08-11-1111",
+      "started": "2026-08-11T08:11:13.381Z",
+      "ended": "2026-08-11T09:11:50.564Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 8814,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/utils/backupUtils.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/node_modules/expo-document-picker/build/ExpoDocumentPicker.web.js",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/layoutStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigrationGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/LegacyMigrationCard.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/menu-management/menuCatalogGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/layout-management/layoutGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/domainChangeApplier.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731180000_fulfillment_groups.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/runtime/OrderiaDataContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/AddHallScreenModern.tsx",
+          "tokens_estimated": 1659,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260727030000_legacy_migration.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260811000000_replace_catalog_from_legacy_snapshot.sql",
+          "tokens_estimated": 3401,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 6781,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigration.ts",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260811000000_replace_catalog_from_legacy_snapshot.sql",
+          "tokens_estimated": 3536,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260811000000_replace_catalog_from_legacy_snapshot.sql",
+          "tokens_estimated": 317,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260811000000_replace_catalog_from_legacy_snapshot.sql",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigrationGateway.ts",
+          "tokens_estimated": 152,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/legacy-migration/legacyMigrationGateway.ts",
+          "tokens_estimated": 363,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 147,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 168,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 288,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 308,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 296,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 296,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 646,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 136,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 185,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 20655,
+        "output_tokens_estimated": 7133,
+        "reads_count": 18,
+        "writes_count": 17,
+        "repeated_reads_blocked": 8,
+        "anatomy_lookups": 4
       }
     }
   ],
