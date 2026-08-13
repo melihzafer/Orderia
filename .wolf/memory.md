@@ -8,6 +8,9 @@
 | 17:10 | Fixed stretched/uneven pill height on OrderPane "All items/Kitchen/Drinks" scope chips + same latent bug in PalettePane category chips (missing `alignItems:'center'` on horizontal ScrollView contentContainerStyle → default 'stretch') | src/features/table-workspace/components/OrderPane.tsx, PalettePane.tsx | pending user verify | ~4k |
 | 17:10 | Confirmed table-to-table order transfer already exists end-to-end (RPC `transfer_or_merge_table_session`, TableOperationSheet, "..." actions sheet → "Masayı taşı / birleştir") — no new work needed | src/screens/TableDetailScreen.tsx, src/features/table-operations/* | informed user | ~1k |
 | 17:12 | tsc --noEmit clean after chip-height fix | — | pass | ~1k |
+| 23:10 | Added long-press action sheet on check pills (CheckStrip) for rename/pay/split/delete — mirrors existing top "..." overflow handlers, zero new business logic. Chip gained onLongPress+accessibilityHint props. Verified live via synthetic long-press. | src/features/table-workspace/components/WorkspaceChrome.tsx, workspaceCopy.ts, src/screens/TableDetailScreen.tsx | pass (tsc clean, lint clean, 41/41 tests, verified live) | ~25k |
+| 22:15 | Fixed real root cause of chip-height issue: horizontal ScrollView (OrderPane view-tabs, PalettePane category chips) had no `flexGrow:0`/`flexShrink:0`, so it stretched to fill its flex-column parent on web — earlier `alignItems:'center'` fix only stopped the pills stretching, leaving them floating centered in an oversized box (264px vs 72px content height, measured via DOM). Added `style={{flexGrow:0, flexShrink:0}}` to both ScrollViews, matching the existing `flexShrink:0` pattern in ServiceActionSheet.tsx | src/features/table-workspace/components/OrderPane.tsx, PalettePane.tsx | pass (tsc clean, 41/41 workspace tests, verified live via DOM measurement) | ~40k |
+| 18:40 | Festival: kısmi servis adedi (partial served quantity). OrderItem.servedQuantity eklendi; servedCount()/isFullyServed() türetme yardımcıları; serveOrderItemQuantity komutu + outbox payload {servedQuantity}; served->ordered geçişi açıldı; ServeQuantityModal (uzun basış + satırdaki servis ikonu); yeni Supabase migration (served_quantity kolonu + apply_order_item_serve_quantity_command RPC) | src/domain/entities.ts, stateTransitions.ts, features/table-workspace/{fulfillment,orderCommands,workspaceCopy}.ts, components/{OrderPane,WorkspaceModals}.tsx, data/sync/mutationPushGateway.ts, services/supabase/database.types.ts, screens/TableDetailScreen.tsx, supabase/migrations/20260813120000_*.sql | pass (tsc clean, 65/65 suites, 331 tests, no cycles, lint clean) | ~90k |
 
 ## Session: 2026-08-06 14:00
 
@@ -674,3 +677,59 @@ bug-081..086 olarak islendi. Hicbir dosya silinmedi, sadece duzenlendi (kullanic
 | 11:23 | Edited src/features/table-workspace/components/PalettePane.tsx | CSS: alignItems | ~45 |
 | 11:26 | Session end: 2 writes across 2 files (OrderPane.tsx, PalettePane.tsx) | 6 reads | ~17270 tok |
 | 13:06 | Session end: 2 writes across 2 files (OrderPane.tsx, PalettePane.tsx) | 16 reads | ~17771 tok |
+| 15:49 | Session end: 2 writes across 2 files (OrderPane.tsx, PalettePane.tsx) | 16 reads | ~17771 tok |
+| 15:58 | Created C:/Users/melih/.claude/plans/evet-festival-yar-nsa-sorted-book.md | — | ~3227 |
+| 15:59 | Edited src/domain/entities.ts | expanded (+7 lines) | ~121 |
+| 15:59 | Edited src/domain/stateTransitions.ts | 2→4 lines | ~56 |
+| 15:59 | Edited src/features/table-workspace/fulfillment.ts | added 2 condition(s) | ~309 |
+| 16:00 | Edited src/features/table-workspace/orderCommands.ts | added 1 condition(s) | ~259 |
+| 16:00 | Edited src/features/table-workspace/orderCommands.ts | added 1 import(s) | ~57 |
+| 16:00 | Edited src/features/table-workspace/orderCommands.ts | added 4 condition(s) | ~847 |
+| 16:00 | Edited src/data/sync/mutationPushGateway.ts | added 1 condition(s) | ~151 |
+| 16:00 | Edited src/services/supabase/database.types.ts | expanded (+12 lines) | ~240 |
+| 16:01 | Created supabase/migrations/20260813120000_order_item_serve_quantity_command.sql | — | ~2034 |
+| 16:01 | Edited src/features/table-workspace/workspaceCopy.ts | expanded (+11 lines) | ~164 |
+| 16:02 | Edited src/features/table-workspace/workspaceCopy.ts | expanded (+10 lines) | ~195 |
+| 16:02 | Edited src/features/table-workspace/workspaceCopy.ts | expanded (+11 lines) | ~190 |
+| 16:02 | Edited src/features/table-workspace/workspaceCopy.ts | expanded (+11 lines) | ~171 |
+| 16:02 | Edited src/features/table-workspace/components/WorkspaceModals.tsx | added optional chaining | ~1037 |
+| 16:03 | Edited src/features/table-workspace/workspaceCopy.ts | 2→3 lines | ~28 |
+| 16:03 | Edited src/features/table-workspace/workspaceCopy.ts | 2→3 lines | ~37 |
+| 16:03 | Edited src/features/table-workspace/workspaceCopy.ts | 2→3 lines | ~39 |
+| 16:03 | Edited src/features/table-workspace/workspaceCopy.ts | 2→3 lines | ~29 |
+| 16:03 | Edited src/features/table-workspace/components/WorkspaceModals.tsx | inline fix | ~10 |
+| 16:03 | Edited src/features/table-workspace/components/OrderPane.tsx | CSS: onServeStatus | ~92 |
+| 16:03 | Edited src/features/table-workspace/components/OrderPane.tsx | 4→5 lines | ~21 |
+| 16:03 | Edited src/features/table-workspace/components/OrderPane.tsx | onEditNote() → onServeStatus() | ~51 |
+| 16:03 | Edited src/features/table-workspace/components/OrderPane.tsx | expanded (+25 lines) | ~382 |
+| 16:04 | Edited src/features/table-workspace/components/OrderPane.tsx | onEditNote() → onServeStatus() | ~159 |
+| 16:04 | Edited src/features/table-workspace/components/OrderPane.tsx | 2→2 lines | ~43 |
+| 16:04 | Edited src/screens/TableDetailScreen.tsx | 5→6 lines | ~49 |
+| 16:04 | Edited src/screens/TableDetailScreen.tsx | 2→3 lines | ~54 |
+| 16:04 | Edited src/screens/TableDetailScreen.tsx | added error handling | ~163 |
+| 16:04 | Edited src/screens/TableDetailScreen.tsx | 3→6 lines | ~39 |
+| 16:05 | Edited src/screens/TableDetailScreen.tsx | added nullish coalescing | ~196 |
+| 16:06 | Edited src/features/table-workspace/__tests__/orderCommands.test.ts | 9→12 lines | ~100 |
+| 16:07 | Edited src/features/table-workspace/__tests__/orderCommands.test.ts | expanded (+183 lines) | ~1584 |
+| 16:07 | Edited src/features/table-workspace/__tests__/orderCommands.test.ts | 25→24 lines | ~171 |
+| 16:07 | Edited src/features/table-workspace/__tests__/orderCommands.test.ts | modified sequentialIds() | ~196 |
+| 16:12 | Session end: 37 writes across 14 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 42 reads | ~59027 tok |
+| 16:47 | Edited src/features/table-workspace/__tests__/orderCommands.test.ts | 3→3 lines | ~36 |
+| 16:55 | Session end: 38 writes across 14 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 44 reads | ~60125 tok |
+| 22:56 | Edited src/features/table-workspace/components/OrderPane.tsx | CSS: flexGrow, flexShrink | ~98 |
+| 22:57 | Edited src/features/table-workspace/components/PalettePane.tsx | CSS: flexGrow, flexShrink | ~98 |
+| 23:02 | Session end: 40 writes across 14 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 44 reads | ~68732 tok |
+| 00:15 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | modified Chip() | ~166 |
+| 00:15 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | expanded (+7 lines) | ~249 |
+| 00:15 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | modified onLongPressCheck() | ~86 |
+| 00:16 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | modified Chip() | ~196 |
+| 00:16 | Edited src/features/table-workspace/components/WorkspaceChrome.tsx | CSS: checkActionsHint | ~110 |
+| 00:16 | Edited src/features/table-workspace/workspaceCopy.ts | 3→5 lines | ~65 |
+| 00:16 | Edited src/features/table-workspace/workspaceCopy.ts | 1→2 lines | ~32 |
+| 00:16 | Edited src/features/table-workspace/workspaceCopy.ts | 1→2 lines | ~35 |
+| 00:17 | Edited src/features/table-workspace/workspaceCopy.ts | 1→2 lines | ~30 |
+| 00:17 | Edited src/screens/TableDetailScreen.tsx | 9→10 lines | ~54 |
+| 00:17 | Edited src/screens/TableDetailScreen.tsx | 2→3 lines | ~58 |
+| 00:17 | Edited src/screens/TableDetailScreen.tsx | added 1 condition(s) | ~124 |
+| 00:18 | Edited src/screens/TableDetailScreen.tsx | added optional chaining | ~466 |
+| 00:22 | Session end: 53 writes across 15 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 45 reads | ~73800 tok |

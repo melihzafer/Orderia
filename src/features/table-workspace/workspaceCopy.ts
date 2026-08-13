@@ -44,6 +44,18 @@ export interface WorkspaceCopy {
   readonly drinksReminder: string;
   readonly drinksDelivered: string;
   readonly drinksDeliveryFailed: string;
+  /** Kısmi servis paneli. `queued` sync anlamında kullanıldığı için ayrı anahtar. */
+  readonly serveStatus: string;
+  readonly served: string;
+  readonly outstanding: string;
+  readonly markAllServed: string;
+  readonly clearServed: string;
+  readonly saveServed: string;
+  readonly servedCountLabel: (served: number, total: number) => string;
+  readonly increaseServed: string;
+  readonly decreaseServed: string;
+  readonly serveFailed: string;
+  readonly cannotReduceBelowServed: string;
   readonly favorites: string;
   readonly recents: string;
   readonly favorite: string;
@@ -117,6 +129,8 @@ export interface WorkspaceCopy {
   readonly renameCheck: string;
   readonly renameCheckSave: string;
   readonly renameCheckFailed: string;
+  /** Hesap çipine uzun basınca açılan hızlı eylemler için erişilebilirlik ipucu. */
+  readonly checkActionsHint: string;
   readonly deleteCheck: string;
   readonly deleteCheckConfirmBody: string;
   readonly deleteCheckFailed: string;
@@ -161,6 +175,17 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       drinksReminder: 'İçecekler hâlâ götürülmeyi bekliyor.',
       drinksDelivered: 'Tüm içecekler götürüldü',
       drinksDeliveryFailed: 'İçecek durumu kaydedilemedi',
+      serveStatus: 'Servis durumu',
+      served: 'Servis edildi',
+      outstanding: 'Bekliyor',
+      markAllServed: 'Tümünü servis edildi işaretle',
+      clearServed: 'Servis işaretini kaldır',
+      saveServed: 'Kaydet',
+      servedCountLabel: (served, total) => `Servis ${served}/${total}`,
+      increaseServed: 'Servis adedini artır',
+      decreaseServed: 'Servis adedini azalt',
+      serveFailed: 'Servis durumu kaydedilemedi',
+      cannotReduceBelowServed: 'Adet, servis edilenin altına inemez. Önce servis adedini azaltın.',
       favorites: 'Favoriler',
       recents: 'Son kullanılan',
       favorite: 'Favori',
@@ -234,6 +259,7 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       renameCheck: 'Hesabı yeniden adlandır',
       renameCheckSave: 'Kaydet',
       renameCheckFailed: 'Hesap adı değiştirilemedi',
+      checkActionsHint: 'Hesap eylemleri için basılı tut',
       deleteCheck: 'Hesabı sil',
       deleteCheckConfirmBody:
         'Hesaptaki tüm ürünler iptal edilir ve hesap kapanır. Gönderilmiş sipariş silinmez, iptal olarak işaretlenir. Bir neden seçin.',
@@ -278,6 +304,18 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       drinksReminder: 'Напитките още чакат да бъдат занесени.',
       drinksDelivered: 'Всички напитки са занесени',
       drinksDeliveryFailed: 'Статусът на напитките не е запазен',
+      serveStatus: 'Статус на сервиране',
+      served: 'Сервирано',
+      outstanding: 'Чака',
+      markAllServed: 'Отбележи всички като сервирани',
+      clearServed: 'Премахни отметката за сервиране',
+      saveServed: 'Запази',
+      servedCountLabel: (served, total) => `Сервирани ${served}/${total}`,
+      increaseServed: 'Увеличи сервираното количество',
+      decreaseServed: 'Намали сервираното количество',
+      serveFailed: 'Статусът на сервиране не е запазен',
+      cannotReduceBelowServed:
+        'Количеството не може да падне под вече сервираното. Първо намалете сервираното.',
       favorites: 'Любими',
       recents: 'Последни',
       favorite: 'Любим',
@@ -358,6 +396,7 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       renameCheck: 'Преименувай сметката',
       renameCheckSave: 'Запази',
       renameCheckFailed: 'Името на сметката не бе променено',
+      checkActionsHint: 'Задръж за действия със сметката',
       deleteCheck: 'Изтрий сметката',
       deleteCheckConfirmBody:
         'Всички продукти в сметката ще бъдат отказани и сметката ще се затвори. Изпратената поръчка не се изтрива, а се маркира като отказана. Изберете причина.',
@@ -401,6 +440,18 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
     drinksReminder: 'Drinks are still waiting to be carried out.',
     drinksDelivered: 'All drinks carried out',
     drinksDeliveryFailed: 'Drink delivery status could not be saved',
+    serveStatus: 'Serving status',
+    served: 'Served',
+    outstanding: 'Outstanding',
+    markAllServed: 'Mark all served',
+    clearServed: 'Clear served mark',
+    saveServed: 'Save',
+    servedCountLabel: (served, total) => `Served ${served}/${total}`,
+    increaseServed: 'Increase served count',
+    decreaseServed: 'Decrease served count',
+    serveFailed: 'Serving status could not be saved',
+    cannotReduceBelowServed:
+      'Quantity cannot drop below what is already served. Reduce the served count first.',
     favorites: 'Favorites',
     recents: 'Recent',
     favorite: 'Favorite',
@@ -474,6 +525,7 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
     renameCheck: 'Rename check',
     renameCheckSave: 'Save',
     renameCheckFailed: 'Check name could not be changed',
+    checkActionsHint: 'Hold for check actions',
     deleteCheck: 'Delete check',
     deleteCheckConfirmBody:
       'Every item on this check will be cancelled and the check will close. A sent order is never deleted, only marked cancelled. Choose a reason.',

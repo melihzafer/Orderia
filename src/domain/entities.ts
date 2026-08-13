@@ -240,6 +240,13 @@ export interface OrderItem extends TenantScope, VersionedMetadata, SyncMetadata 
   readonly taxRateBasisPoints: number;
   readonly quantity: number;
   readonly status: OrderItemStatus;
+  /**
+   * Kaç adedi masaya götürüldü. `status` satırın tamamını anlatır; bu alan
+   * kısmi servisi anlatır (2 kolanın 1'i gitti). Eski satırlarda ve içecek
+   * "götürüldü" komutunda tanımsızdır — okurken `servedCount()` kullan,
+   * doğrudan bu alanı değil.
+   */
+  readonly servedQuantity?: number;
   readonly note?: string;
   readonly createdBy: UserId;
   readonly updatedBy: UserId;

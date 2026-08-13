@@ -60,6 +60,12 @@ export class SupabaseMutationPushGateway implements MutationPushGateway {
         return this.client.rpc('apply_check_rename_command', versioned);
       }
       if (mutation.repository === 'orderItems') {
+        // `servedQuantity` once bakilir: eslesme ilk dala gider ve bu anahtar
+        // asagidaki `quantity`/`served` dallarindan biriyle karistirilirsa
+        // sunucuda yanlis komut calisir.
+        if (hasKey(payload, 'servedQuantity')) {
+          return this.client.rpc('apply_order_item_serve_quantity_command', versioned);
+        }
         if (hasKey(payload, 'voidQuantity')) {
           return this.client.rpc('apply_order_item_void_command', versioned);
         }

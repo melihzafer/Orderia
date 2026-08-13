@@ -1845,10 +1845,248 @@
       "file": "src/features/table-workspace/components/OrderPane.tsx",
       "root_cause": "Horizontal ScrollView contentContainerStyle omitted alignItems: 'center', so flexbox defaulted to align-items: stretch and each Chip stretched to the ScrollView's cross-axis size instead of sizing to content. CheckStrip in the same file (WorkspaceChrome.tsx) already had alignItems:'center' set, so only this chip strip and PalettePane's category chip strip (same missing property) were affected.",
       "fix": "Added alignItems: 'center' to the contentContainerStyle of the viewOptions ScrollView in OrderPane.tsx and the category ScrollView in PalettePane.tsx",
-      "tags": ["ui", "flexbox", "react-native", "chip", "table-workspace"],
+      "tags": [
+        "ui",
+        "flexbox",
+        "react-native",
+        "chip",
+        "table-workspace"
+      ],
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-13T13:10:00.000Z"
+    },
+    {
+      "id": "bug-115",
+      "timestamp": "2026-08-13T12:59:43.559Z",
+      "error_message": "Missing guard clause",
+      "file": "src/features/table-workspace/fulfillment.ts",
+      "root_cause": "No early return/throw for edge case: item.status === 'cancelled'",
+      "fix": "Added guard clause: if (item.status === 'cancelled')",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T12:59:43.559Z"
+    },
+    {
+      "id": "bug-116",
+      "timestamp": "2026-08-13T13:00:07.651Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/features/table-workspace/orderCommands.ts",
+      "root_cause": "Had './workspaceModel'",
+      "fix": "Changed to './fulfillment'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:00:07.651Z"
+    },
+    {
+      "id": "bug-117",
+      "timestamp": "2026-08-13T13:00:33.282Z",
+      "error_message": "Missing await",
+      "file": "src/features/table-workspace/orderCommands.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:00:33.282Z"
+    },
+    {
+      "id": "bug-118",
+      "timestamp": "2026-08-13T13:00:47.526Z",
+      "error_message": "Wrong return value",
+      "file": "src/data/sync/mutationPushGateway.ts",
+      "root_cause": "Was returning: this.client.rpc('apply_order_item_void_command', v",
+      "fix": "Now returns: this.client.rpc('apply_order_item_serve_quantity_c",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:00:47.526Z"
+    },
+    {
+      "id": "bug-119",
+      "timestamp": "2026-08-13T13:02:54.875Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/features/table-workspace/components/WorkspaceModals.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:02:54.875Z"
+    },
+    {
+      "id": "bug-120",
+      "timestamp": "2026-08-13T13:03:26.720Z",
+      "error_message": "Wrong reference: save should be saveServed",
+      "file": "src/features/table-workspace/components/WorkspaceModals.tsx",
+      "root_cause": "Used \"save\" instead of \"saveServed\"",
+      "fix": "Changed save → saveServed",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:03:26.720Z"
+    },
+    {
+      "id": "bug-121",
+      "timestamp": "2026-08-13T13:04:01.483Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/features/table-workspace/components/OrderPane.tsx",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 5→10 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:04:01.483Z"
+    },
+    {
+      "id": "bug-122",
+      "timestamp": "2026-08-13T13:04:36.054Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:04:36.054Z"
+    },
+    {
+      "id": "bug-123",
+      "timestamp": "2026-08-13T13:05:05.567Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:05:05.567Z"
+    },
+    {
+      "id": "bug-124",
+      "timestamp": "2026-08-13T13:07:05.813Z",
+      "error_message": "Missing await",
+      "file": "src/features/table-workspace/__tests__/orderCommands.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call | Also: /** Tohumlanmis katalogdan tek satirlik gonderilmis bir sipa; async function sendLine(database: InMemoryLocalDatabase, qua",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-13T13:07:37.574Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-08-13T18:40:00.000Z",
+      "error_message": "Waiter cannot record partial delivery: '2 x Coca-Cola' could only be all-served or not-served, so '1 delivered, 1 coming' was unrepresentable",
+      "file": "src/features/table-workspace/orderCommands.ts",
+      "root_cause": "OrderItemStatus was a single line-level enum ('draft'|'ordered'|'served'|'cancelled') with no per-unit counter. markOrderItemsServed() flipped whole lines and was only ever called by the bulk drinks-delivered button, so kitchen items never left 'ordered' at all.",
+      "fix": "Added optional OrderItem.servedQuantity + servedCount()/isFullyServed() derivation helpers (status:'served' still reads as n/n so legacy rows and the drinks button keep working). New serveOrderItemQuantity() command enqueues {servedQuantity:n} to the outbox; status is derived (n>=quantity ? 'served':'ordered'). Relaxed state machine to allow served->ordered so a mistap can be undone. New Supabase migration adds served_quantity column + apply_order_item_serve_quantity_command RPC, plus a mutationPushGateway dispatch branch.",
+      "tags": [
+        "fulfillment",
+        "partial-serve",
+        "offline-sync",
+        "outbox",
+        "supabase-rpc",
+        "festival"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T18:40:00.000Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-08-13T22:15:00.000Z",
+      "error_message": "User-reported (production screenshots): the 'All items/Kitchen/Drinks' chip buttons on the check screen still float with large empty space above/below them, even after bug-013's fix",
+      "file": "src/features/table-workspace/components/OrderPane.tsx",
+      "root_cause": "bug-013's fix (alignItems:'center' on contentContainerStyle) correctly stopped the pills themselves from stretching, but did not address the actual cause: on web, a horizontal ScrollView with no explicit style is a direct child of a flex-column ServiceSurface(flex:1) and defaults to flexGrow, so the ScrollView's own wrapping box stretches to consume all available vertical space in the column. Confirmed via DOM measurement: the chip button was 48px tall but its ScrollView wrapper measured 264px. After centering, the compact pill row just floats centered inside that oversized box instead of stretching to fill it -- same underlying bug, different visual symptom.",
+      "fix": "Added style={{flexGrow:0, flexShrink:0}} directly on the ScrollView (not contentContainerStyle) in OrderPane.tsx and PalettePane.tsx, matching the existing flexShrink:0 pattern already used in ServiceActionSheet.tsx for the same RNW web flex-column quirk. DOM re-measurement after the fix: wrapper shrank from 264px to 72px, matching content height.",
+      "tags": [
+        "ui",
+        "flexbox",
+        "react-native-web",
+        "scrollview",
+        "regression",
+        "table-workspace"
+      ],
+      "related_bugs": [
+        "bug-013"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T22:15:00.000Z"
+    },
+    {
+      "id": "bug-127",
+      "timestamp": "2026-08-13T21:17:48.988Z",
+      "error_message": "Missing guard clause",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "No early return/throw for edge case: !check",
+      "fix": "Added guard clause: if (!check)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:17:48.988Z"
+    },
+    {
+      "id": "bug-128",
+      "timestamp": "2026-08-13T21:18:07.254Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:18:07.254Z"
     }
   ]
 }

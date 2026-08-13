@@ -10,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useOrderiaData } from '../data/runtime';
 import {
   haptic,
+  ServiceActionSheet,
   ServiceButton,
   ServiceEmptyState,
   ServiceIconButton,
@@ -56,6 +57,9 @@ import {
   ProductConfigurationModal,
   renameCheck,
   resolveOrderItemNoteConflict,
+  servedCount,
+  serveOrderItemQuantity,
+  ServeQuantityModal,
   TableWorkspaceSnapshot,
   updateOrderItemNote,
   updateOrderItemQuantity,
@@ -180,6 +184,7 @@ function CloudTableWorkspace({
   const [cancellingItem, setCancellingItem] = useState<OrderItem>();
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem>();
   const [editingNote, setEditingNote] = useState('');
+  const [servingItem, setServingItem] = useState<OrderItem>();
   const [editingLocationNote, setEditingLocationNote] = useState(false);
   const [locationNote, setLocationNote] = useState('');
   const [payingCheck, setPayingCheck] = useState<Check>();
@@ -195,6 +200,7 @@ function CloudTableWorkspace({
   const [notice, setNotice] = useState<WorkspaceNotice>();
   const [renamingCheck, setRenamingCheck] = useState<Check>();
   const [renameCheckBusy, setRenameCheckBusy] = useState(false);
+  const [checkActionsTarget, setCheckActionsTarget] = useState<Check>();
   const [deletingCheck, setDeletingCheck] = useState<Check>();
   const [deleteCheckBusy, setDeleteCheckBusy] = useState(false);
 
@@ -368,6 +374,25 @@ function CloudTableWorkspace({
       void refresh();
     } catch (error) {
       notify(copy.drinksDeliveryFailed, error instanceof Error ? error.message : copy.tryAgain);
+    }
+  };
+
+  const applyServedQuantity = async (item: OrderItem, nextServed: number) => {
+    if (!database || !scope) return;
+    setServingItem(undefined);
+    try {
+      await serveOrderItemQuantity({
+        database,
+        scope,
+        actorUserId,
+        deviceId,
+        item,
+        servedQuantity: nextServed,
+      });
+      await reload();
+      void refresh();
+    } catch (error) {
+      notify(copy.serveFailed, error instanceof Error ? error.message : copy.tryAgain);
     }
   };
 
@@ -701,6 +726,7 @@ function CloudTableWorkspace({
         setEditingNote(item.note ?? '');
         setEditingNoteItem(item);
       }}
+      onServeStatus={setServingItem}
       onPay={() => {
         if (selectedCheck) setPayingCheck(selectedCheck);
       }}
@@ -816,6 +842,15 @@ function CloudTableWorkspace({
           setSelectedCheckId(checkId);
         }}
         onSelectPending={() => setSelectedCheckId(undefined)}
+        onLongPressCheck={(checkId) => {
+          const check = snapshot.checks.find((candidate) => candidate.id === checkId);
+          if (!check) return;
+          haptic('activate');
+          setStartingNewCheck(false);
+          setPendingCheckName('');
+          setSelectedCheckId(checkId);
+          setCheckActionsTarget(check);
+        }}
       />
 
       <View
@@ -1080,6 +1115,63 @@ function CloudTableWorkspace({
         onChange={setEditingNote}
         onClose={() => setEditingNoteItem(undefined)}
         onConfirm={() => void saveItemNote()}
+      />
+      <ServiceActionSheet
+        actions={[
+          {
+            id: 'rename',
+            icon: 'create-outline',
+            label: copy.renameCheck,
+            onPress: () => {
+              if (checkActionsTarget) {
+                setCheckNameInput(checkActionsTarget.name);
+                setRenamingCheck(checkActionsTarget);
+              }
+            },
+          },
+          {
+            id: 'pay',
+            icon: 'card-outline',
+            label: copy.takePayment,
+            onPress: () => {
+              if (checkActionsTarget) setPayingCheck(checkActionsTarget);
+            },
+          },
+          {
+            id: 'split',
+            disabled: !personAccountsEnabled,
+            icon: 'pie-chart-outline',
+            label: copy.splitCheck,
+            onPress: () => {
+              if (checkActionsTarget) setSplittingCheck(checkActionsTarget);
+            },
+          },
+          {
+            id: 'delete',
+            destructive: true,
+            icon: 'trash-outline',
+            label: copy.deleteCheck,
+            onPress: () => {
+              if (checkActionsTarget) setDeletingCheck(checkActionsTarget);
+            },
+          },
+        ]}
+        cancelLabel={copy.close}
+        onClose={() => setCheckActionsTarget(undefined)}
+        title={checkActionsTarget?.name ?? ''}
+        visible={Boolean(checkActionsTarget)}
+      />
+      <ServeQuantityModal
+        copy={copy}
+        item={servingItem}
+        onClose={() => setServingItem(undefined)}
+        onEditNote={(item) => {
+          setServingItem(undefined);
+          setEditingNote(item.note ?? '');
+          setEditingNoteItem(item);
+        }}
+        onSubmit={(item, nextServed) => void applyServedQuantity(item, nextServed)}
+        servedQuantity={servingItem ? servedCount(servingItem) : 0}
       />
       {payingCheck ? (
         <PaymentSheet

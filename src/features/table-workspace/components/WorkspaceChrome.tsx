@@ -103,6 +103,7 @@ export function CheckStrip({
   onSelect,
   onSelectPending,
   onAdd,
+  onLongPressCheck,
 }: {
   readonly checks: readonly Check[];
   readonly selectedCheckId?: CheckId;
@@ -117,6 +118,12 @@ export function CheckStrip({
   readonly onSelect: (id: CheckId) => void;
   readonly onSelectPending: () => void;
   readonly onAdd: () => void;
+  /**
+   * Var olan bir hesabın adına uzun basılınca hızlı eylemler açar (yeniden
+   * adlandır vb). Henüz gönderilmemiş taslak hesapta bu yok — sunucuda karşılığı
+   * olmayan bir hesap yeniden adlandırılamaz.
+   */
+  readonly onLongPressCheck?: (id: CheckId) => void;
 }) {
   const { tokens } = useTheme();
   return (
@@ -139,9 +146,11 @@ export function CheckStrip({
         {checks.map((check) => (
           <Chip
             key={check.id}
+            accessibilityHint={onLongPressCheck ? copy.checkActionsHint : undefined}
             label={check.name}
             role="tab"
             selected={check.id === selectedCheckId}
+            onLongPress={onLongPressCheck ? () => onLongPressCheck(check.id) : undefined}
             onPress={() => onSelect(check.id)}
           />
         ))}
@@ -177,20 +186,27 @@ export function Chip({
   label,
   selected,
   onPress,
+  onLongPress,
+  accessibilityHint,
   icon,
   role = 'button',
 }: {
   readonly label: string;
   readonly selected: boolean;
   readonly onPress: () => void;
+  /** Ayarlanırsa uzun basış aynı öğeye ait bağlamsal eylemleri açabilir. */
+  readonly onLongPress?: () => void;
+  readonly accessibilityHint?: string;
   readonly icon?: keyof typeof Ionicons.glyphMap;
   readonly role?: 'button' | 'tab';
 }) {
   const { tokens } = useTheme();
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
       accessibilityRole={role}
       accessibilityState={{ selected }}
+      onLongPress={onLongPress}
       onPress={onPress}
       style={({ pressed }) => ({
         alignItems: 'center',

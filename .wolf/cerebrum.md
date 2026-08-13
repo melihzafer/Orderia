@@ -63,6 +63,14 @@
   Yerine `ServiceConfirmSheet` veya ekranin kendi notice seridi.
 - [2026-08-07] Yeni bir CI adimi (`check:cycles`) eklemeden once yerelde calistir: mevcut bir ihlal
   varsa CI'yi kirar. Bu sefer AuthGate/LoginScreen/components barrel dongusu vardi.
+- [2026-08-13] **Sunucudaki komut RPC'leri payload anahtarlarini KATI bir whitelist ile dogruluyor:**
+  `requested_payload - array['served'] <> '{}'::jsonb` deseni fazladan HERHANGI bir anahtarda
+  `22023` firlatir. Mevcut bir komuta yeni bir alan "eklemek" imkansiz — yeni bir RPC + yeni
+  migration sart. Tek istisna `apply_order_item_void_command` (whitelist cikarmasi yapmiyor).
+- [2026-08-13] **`mutationPushGateway` ilk-eslesen if-zinciri.** Taninmayan bir orderItems payload'i
+  sessizce `apply_client_mutation`'a `'order_items.cancel'` olarak gider ve sunucuda patlar —
+  istemci tarafinda hicbir uyari yok. Yeni bir komut payload'i eklerken MUTLAKA buraya bir dal ekle,
+  ve dal sirasi onemli (spesifik anahtar once).
 
 ## Decision Log
 
@@ -112,6 +120,32 @@
   insa etmeyi degil). Tek giris noktasi (`SettingsScreen.tsx`'teki "QR Menu" satiri) kaldirildi;
   `QRMenuScreenModern`/`QRMenuContext`/route kaydi SILINMEDI, sadece erisilemez hale getirildi.
   Bu domain/QR akisini "duzeltmek" isteyen bir istekle karsilasirsan bu once bir urun karari.
+- [2026-08-13] **RNW/web'de yatay `ScrollView`, flex-column ebeveynin icinde varsayilan olarak
+  `flexGrow`e sahip — ebeveynin butun bos dikey alanini yutar.** `alignItems:'center'` (contentContainerStyle)
+  yalnizca ICERIGI ortalar, ScrollView'in KENDI KUTUSUNU kucultmez. Bir yatay chip/tab seridi bir flex
+  sutununun (ornek: `ServiceSurface style={{flex:1}}`) ILK COCUGUYSA, seride `style={{flexGrow:0,
+  flexShrink:0}}` VERMEDEN eklenen `alignItems:'center'` sadece "cipler devasa bir kutunun ortasinda
+  yuzuyor" gorunumune donusur — cozmuyor, gizliyor. Kanit: DOM olcumu, chip butonu 48px ama sarmalayici
+  264px idi; fix sonrasi 72px'e dustu. `ServiceActionSheet.tsx`'teki dikey ScrollView'de zaten AYNI
+  desen `flexShrink:0` ile var (yorum: "overflow:auto CSS min-height:0 verir"). Yeni bir yatay/dikey
+  ScrollView eklerken bunu HER ZAMAN kontrol et, sadece contentContainerStyle'a guvenme.
+- [2026-08-13] **Kismi servis: `status` korundu, yanina `servedQuantity` eklendi.** Secenekler:
+  (A) adet sayaci, (B) birim bazli fulfillment kayitlari, (C) satiri iki satira bolmek. (A) secildi.
+  (C) reddedildi cunku `voidOrderItemQuantity` zaten satir bolerek yeni bir OrderItem uretiyor ve
+  her servis isaretinde satir bolmek fis/odeme izini paramparca ederdi. Kritik nokta: `status`
+  KALDIRILMADI, ondan TURETILIYOR (`n >= quantity ? 'served' : 'ordered'`), boylece
+  `status === 'served'` kontrolu yapan mevcut kod (raporlar, drinks butonu, RLS) aynen calisiyor.
+  Geriye donuk uyum `servedCount()` turetmesiyle saglaniyor: `status: 'served'` olan ESKI satirlar
+  ve `markOrderItemsServed`'in yazdiklari `servedQuantity` icermez ama n/n olarak okunur —
+  bu yuzden `item.servedQuantity`'yi DOGRUDAN OKUMA, her zaman `servedCount()` kullan.
+  Ust sinir DB'de CHECK kisiti DEGIL (void/adet komutlari adedi dusurunce ham kisit ihlali verirdi);
+  sinir RPC'de ve `servedCount()` kirpmasinda uygulaniyor.
+- [2026-08-13] **Odeme ZATEN kalem bazinda** (`PaymentAllocation.orderItemId?` + `quantity?`),
+  `buildPayableOrderItems` kalem basina `remainingQuantity` hesapliyor. AMA `amount`/`equal` modunda
+  yapilan odemeler `orderItemId = NULL` yaziyor — o hesaplarda kalem bazli "Paid 1/2" rozeti UYDURMA
+  olur. Bu yuzden festival surumunde Paid gosterilmedi. Rozet eklenirse `orderItemId` null olan
+  tahsislerde gizlenmeli, sifir gosterilmemeli.
+
 - [2026-08-08] **KRITIK: `CI=1` ile baslatilan Metro dev server, dosya degisikliklerini bir daha ASLA
   yakalamiyor — tek seferlik `--clear` restart bile yetmiyor, HER kod degisikliginden sonra server'i
   YENIDEN BASLATMAK gerekiyor.** "Metro is running in CI mode, reloads are disabled" uyarisi sadece

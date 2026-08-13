@@ -24,7 +24,9 @@ const checkTransitions: Readonly<Record<CheckStatus, readonly CheckStatus[]>> = 
 const orderItemTransitions: Readonly<Record<OrderItemStatus, readonly OrderItemStatus[]>> = {
   draft: ['ordered', 'cancelled'],
   ordered: ['served', 'cancelled'],
-  served: ['cancelled'],
+  // Servis işaretini geri almak meşru bir düzeltme: garson yanlışlıkla
+  // "hepsi gitti" derse tek tek geri sayabilmeli.
+  served: ['ordered', 'cancelled'],
   cancelled: [],
 };
 

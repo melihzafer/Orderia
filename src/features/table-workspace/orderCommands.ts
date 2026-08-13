@@ -22,6 +22,7 @@ import {
   toDomainId,
 } from '../../domain';
 import { LocalDatabase, OutboxMutation, RepositoryScope, SyncConflict } from '../../data/contracts';
+import { servedCount } from './fulfillment';
 import { WorkspaceProduct } from './workspaceModel';
 
 export interface DraftOrderLine {
@@ -313,6 +314,16 @@ export async function updateOrderItemQuantity(
   if (!Number.isSafeInteger(input.quantity) || input.quantity < 1 || input.quantity > 999) {
     throw new Error('Quantity must be a whole number between 1 and 999');
   }
+  // Zaten masaya götürülmüş adedin altına inmek sayacı tutarsız bırakırdı.
+  // Sunucudaki adet komutu yalnızca `quantity` anahtarını kabul ettiği için
+  // servis sayacını orada birlikte kırpamıyoruz; bu yüzden garsondan önce
+  // servis sayacını düşürmesi isteniyor.
+  const alreadyServed = servedCount(input.item);
+  if (input.quantity < alreadyServed) {
+    throw new Error(
+      `Quantity cannot drop below the ${alreadyServed} already served; reduce the served count first`,
+    );
+  }
   if (input.quantity === input.item.quantity) {
     return input.item;
   }
@@ -411,6 +422,83 @@ export async function markOrderItemsServed(
 
   const updatedById = new Map(updates.map((update) => [update.updated.id, update.updated]));
   return input.items.map((item) => updatedById.get(item.id) ?? item);
+}
+
+export interface ServeOrderItemQuantityInput {
+  readonly database: LocalDatabase;
+  readonly scope: Required<RepositoryScope>;
+  readonly deviceId: DeviceId;
+  readonly actorUserId: UserId;
+  readonly item: OrderItem;
+  /** Kaç adedin masaya götürüldüğü. 0 ile satırın adedi arasına kırpılır. */
+  readonly servedQuantity: number;
+  readonly now?: Date;
+  readonly createUuid?: () => string;
+}
+
+/**
+ * Bir satırın kaç adedinin servis edildiğini ayarlar (kısmi servis).
+ *
+ * `status` kaba göstergedir ve buradan türetilir: hepsi gittiyse `served`,
+ * aksi halde `ordered`. Böylece `status === 'served'` kontrolü yapan mevcut
+ * kodun tamamı çalışmaya devam eder. Geri sayım da meşru olduğu için
+ * `served -> ordered` geçişi durum makinesinde açıldı.
+ */
+export async function serveOrderItemQuantity(
+  input: ServeOrderItemQuantityInput,
+): Promise<OrderItem> {
+  if (input.item.status === 'cancelled') {
+    throw new Error('A cancelled order item cannot be served');
+  }
+  if (input.item.status === 'draft') {
+    throw new Error('An order item must be sent before it can be served');
+  }
+  if (!Number.isSafeInteger(input.servedQuantity) || input.servedQuantity < 0) {
+    throw new Error('Served quantity must be a whole number of zero or more');
+  }
+
+  const nextServed = Math.min(input.servedQuantity, input.item.quantity);
+  const nextStatus: OrderItem['status'] = nextServed >= input.item.quantity ? 'served' : 'ordered';
+  if (servedCount(input.item) === nextServed && input.item.status === nextStatus) {
+    return input.item;
+  }
+  assertOrderItemTransition(input.item.status, nextStatus);
+
+  const updatedAt = (input.now ?? new Date()).toISOString();
+  const mutationId = toDomainId<MutationId>((input.createUuid ?? defaultUuid)());
+  const updated: OrderItem = {
+    ...input.item,
+    servedQuantity: nextServed,
+    status: nextStatus,
+    updatedBy: input.actorUserId,
+    updatedAt,
+    version: input.item.version + 1,
+    syncStatus: 'pending',
+    clientMutationId: mutationId,
+  };
+  const mutation: OutboxMutation = {
+    id: mutationId,
+    ...input.scope,
+    deviceId: input.deviceId,
+    clientMutationId: mutationId,
+    idempotencyKey: `${input.deviceId}:${mutationId}`,
+    repository: 'orderItems',
+    entityId: input.item.id,
+    operation: 'command',
+    payload: { servedQuantity: nextServed },
+    baseVersion: input.item.serverVersion ?? input.item.version,
+    status: 'pending',
+    attemptCount: 0,
+    createdAt: updatedAt,
+  };
+
+  return input.database.transaction(async (transaction) => {
+    const stored = await transaction.repository('orderItems').put(input.scope, updated, {
+      expectedVersion: input.item.version,
+    });
+    await transaction.outbox.enqueue(mutation);
+    return stored;
+  });
 }
 
 export interface UpdateTableSessionNoteInput {

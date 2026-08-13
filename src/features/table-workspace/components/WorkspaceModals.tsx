@@ -353,6 +353,113 @@ export function CancellationModal({
 }
 
 /**
+ * Kısmi servis paneli: satırın kaç adedinin masaya götürüldüğü.
+ *
+ * `CancellationModal`'ın adet steppera deseninin aynısı. Değişiklik ANINDA
+ * uygulanmaz, "Kaydet"e basılınca uygulanır — böylece "Kapat" bedava bir geri
+ * alma olur ve festivalde yanlış dokunuş masaya yanlış durum yazmaz.
+ * Not düzenleme buraya taşındı: satırdaki uzun basış artık bu paneli açıyor.
+ */
+export function ServeQuantityModal({
+  item,
+  servedQuantity,
+  copy,
+  onClose,
+  onEditNote,
+  onSubmit,
+}: {
+  readonly item?: OrderItem;
+  /** Satırın mevcut servis adedi — `servedCount()` ile türetilmiş olarak gelir. */
+  readonly servedQuantity: number;
+  readonly copy: WorkspaceCopy;
+  readonly onClose: () => void;
+  readonly onEditNote: (item: OrderItem) => void;
+  readonly onSubmit: (item: OrderItem, servedQuantity: number) => void;
+}) {
+  const { tokens } = useTheme();
+  const maximum = item?.quantity ?? 1;
+  const [served, setServed] = useState(servedQuantity);
+
+  // Satir degistiginde sayac o satirin gercek degerine doner: yarim kalmis bir
+  // secim yanlislikla baska bir urune tasinmasin.
+  useEffect(() => {
+    setServed(servedQuantity);
+  }, [item?.id, servedQuantity]);
+
+  return (
+    <WorkspaceModal
+      title={`${copy.serveStatus}: ${item?.nameSnapshot ?? ''}`}
+      visible={Boolean(item)}
+      onClose={onClose}
+    >
+      <View
+        style={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: tokens.space.md,
+          marginBottom: tokens.space.md,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[tokens.typography.bodyStrong, { color: tokens.colors.text }]}>
+            {copy.served}
+          </Text>
+          <Text style={[tokens.typography.caption, { color: tokens.colors.textSubtle }]}>
+            {copy.servedCountLabel(served, maximum)}
+            {served < maximum ? ` · ${copy.outstanding} ${maximum - served}` : ''}
+          </Text>
+        </View>
+        <QuantityStepper
+          decreaseDisabled={served <= 0}
+          decreaseLabel={copy.decreaseServed}
+          increaseDisabled={served >= maximum}
+          increaseLabel={copy.increaseServed}
+          onDecrease={() => setServed((current) => Math.max(0, current - 1))}
+          onIncrease={() => setServed((current) => Math.min(maximum, current + 1))}
+          quantity={served}
+        />
+      </View>
+      <View style={{ gap: tokens.space.xs }}>
+        <ServiceButton
+          disabled={served >= maximum}
+          fullWidth
+          icon="checkmark-done-outline"
+          label={copy.markAllServed}
+          onPress={() => setServed(maximum)}
+          variant="outline"
+        />
+        <ServiceButton
+          disabled={served <= 0}
+          fullWidth
+          icon="arrow-undo-outline"
+          label={copy.clearServed}
+          onPress={() => setServed(0)}
+          variant="outline"
+        />
+        <ServiceButton
+          fullWidth
+          icon="create-outline"
+          label={copy.editNote}
+          onPress={() => {
+            if (item) onEditNote(item);
+          }}
+          variant="outline"
+        />
+      </View>
+      <ModalActions
+        cancel={copy.close}
+        confirm={copy.saveServed}
+        confirmDisabled={served === servedQuantity}
+        onCancel={onClose}
+        onConfirm={() => {
+          if (item) onSubmit(item, served);
+        }}
+      />
+    </WorkspaceModal>
+  );
+}
+
+/**
  * Hesabın tamamını iptal eden onay akışı. `CancellationModal`'ın aynısı ama
  * tek bir satır değil, tüm hesap için — bu yüzden adet steppera gerek yok,
  * ama denetim izi tutarlılığı için aynı gerekçe listesi zorunlu kalıyor.

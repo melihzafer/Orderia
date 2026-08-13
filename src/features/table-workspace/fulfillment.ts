@@ -15,6 +15,29 @@ export function getFulfillmentGroup(
   return product?.fulfillmentGroup ?? 'kitchen';
 }
 
+/**
+ * Kaç adedin masaya götürüldüğü — `servedQuantity` yerine HER ZAMAN bunu oku.
+ *
+ * `status: 'served'` satırın tamamının gittiği anlamına gelir: hem bu alan hiç
+ * yokken yazılmış eski satırlar hem de içeceklerin toplu "götürüldü" komutu
+ * (`markOrderItemsServed`) böyle görünür, ikisi de `servedQuantity` yazmaz.
+ * Üst sınıra kırpmak ayrıca satır bölündüğünde (`voidOrderItemQuantity`
+ * kalan adedi düşürür) sayacın adedi aşmasını engeller.
+ */
+export function servedCount(
+  item: Pick<OrderItem, 'status' | 'quantity' | 'servedQuantity'>,
+): number {
+  if (item.status === 'cancelled') return 0;
+  if (item.status === 'served') return item.quantity;
+  return Math.min(Math.max(item.servedQuantity ?? 0, 0), item.quantity);
+}
+
+export function isFullyServed(
+  item: Pick<OrderItem, 'status' | 'quantity' | 'servedQuantity'>,
+): boolean {
+  return item.status !== 'cancelled' && servedCount(item) >= item.quantity;
+}
+
 export function getLatestOrderBatchId(
   items: readonly OrderItem[],
 ): OrderItem['orderBatchId'] | undefined {

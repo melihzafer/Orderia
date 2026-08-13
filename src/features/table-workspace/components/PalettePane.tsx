@@ -77,6 +77,7 @@ export function PalettePane({
             gap: tokens.space.xs,
             paddingTop: tokens.space.sm,
           }}
+          style={{ flexGrow: 0, flexShrink: 0 }}
         >
           <Chip
             label={copy.all}

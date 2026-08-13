@@ -26,9 +26,12 @@ import {
   markOrderItemsServed,
   resolveOrderItemNoteConflict,
   sendOrderBatch,
+  serveOrderItemQuantity,
+  updateOrderItemQuantity,
   updateTableSessionNote,
   updateOrderItemNote,
 } from '../orderCommands';
+import { isFullyServed, servedCount } from '../fulfillment';
 import { loadTableWorkspace } from '../workspaceModel';
 
 const organizationId = toDomainId<OrganizationId>('organization-1');
@@ -223,6 +226,188 @@ describe('rapid table workspace commands', () => {
         }),
       ]),
     );
+  });
+
+  it('serves part of a line, keeps it ordered, and flips to served only when complete', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 3);
+    const item = sent.items[0];
+
+    // 3 birayi tasiyan garson once ikisini goturuyor.
+    const partial = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item,
+      servedQuantity: 2,
+      createUuid: () => 'serve-mutation-1',
+    });
+
+    expect(partial).toMatchObject({ servedQuantity: 2, status: 'ordered', version: 2 });
+    expect(servedCount(partial)).toBe(2);
+    expect(isFullyServed(partial)).toBe(false);
+    expect(await database.outbox.list(scope, ['pending'])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ entityId: item.id, payload: { servedQuantity: 2 } }),
+      ]),
+    );
+
+    const complete = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: partial,
+      servedQuantity: 3,
+      createUuid: () => 'serve-mutation-2',
+    });
+
+    expect(complete).toMatchObject({ servedQuantity: 3, status: 'served', version: 3 });
+    expect(isFullyServed(complete)).toBe(true);
+  });
+
+  it('clamps the served count to the line quantity and never below zero', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 2);
+
+    const overshoot = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: sent.items[0],
+      servedQuantity: 9,
+      createUuid: () => 'serve-clamp-high',
+    });
+    expect(overshoot).toMatchObject({ servedQuantity: 2, status: 'served' });
+
+    // Yanlis dokunusu geri almak: served -> ordered gecisi mesru.
+    const undone = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: overshoot,
+      servedQuantity: 0,
+      createUuid: () => 'serve-clamp-zero',
+    });
+    expect(undone).toMatchObject({ servedQuantity: 0, status: 'ordered' });
+    expect(servedCount(undone)).toBe(0);
+
+    await expect(
+      serveOrderItemQuantity({
+        database,
+        scope,
+        deviceId,
+        actorUserId: userId,
+        item: undone,
+        servedQuantity: -1,
+      }),
+    ).rejects.toThrow(/zero or more/);
+  });
+
+  it('does not enqueue a mutation when the served count is unchanged', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 2);
+    const before = (await database.outbox.list(scope, ['pending'])).length;
+
+    const unchanged = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: sent.items[0],
+      servedQuantity: 0,
+    });
+
+    expect(unchanged).toBe(sent.items[0]);
+    expect(await database.outbox.list(scope, ['pending'])).toHaveLength(before);
+  });
+
+  it('refuses to serve a cancelled line', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 1);
+    const cancelled = await cancelOrderItem({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: sent.items[0],
+      reasonId,
+      createUuid: () => 'cancel-mutation',
+    });
+
+    await expect(
+      serveOrderItemQuantity({
+        database,
+        scope,
+        deviceId,
+        actorUserId: userId,
+        item: cancelled,
+        servedQuantity: 1,
+      }),
+    ).rejects.toThrow(/cancelled/);
+  });
+
+  it('refuses to drop the quantity below what is already served', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 3);
+    const served = await serveOrderItemQuantity({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      item: sent.items[0],
+      servedQuantity: 2,
+      createUuid: () => 'serve-before-quantity',
+    });
+
+    await expect(
+      updateOrderItemQuantity({
+        database,
+        scope,
+        deviceId,
+        actorUserId: userId,
+        item: served,
+        quantity: 1,
+      }),
+    ).rejects.toThrow(/already served/);
+
+    // Servis edilen adede esit olmak sorun degil.
+    await expect(
+      updateOrderItemQuantity({
+        database,
+        scope,
+        deviceId,
+        actorUserId: userId,
+        item: served,
+        quantity: 2,
+        createUuid: () => 'quantity-to-served',
+      }),
+    ).resolves.toMatchObject({ quantity: 2, servedQuantity: 2 });
+  });
+
+  it('reads a legacy fully-served line as n/n even without servedQuantity', async () => {
+    const database = new InMemoryLocalDatabase();
+    const sent = await sendLine(database, 2);
+    const [drinkServed] = await markOrderItemsServed({
+      database,
+      scope,
+      deviceId,
+      actorUserId: userId,
+      items: sent.items,
+      createUuid: () => 'legacy-served',
+    });
+
+    // `markOrderItemsServed` servedQuantity yazmaz — turetme bunu kapatmali.
+    expect(drinkServed.servedQuantity).toBeUndefined();
+    expect(servedCount(drinkServed)).toBe(2);
+    expect(isFullyServed(drinkServed)).toBe(true);
+
+    // Satir bolunup adedi dustugunde sayac adedi asmamali.
+    expect(servedCount({ status: 'ordered', quantity: 1, servedQuantity: 5 })).toBe(1);
+    expect(servedCount({ status: 'cancelled', quantity: 3, servedQuantity: 3 })).toBe(0);
   });
 
   it('stores a physical location note with an idempotent session mutation', async () => {
@@ -460,6 +645,29 @@ async function seedWorkspace(database: InMemoryLocalDatabase): Promise<void> {
 function sequentialIds(): () => string {
   let index = 0;
   return () => `generated-${++index}`;
+}
+
+/** Tohumlanmis katalogdan tek satirlik gonderilmis bir siparis uretir. */
+async function sendLine(database: InMemoryLocalDatabase, quantity: number) {
+  await seedWorkspace(database);
+  const workspace = await loadTableWorkspace(database, scope, tableId);
+  return sendOrderBatch({
+    database,
+    scope,
+    deviceId,
+    actorUserId: userId,
+    tableId,
+    checkName: 'Hesap 1',
+    lines: [
+      {
+        id: 'draft-1',
+        product: workspace!.products[0],
+        quantity,
+        selectedOptionIds: [optionId],
+      },
+    ],
+    createUuid: sequentialIds(),
+  });
 }
 
 async function markPendingApplied(database: InMemoryLocalDatabase): Promise<void> {

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T08:23:38.107Z
-> Files: 43 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:18:07.242Z
+> Files: 52 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -44,6 +44,7 @@
 
 ## C:/Users/melih/.claude/plans/
 
+- `evet-festival-yar-nsa-sorted-book.md` — Festival — Partial Served Quantity (Kısmi Servis Miktarı) (~3025 tok)
 
 ## C:/Users/melih/.claude/projects/D--Projects-Orderia/memory/
 
@@ -188,7 +189,7 @@
 
 ## src/data/sync/
 
-- `mutationPushGateway.ts` — Her yerel komut kendi sunucu fonksiyonuna gider. Ayrim once depoya, sonra (~2191 tok)
+- `mutationPushGateway.ts` — Her yerel komut kendi sunucu fonksiyonuna gider. Ayrim once depoya, sonra (~2289 tok)
 
 ## src/data/sync/__tests__/
 
@@ -217,6 +218,8 @@
 
 ## src/domain/
 
+- `entities.ts` — The default service handoff for this product; legacy rows default to kitchen. (~3356 tok)
+- `stateTransitions.ts` — Exports assertTableSessionTransition, assertCheckTransition, assertOrderItemTransition, assertPaymen (~675 tok)
 
 ## src/domain/__tests__/
 
@@ -293,15 +296,20 @@
 
 ## src/features/table-workspace/
 
+- `fulfillment.ts` — Kaç adedin masaya götürüldüğü — `servedQuantity` yerine HER ZAMAN bunu oku. (~754 tok)
+- `orderCommands.ts` — Marks ordered lines as served while leaving one idempotent outbox command per line. (~8873 tok)
+- `workspaceCopy.ts` — Masa çalışma alanının bütün arayüz metinleri. (~6262 tok)
 
 ## src/features/table-workspace/__tests__/
 
+- `orderCommands.test.ts` — Declares organizationId (~5619 tok)
 
 ## src/features/table-workspace/components/
 
-- `OrderPane.tsx` — Açık hesabın sipariş satırları: gruplama, servis işaretleme ve satır eylemleri. (~3906 tok)
-- `PalettePane.tsx` — Ürün paleti: kategori/favori daraltması, arama ve hızlı ekleme. (~2745 tok)
-- `WorkspaceChrome.tsx` — Palet daraltma kapsamı: ya sabit bir grup ya da bir kategori kimliği. (~1902 tok)
+- `OrderPane.tsx` — Açık hesabın sipariş satırları: gruplama, servis işaretleme ve satır eylemleri. (~4367 tok)
+- `PalettePane.tsx` — Ürün paleti: kategori/favori daraltması, arama ve hızlı ekleme. (~2759 tok)
+- `WorkspaceChrome.tsx` — Palet daraltma kapsamı: ya sabit bir grup ya da bir kategori kimliği. (~2111 tok)
+- `WorkspaceModals.tsx` — Çalışma alanının modal ailesi: hesap adı, ürün/masa notu, ürün seçenekleri, (~5199 tok)
 
 ## src/i18n/
 
@@ -332,7 +340,7 @@
 - `MenuScreen.tsx` — MenuScreen (~8155 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
 - `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
-- `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~11364 tok)
+- `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~12202 tok)
 
 ## src/screens/__tests__/
 
@@ -345,7 +353,7 @@
 
 ## src/services/supabase/
 
-- `database.types.ts` — Exports Json, OrganizationRow, BranchRow, ProfileRow + 18 more (~5232 tok)
+- `database.types.ts` — Exports Json, OrganizationRow, BranchRow, ProfileRow + 18 more (~5346 tok)
 
 ## src/services/supabase/__tests__/
 
@@ -393,3 +401,4 @@
 - `20260808120000_check_rename_command.sql` — Renaming a check ("Mehmet Ağa") had no server-side command handler at all: (~1745 tok)
 - `20260808130000_seed_cancellation_reasons.sql` — The cancellation_reasons table shipped with manager-insert RLS but no seed (~1239 tok)
 - `20260811000000_replace_catalog_from_legacy_snapshot.sql` — Catalog-only variant of the legacy migration: lets a manager re-import a (~3401 tok)
+- `20260813120000_order_item_serve_quantity_command.sql` — Kismi servis: bir satirin kac adedinin masaya goturuldugunu saklar. (~2034 tok)

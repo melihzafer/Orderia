@@ -15,7 +15,7 @@ import { QuantityStepper } from '../../../components/QuantityStepper';
 import type { Language } from '../../../i18n';
 import type { WorkspaceCopy } from '../workspaceCopy';
 import { conflictNote, formatMoney, timeOnly } from '../workspaceFormat';
-import type { OrderView } from '../fulfillment';
+import { isFullyServed, servedCount, type OrderView } from '../fulfillment';
 import { Chip } from './WorkspaceChrome';
 
 /**
@@ -43,6 +43,7 @@ export function OrderPane({
   onCancel,
   onChangeQuantity,
   onEditNote,
+  onServeStatus,
   onPay,
   onResolveConflict,
   onSplit,
@@ -69,6 +70,8 @@ export function OrderPane({
   readonly onCancel: (item: OrderItem) => void;
   readonly onChangeQuantity: (item: OrderItem, nextQuantity: number) => void;
   readonly onEditNote: (item: OrderItem) => void;
+  /** Kısmi servis panelini açar — uzun basış ve satırdaki servis ikonu aynı hedefe gider. */
+  readonly onServeStatus: (item: OrderItem) => void;
   readonly onPay: () => void;
   readonly onResolveConflict: (
     item: OrderItem,
@@ -108,6 +111,7 @@ export function OrderPane({
             padding: tokens.space.sm,
           }}
           showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0, flexShrink: 0 }}
         >
           {viewOptions.map((option) => (
             <Chip
@@ -175,9 +179,9 @@ export function OrderPane({
             );
             return (
               <Pressable
-                accessibilityHint={copy.longPress}
+                accessibilityHint={copy.serveStatus}
                 accessibilityRole="button"
-                onLongPress={() => onEditNote(item)}
+                onLongPress={() => onServeStatus(item)}
                 style={{
                   borderBottomColor: tokens.colors.borderLight,
                   borderBottomWidth: 1,
@@ -210,11 +214,36 @@ export function OrderPane({
                         + {modifier.modifierOptionNameSnapshot}
                       </Text>
                     ))}
-                    <ServiceStatusPill
-                      label={itemGroups[item.id] === 'drinks' ? copy.drinks : copy.kitchen}
-                      size="small"
-                      tone={itemGroups[item.id] === 'drinks' ? 'info' : 'neutral'}
-                    />
+                    <View
+                      style={{
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: tokens.space.xxs,
+                      }}
+                    >
+                      <ServiceStatusPill
+                        label={itemGroups[item.id] === 'drinks' ? copy.drinks : copy.kitchen}
+                        size="small"
+                        tone={itemGroups[item.id] === 'drinks' ? 'info' : 'neutral'}
+                      />
+                      {item.status !== 'cancelled' ? (
+                        isFullyServed(item) ? (
+                          <ServiceStatusPill
+                            icon="checkmark-done-outline"
+                            label={copy.served}
+                            size="small"
+                            tone="success"
+                          />
+                        ) : (
+                          <ServiceStatusPill
+                            label={copy.servedCountLabel(servedCount(item), item.quantity)}
+                            size="small"
+                            tone={servedCount(item) > 0 ? 'warning' : 'neutral'}
+                          />
+                        )
+                      ) : null}
+                    </View>
                     {item.note ? (
                       <Text style={[tokens.typography.caption, { color: tokens.colors.warning }]}>
                         {copy.note}: {item.note}
@@ -250,10 +279,15 @@ export function OrderPane({
                     </Text>
                     {item.status !== 'cancelled' ? (
                       <View style={{ flexDirection: 'row' }}>
+                        {/*
+                          Kalem ikonunun yerini servis ikonu aldi: uzun basis
+                          gizli tek yol olmasin diye ayni panele goturen gorunur
+                          bir hedef sart. Not duzenleme panelin icine tasindi.
+                        */}
                         <ServiceIconButton
-                          icon="create-outline"
-                          label={`${copy.editNote}: ${item.nameSnapshot}`}
-                          onPress={() => onEditNote(item)}
+                          icon="restaurant-outline"
+                          label={`${copy.serveStatus}: ${item.nameSnapshot}`}
+                          onPress={() => onServeStatus(item)}
                         />
                         <ServiceIconButton
                           icon="close-circle-outline"

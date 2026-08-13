@@ -390,6 +390,18 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_order_item_serve_quantity_command: {
+        Args: {
+          requested_organization_id: string;
+          requested_branch_id: string;
+          requested_device_id: string;
+          requested_client_mutation_id: string;
+          requested_entity_id: string;
+          requested_payload: Json;
+          requested_base_version: number | null;
+        };
+        Returns: Json;
+      };
       apply_table_session_note_command: {
         Args: {
           requested_organization_id: string;
