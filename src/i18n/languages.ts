@@ -1054,7 +1054,7 @@ export const translations: Record<string, Translation> = {
     ordersNav: 'Поръчки',
     tablesNav: 'Маси',
     serviceNav: 'Обслужване',
-    receiptsNav: 'Касови бележки',
+    receiptsNav: 'Касов Бон',
     profileNav: 'Профил',
     reportsNav: 'Отчети',
     moreNav: 'Още',

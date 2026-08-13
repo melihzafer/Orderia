@@ -2159,7 +2159,13 @@
       "file": "src/features/service-board/shiftBoardModel.ts",
       "root_cause": "filterShiftBoardTables's scope==='payment' required table.state === 'payment_pending'. That derived state only becomes true when a check already has a partial payment recorded (checks.some(c=>c.status==='partially_paid')) -- no code path in the app ever sets tableSession.status to 'payment_pending' directly. A fully-unpaid open table (the overwhelmingly common case for this button) never matched, so the quick action was effectively dead for its primary use case. Home's own 'Payment due' stat and quick-action badge already used the correct definition (remainingMinor > 0), so the two screens disagreed.",
       "fix": "Changed the payment scope check to table.remainingMinor <= 0 (excluded) instead of table.state !== 'payment_pending', matching HomeScreen's existing definition. Updated the existing shiftBoardModel test that had locked in the old (buggy) exclusion behavior, and added an explicit assertion for the zero-balance boundary. Also split OrdersFlowScreen's empty-state message: a scope filter matching zero tables now shows 'No tables match these filters' instead of the misleading 'ask your manager to configure the table layout', which only fits a genuinely hall-less scenario.",
-      "tags": ["service-board", "payments", "filter", "cross-screen-inconsistency", "orders-flow"],
+      "tags": [
+        "service-board",
+        "payments",
+        "filter",
+        "cross-screen-inconsistency",
+        "orders-flow"
+      ],
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T00:20:00.000Z"
@@ -2171,10 +2177,31 @@
       "file": "src/features/pwa/PwaLifecycleBanner.tsx",
       "root_cause": "installDismissed was a plain useState(false) local to the component, reset to false on every fresh mount (i.e. every reload). Nothing persisted the user's dismissal anywhere.",
       "fix": "Lazily initialize installDismissed from window.localStorage (web-only, guarded by Platform.OS==='web'), and write the flag on both dismiss paths (the X icon and the 'Later' button). Deliberately scoped to the install prompt only -- the separate update-ready banner (updateDeferred) is left session-only, since re-prompting about a pending update on next load is correct behavior, unlike repeatedly begging to install.",
-      "tags": ["pwa", "localstorage", "persistence", "ux-annoyance"],
+      "tags": [
+        "pwa",
+        "localstorage",
+        "persistence",
+        "ux-annoyance"
+      ],
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T00:20:00.000Z"
+    },
+    {
+      "id": "bug-135",
+      "timestamp": "2026-08-13T21:59:57.572Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/i18n/languages.ts",
+      "root_cause": "Had 'Касови бележки'",
+      "fix": "Changed to 'Касов Бон'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:59:57.572Z"
     }
   ]
 }

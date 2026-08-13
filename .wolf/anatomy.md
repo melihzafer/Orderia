@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:48:34.103Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:59:57.561Z
 > Files: 56 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -316,7 +316,7 @@
 
 ## src/i18n/
 
-- `languages.ts` — Exports Translation, translations (~21108 tok)
+- `languages.ts` — Exports Translation, translations (~21106 tok)
 
 ## src/navigation/
 

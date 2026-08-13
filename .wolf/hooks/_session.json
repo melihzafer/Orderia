@@ -251,6 +251,11 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-08-13T21:45:54.350Z"
+    },
+    "D:/Projects/Orderia/src/i18n/languages.ts": {
+      "count": 1,
+      "tokens": 21108,
+      "first_read": "2026-08-13T21:59:49.082Z"
     }
   },
   "files_written": [
@@ -619,6 +624,12 @@
       "action": "edit",
       "tokens": 51,
       "at": "2026-08-13T21:48:34.113Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+      "action": "edit",
+      "tokens": 9,
+      "at": "2026-08-13T21:59:57.570Z"
     }
   ],
   "edit_counts": {
@@ -640,11 +651,12 @@
     "src/features/pwa/PwaLifecycleBanner.tsx": 3,
     "src/features/service-board/shiftBoardModel.ts": 1,
     "src/features/service-board/__tests__/shiftBoardModel.test.ts": 2,
-    "src/screens/OrdersFlowScreen.tsx": 2
+    "src/screens/OrdersFlowScreen.tsx": 2,
+    "src/i18n/languages.ts": 1
   },
-  "anatomy_hits": 8,
+  "anatomy_hits": 9,
   "anatomy_misses": 40,
   "repeated_reads_warned": 44,
   "cerebrum_warnings": 0,
-  "stop_count": 8
+  "stop_count": 10
 }
