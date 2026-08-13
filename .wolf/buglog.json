@@ -1805,6 +1805,50 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-11T11:54:37.027Z"
+    },
+    {
+      "id": "bug-112",
+      "timestamp": "2026-08-13T08:23:34.165Z",
+      "error_message": "CSS fix: gap",
+      "file": "src/features/table-workspace/components/OrderPane.tsx",
+      "root_cause": "gap: tokens.space.xs, padding: tokens.space.sm → tokens.space.xs,",
+      "fix": "Changed gap: tokens.space.xs, padding: tokens.space.sm → tokens.space.xs,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T08:23:34.165Z"
+    },
+    {
+      "id": "bug-113",
+      "timestamp": "2026-08-13T08:23:38.117Z",
+      "error_message": "CSS fix: gap",
+      "file": "src/features/table-workspace/components/PalettePane.tsx",
+      "root_cause": "gap: tokens.space.xs, paddingTop: tokens.space.sm → tokens.space.xs,",
+      "fix": "Changed gap: tokens.space.xs, paddingTop: tokens.space.sm → tokens.space.xs,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T08:23:38.117Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-08-13T13:10:00.000Z",
+      "error_message": "User-reported: check screen 'All items/Kitchen/Drinks' scope chips render with wildly uneven pill heights (one stretched full-height, others normal)",
+      "file": "src/features/table-workspace/components/OrderPane.tsx",
+      "root_cause": "Horizontal ScrollView contentContainerStyle omitted alignItems: 'center', so flexbox defaulted to align-items: stretch and each Chip stretched to the ScrollView's cross-axis size instead of sizing to content. CheckStrip in the same file (WorkspaceChrome.tsx) already had alignItems:'center' set, so only this chip strip and PalettePane's category chip strip (same missing property) were affected.",
+      "fix": "Added alignItems: 'center' to the contentContainerStyle of the viewOptions ScrollView in OrderPane.tsx and the category ScrollView in PalettePane.tsx",
+      "tags": ["ui", "flexbox", "react-native", "chip", "table-workspace"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T13:10:00.000Z"
     }
   ]
 }

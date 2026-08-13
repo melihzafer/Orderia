@@ -5,6 +5,9 @@
 
 | 15:00 | Localized+specialized auth error messages (invalid creds/network/rate-limit/email-in-use/weak-password/device-revoked/etc.) | src/contexts/AuthContext.tsx, src/i18n/languages.ts, src/contexts/__tests__/AuthContext.test.tsx | pass (tsc clean, 65/65 suites) | ~35k |
 | 15:00 | Added missing success snackbars for add/edit table, hall, category (used pre-existing but unused i18n keys); fixed category-delete toast to say "deleted" not the button label | src/screens/AddTableScreenModern.tsx, AddHallScreenModern.tsx, AddCategoryScreenModern.tsx, src/i18n/languages.ts | pass | ~10k |
+| 17:10 | Fixed stretched/uneven pill height on OrderPane "All items/Kitchen/Drinks" scope chips + same latent bug in PalettePane category chips (missing `alignItems:'center'` on horizontal ScrollView contentContainerStyle → default 'stretch') | src/features/table-workspace/components/OrderPane.tsx, PalettePane.tsx | pending user verify | ~4k |
+| 17:10 | Confirmed table-to-table order transfer already exists end-to-end (RPC `transfer_or_merge_table_session`, TableOperationSheet, "..." actions sheet → "Masayı taşı / birleştir") — no new work needed | src/screens/TableDetailScreen.tsx, src/features/table-operations/* | informed user | ~1k |
+| 17:12 | tsc --noEmit clean after chip-height fix | — | pass | ~1k |
 
 ## Session: 2026-08-06 14:00
 
@@ -650,3 +653,24 @@ bug-081..086 olarak islendi. Hicbir dosya silinmedi, sadece duzenlendi (kullanic
 | 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~75 |
 | 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~76 |
 | 14:54 | Edited src/screens/MenuScreen.tsx | CSS: description, price | ~78 |
+| 15:01 | Session end: 48 writes across 12 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 29 reads | ~61291 tok |
+| 18:00 | Session end: 48 writes across 12 files (legacyMigration.ts, 20260811000000_replace_catalog_from_legacy_snapshot.sql, legacyMigrationGateway.ts, database.types.ts, settingsCopy.ts) | 29 reads | ~61291 tok |
+
+## Session: 2026-08-13 11:11
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-08-13 11:12
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-08-13 11:12
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:23 | Edited src/features/table-workspace/components/OrderPane.tsx | CSS: alignItems | ~73 |
+| 11:23 | Edited src/features/table-workspace/components/PalettePane.tsx | CSS: alignItems | ~45 |
+| 11:26 | Session end: 2 writes across 2 files (OrderPane.tsx, PalettePane.tsx) | 6 reads | ~17270 tok |
+| 13:06 | Session end: 2 writes across 2 files (OrderPane.tsx, PalettePane.tsx) | 16 reads | ~17771 tok |

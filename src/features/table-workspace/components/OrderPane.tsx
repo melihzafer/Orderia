@@ -102,7 +102,11 @@ export function OrderPane({
         <ScrollView
           horizontal
           accessibilityRole="tablist"
-          contentContainerStyle={{ gap: tokens.space.xs, padding: tokens.space.sm }}
+          contentContainerStyle={{
+            alignItems: 'center',
+            gap: tokens.space.xs,
+            padding: tokens.space.sm,
+          }}
           showsHorizontalScrollIndicator={false}
         >
           {viewOptions.map((option) => (

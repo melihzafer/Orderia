@@ -72,7 +72,11 @@ export function PalettePane({
           horizontal
           accessibilityRole="tablist"
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: tokens.space.xs, paddingTop: tokens.space.sm }}
+          contentContainerStyle={{
+            alignItems: 'center',
+            gap: tokens.space.xs,
+            paddingTop: tokens.space.sm,
+          }}
         >
           <Chip
             label={copy.all}

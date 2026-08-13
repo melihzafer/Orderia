@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-11T11:54:43.285Z
-> Files: 42 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T08:23:38.107Z
+> Files: 43 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -299,7 +299,8 @@
 
 ## src/features/table-workspace/components/
 
-- `OrderPane.tsx` — Açık hesabın sipariş satırları: gruplama, servis işaretleme ve satır eylemleri. (~3886 tok)
+- `OrderPane.tsx` — Açık hesabın sipariş satırları: gruplama, servis işaretleme ve satır eylemleri. (~3906 tok)
+- `PalettePane.tsx` — Ürün paleti: kategori/favori daraltması, arama ve hızlı ekleme. (~2745 tok)
 - `WorkspaceChrome.tsx` — Palet daraltma kapsamı: ya sabit bir grup ya da bir kategori kimliği. (~1902 tok)
 
 ## src/i18n/
