@@ -2087,6 +2087,94 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-13T21:18:07.254Z"
+    },
+    {
+      "id": "bug-129",
+      "timestamp": "2026-08-13T21:46:28.845Z",
+      "error_message": "Missing error handling in readInstallDismissed",
+      "file": "src/features/pwa/PwaLifecycleBanner.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:46:28.845Z"
+    },
+    {
+      "id": "bug-130",
+      "timestamp": "2026-08-13T21:46:35.702Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/features/pwa/PwaLifecycleBanner.tsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 7→11 lines (2 removed) | Also: if (showUpdate) setUpdateDeferred(true);; else setInstallDismissed(true);",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-08-13T21:46:42.287Z"
+    },
+    {
+      "id": "bug-131",
+      "timestamp": "2026-08-13T21:46:55.776Z",
+      "error_message": "Wrong operator: !== should be <=",
+      "file": "src/features/service-board/shiftBoardModel.ts",
+      "root_cause": "Used \"!==\" instead of \"<=\"",
+      "fix": "Changed operator !== → <=",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:46:55.776Z"
+    },
+    {
+      "id": "bug-132",
+      "timestamp": "2026-08-13T21:48:19.628Z",
+      "error_message": "Type error",
+      "file": "src/screens/OrdersFlowScreen.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T21:48:19.628Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-08-14T00:20:00.000Z",
+      "error_message": "User-reported: tapping 'Take payment' on Home always shows 'No tables in this hall yet / Ask your manager to configure the table layout', even though Home's own dashboard shows open tables with an unpaid balance",
+      "file": "src/features/service-board/shiftBoardModel.ts",
+      "root_cause": "filterShiftBoardTables's scope==='payment' required table.state === 'payment_pending'. That derived state only becomes true when a check already has a partial payment recorded (checks.some(c=>c.status==='partially_paid')) -- no code path in the app ever sets tableSession.status to 'payment_pending' directly. A fully-unpaid open table (the overwhelmingly common case for this button) never matched, so the quick action was effectively dead for its primary use case. Home's own 'Payment due' stat and quick-action badge already used the correct definition (remainingMinor > 0), so the two screens disagreed.",
+      "fix": "Changed the payment scope check to table.remainingMinor <= 0 (excluded) instead of table.state !== 'payment_pending', matching HomeScreen's existing definition. Updated the existing shiftBoardModel test that had locked in the old (buggy) exclusion behavior, and added an explicit assertion for the zero-balance boundary. Also split OrdersFlowScreen's empty-state message: a scope filter matching zero tables now shows 'No tables match these filters' instead of the misleading 'ask your manager to configure the table layout', which only fits a genuinely hall-less scenario.",
+      "tags": ["service-board", "payments", "filter", "cross-screen-inconsistency", "orders-flow"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T00:20:00.000Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-08-14T00:20:00.000Z",
+      "error_message": "User-reported: PWA 'Add Orderia to your phone' install banner reappears on every page reload even after dismissing it",
+      "file": "src/features/pwa/PwaLifecycleBanner.tsx",
+      "root_cause": "installDismissed was a plain useState(false) local to the component, reset to false on every fresh mount (i.e. every reload). Nothing persisted the user's dismissal anywhere.",
+      "fix": "Lazily initialize installDismissed from window.localStorage (web-only, guarded by Platform.OS==='web'), and write the flag on both dismiss paths (the X icon and the 'Later' button). Deliberately scoped to the install prompt only -- the separate update-ready banner (updateDeferred) is left session-only, since re-prompting about a pending update on next load is correct behavior, unlike repeatedly begging to install.",
+      "tags": ["pwa", "localstorage", "persistence", "ux-annoyance"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T00:20:00.000Z"
     }
   ]
 }

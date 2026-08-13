@@ -15,13 +15,40 @@ import {
   subscribePwaLifecycle,
 } from './pwaLifecycle';
 
+/**
+ * Kurulum uyarısı kapatıldığında kalıcı olur — her sayfa yenilemesinde yeniden
+ * sormak "kur" davetini gürültüye çeviriyordu. Güncelleme uyarısı kasıtlı olarak
+ * bunun dışında: yeni bir sürüm gerçekten uygulanana kadar her oturumda tekrar
+ * sorulması doğru, kalıcı olarak susturulmamalı.
+ */
+const INSTALL_DISMISSED_KEY = 'orderia:pwaInstallDismissed';
+
+function readInstallDismissed(): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(INSTALL_DISMISSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function persistInstallDismissed(): void {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(INSTALL_DISMISSED_KEY, '1');
+  } catch {
+    // Gizli/kısıtlı tarama modunda localStorage yazımı reddedilebilir — bu durumda
+    // yalnızca bu oturum için kapanır, kalıcı olmaz. Kritik olmayan bir zarafet kaybı.
+  }
+}
+
 export function PwaLifecycleBanner() {
   const { tokens } = useTheme();
   const { language } = useLocalization();
   const { sync } = useOrderiaData();
   const insets = useSafeAreaInsets();
   const [state, setState] = useState<PwaLifecycleSnapshot>(getPwaLifecycleSnapshot);
-  const [installDismissed, setInstallDismissed] = useState(false);
+  const [installDismissed, setInstallDismissed] = useState(readInstallDismissed);
   const [updateDeferred, setUpdateDeferred] = useState(false);
   const copy = pwaCopy(language);
 
@@ -94,8 +121,12 @@ export function PwaLifecycleBanner() {
           accessibilityRole="button"
           hitSlop={12}
           onPress={() => {
-            if (showUpdate) setUpdateDeferred(true);
-            else setInstallDismissed(true);
+            if (showUpdate) {
+              setUpdateDeferred(true);
+            } else {
+              persistInstallDismissed();
+              setInstallDismissed(true);
+            }
           }}
         >
           <Ionicons color={tokens.colors.textSubtle} name="close" size={24} />
@@ -121,8 +152,12 @@ export function PwaLifecycleBanner() {
         <ServiceButton
           label={copy.later}
           onPress={() => {
-            if (showUpdate) setUpdateDeferred(true);
-            else setInstallDismissed(true);
+            if (showUpdate) {
+              setUpdateDeferred(true);
+            } else {
+              persistInstallDismissed();
+              setInstallDismissed(true);
+            }
           }}
           variant="ghost"
         />

@@ -120,6 +120,15 @@
   insa etmeyi degil). Tek giris noktasi (`SettingsScreen.tsx`'teki "QR Menu" satiri) kaldirildi;
   `QRMenuScreenModern`/`QRMenuContext`/route kaydi SILINMEDI, sadece erisilemez hale getirildi.
   Bu domain/QR akisini "duzeltmek" isteyen bir istekle karsilasirsan bu once bir urun karari.
+- [2026-08-14] **KRITIK: `ShiftBoardTableState.payment_pending` sadece kismi odemede olusur,
+  hicbir kod yolu `tableSession.status`'u dogrudan bu degere getirmiyor.** "Odeme al" gibi
+  filtreleri bu state'e gore yazma — Home ekraninin kendi sayaci zaten dogru tanimi
+  (`remainingMinor > 0`) kullaniyor, ona hizalan. `grep "status: 'payment_pending'"` bunu
+  hizlica dogrular (sadece test fixture'inda cikar, gercek koddaki HICBIR yazmada yok).
+- [2026-08-14] **`AsyncStorage` degil, dogrudan `window.localStorage`** — PWA-only bilesenlerde
+  (pwaLifecycle.ts, PwaLifecycleBanner.tsx) zaten `window`/`navigator`/`document`'a dogrudan
+  erisiliyor (Platform.OS==='web' korumali); bu dosyalarda kalici bir bayrak eklerken de ayni
+  desene uy, cross-platform AsyncStorage'a gecme.
 - [2026-08-13] **RNW/web'de yatay `ScrollView`, flex-column ebeveynin icinde varsayilan olarak
   `flexGrow`e sahip — ebeveynin butun bos dikey alanini yutar.** `alignItems:'center'` (contentContainerStyle)
   yalnizca ICERIGI ortalar, ScrollView'in KENDI KUTUSUNU kucultmez. Bir yatay chip/tab seridi bir flex

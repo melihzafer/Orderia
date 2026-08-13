@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:18:07.242Z
-> Files: 52 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:48:34.103Z
+> Files: 56 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -265,6 +265,7 @@
 
 ## src/features/pwa/
 
+- `PwaLifecycleBanner.tsx` — Kurulum uyarısı kapatıldığında kalıcı olur — her sayfa yenilemesinde yeniden (~2210 tok)
 
 ## src/features/pwa/__tests__/
 
@@ -284,9 +285,11 @@
 
 ## src/features/service-board/
 
+- `shiftBoardModel.ts` — Customer/order names are searchable from the open-order board. (~3899 tok)
 
 ## src/features/service-board/__tests__/
 
+- `shiftBoardModel.test.ts` — organizationId: fixture (~3396 tok)
 
 ## src/features/table-operations/
 
@@ -338,6 +341,7 @@
 - `LegacyTableDetailScreen.tsx` — localCancellationReasons — renders table (~15580 tok)
 - `MenuAssistantScreen.tsx` — MenuAssistantScreen (~8570 tok)
 - `MenuScreen.tsx` — MenuScreen (~8155 tok)
+- `OrdersFlowScreen.tsx` — Orders is intentionally a short navigation flow. Operational filters and (~5268 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
 - `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
 - `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~12202 tok)

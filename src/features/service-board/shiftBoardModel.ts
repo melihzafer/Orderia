@@ -200,7 +200,12 @@ export function filterShiftBoardTables(
     if (filters.scope === 'mine' && !table.isMine) return false;
     if (filters.scope === 'alerts' && !table.needsAttention) return false;
     if (filters.scope === 'open' && table.state === 'available') return false;
-    if (filters.scope === 'payment' && table.state !== 'payment_pending') return false;
+    // `payment_pending` durumu yalnizca kismi odeme yapilmis hesaplarda olusuyor —
+    // hicbir kod yolu `tableSession.status`'u dogrudan bu degere getirmiyor. Hic
+    // odenmemis ama bakiyesi olan (en yaygin durum) bir masa bu yuzden hic
+    // gorunmuyordu. Ana ekranin kendi "Odeme bekleyen" sayaci zaten `remainingMinor`
+    // kullaniyor; burasi da ayni tanima hizalandi.
+    if (filters.scope === 'payment' && table.remainingMinor <= 0) return false;
     if (filters.scope === 'available' && table.state !== 'available') return false;
 
     return matches(

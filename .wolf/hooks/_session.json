@@ -43,7 +43,7 @@
       "first_read": "2026-08-13T10:03:36.582Z"
     },
     "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts": {
-      "count": 1,
+      "count": 2,
       "tokens": 0,
       "first_read": "2026-08-13T10:03:53.596Z"
     },
@@ -226,6 +226,31 @@
       "count": 1,
       "tokens": 2742,
       "first_read": "2026-08-13T21:14:01.383Z"
+    },
+    "D:/Projects/Orderia/src/screens/HomeScreen.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-13T21:43:28.414Z"
+    },
+    "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-08-13T21:44:31.746Z"
+    },
+    "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx": {
+      "count": 2,
+      "tokens": 5265,
+      "first_read": "2026-08-13T21:45:18.142Z"
+    },
+    "D:/Projects/Orderia/src/features/pwa/pwaLifecycle.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-13T21:45:46.744Z"
+    },
+    "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-13T21:45:54.350Z"
     }
   },
   "files_written": [
@@ -546,6 +571,54 @@
       "action": "edit",
       "tokens": 466,
       "at": "2026-08-13T21:18:07.251Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+      "action": "edit",
+      "tokens": 397,
+      "at": "2026-08-13T21:46:28.843Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+      "action": "edit",
+      "tokens": 97,
+      "at": "2026-08-13T21:46:35.699Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+      "action": "edit",
+      "tokens": 90,
+      "at": "2026-08-13T21:46:42.284Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts",
+      "action": "edit",
+      "tokens": 154,
+      "at": "2026-08-13T21:46:55.773Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+      "action": "edit",
+      "tokens": 336,
+      "at": "2026-08-13T21:47:44.797Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+      "action": "edit",
+      "tokens": 95,
+      "at": "2026-08-13T21:48:06.689Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+      "action": "edit",
+      "tokens": 166,
+      "at": "2026-08-13T21:48:19.625Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+      "action": "edit",
+      "tokens": 51,
+      "at": "2026-08-13T21:48:34.113Z"
     }
   ],
   "edit_counts": {
@@ -563,11 +636,15 @@
     "src/features/table-workspace/components/WorkspaceModals.tsx": 2,
     "src/screens/TableDetailScreen.tsx": 9,
     "src/features/table-workspace/__tests__/orderCommands.test.ts": 5,
-    "src/features/table-workspace/components/WorkspaceChrome.tsx": 5
+    "src/features/table-workspace/components/WorkspaceChrome.tsx": 5,
+    "src/features/pwa/PwaLifecycleBanner.tsx": 3,
+    "src/features/service-board/shiftBoardModel.ts": 1,
+    "src/features/service-board/__tests__/shiftBoardModel.test.ts": 2,
+    "src/screens/OrdersFlowScreen.tsx": 2
   },
   "anatomy_hits": 8,
-  "anatomy_misses": 35,
-  "repeated_reads_warned": 40,
+  "anatomy_misses": 40,
+  "repeated_reads_warned": 44,
   "cerebrum_warnings": 0,
-  "stop_count": 7
+  "stop_count": 8
 }

@@ -202,6 +202,11 @@ describe('filterShiftBoardTables', () => {
   });
 
   it('supports the home quick-action scopes for open, payment and available work', () => {
+    // `payment` kapsami `remainingMinor > 0`'a bakar, `payment_pending` durumuna
+    // degil: hicbir kod yolu bir oturumu dogrudan 'payment_pending'e getirmiyor,
+    // yalnizca kismi odeme bunu tetikliyor. Odenmemis bakiyesi olan ACIK bir masa
+    // da (henuz hic odeme yapilmamis, en yaygin durum) bu kapsamda gorunmeli —
+    // yoksa Ana ekranin "Odeme al" hizli eylemi hicbir zaman sonuc getirmezdi.
     const openTableWithBalance = {
       ...tables[0],
       id: 'open-table-with-balance',
@@ -213,11 +218,15 @@ describe('filterShiftBoardTables', () => {
     expect(filterShiftBoardTables(tables, { scope: 'open' }).map((table) => table.id)).toEqual([
       tableId,
     ]);
+    // Bakiyesi olmayan (musait) bir masa 'payment' kapsamina hic girmemeli.
+    expect(filterShiftBoardTables(tables, { scope: 'payment' }).map((table) => table.id)).toEqual([
+      tableId,
+    ]);
     expect(
       filterShiftBoardTables(tablesIncludingOpenBalance, { scope: 'payment' }).map(
         (table) => table.id,
       ),
-    ).toEqual([tableId]);
+    ).toEqual([tableId, 'open-table-with-balance']);
     expect(filterShiftBoardTables(tables, { scope: 'available' }).map((table) => table.id)).toEqual(
       [availableTableId],
     );

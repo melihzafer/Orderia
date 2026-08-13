@@ -537,7 +537,18 @@ function TableStep({
         />
       ) : null}
       {tables.length === 0 ? (
-        <ServiceEmptyState body={t.askManagerForTables} icon="grid-outline" title={t.noTables} />
+        // Filtre (orn. "Odeme bekleyen") hicbir masaya uymadigi icin bos olmasi,
+        // salonun hic masasi olmamasindan farkli bir mesaj hak ediyor — aksi halde
+        // "Yoneticinizden masa duzeni istey in" mesaji yanlis teshise goturuyordu.
+        filter === 'all' ? (
+          <ServiceEmptyState body={t.askManagerForTables} icon="grid-outline" title={t.noTables} />
+        ) : (
+          <ServiceEmptyState
+            body={t.tryDifferentSearch}
+            icon="filter-outline"
+            title={t.noMatchingTables}
+          />
+        )
       ) : (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.sm }}>
           {/*
