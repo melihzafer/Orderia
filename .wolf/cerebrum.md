@@ -83,6 +83,16 @@
 - [2026-08-07] **Jenerik smoke testi + hedefli derin testler.** `screens.smoke.test.tsx` barrel'daki
   HER ekrani render edip yalnizca "cokuyor mu" sorar (yeni ekran otomatik kapsama girer); davranis
   testleri ekranin kendi dosyasinda durur. 28 ekrana elle detayli test yazmak bakim yuku olurdu.
+- [2026-08-14] **EAS Android build de ayni "Sentry uyarir, engellemez" ilkesine tabi olmali —
+  onceden degildi ve APK/AAB build'ini KOKUNDEN kirdiriyordu.** `@sentry/react-native`'in
+  `sentry.gradle` eklentisi her release build'de sourcemap yukleme adimi calistiriyor ve
+  org/project yoksa (bu projede HICBIR ZAMAN gercek Sentry kimlik bilgisi tanimlanmadi)
+  TUM build'i `FAILURE: Build failed with an exception` ile durduruyordu — web tarafinin
+  `verify-release-env.mjs --warn-only` deseni Android'e hic uygulanmamisti. Fix: `eas.json`'daki
+  UC build profiline de (`development`/`preview`/`production`) `"env": {"SENTRY_DISABLE_AUTO_UPLOAD": "true"}`
+  eklendi — bu, `sentry.gradle`'in kendi resmi kacis yolu (`shouldSentryAutoUploadGeneral()`
+  tam olarak bu degiskene bakiyor). Uygulama islevine hicbir etkisi yok, sadece Sentry'de
+  sembolize edilmis stack trace olmuyor gercek kimlik bilgisi tanimlanana kadar.
 - [2026-08-07] **Sentry gate'i uyari, engel degil.** `prebuild:web` -> `verify-release-env.mjs --warn-only`.
   Sert gate (`release:env`) Vercel'de env tanimlanana kadar butun deploy'lari kirardi; kullanici
   "uyar ama engelleme"yi secti. Sert gate hala bayraksiz calistirilabiliyor.

@@ -321,6 +321,21 @@
       "count": 3,
       "tokens": 2727,
       "first_read": "2026-08-14T10:57:46.629Z"
+    },
+    "C:/Users/melih/.claude/jobs/c353d571/tmp/build.log": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T11:22:51.434Z"
+    },
+    "C:/Users/melih/.claude/jobs/c353d571/tmp/gradle_section.log": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T11:24:33.151Z"
+    },
+    "D:/Projects/Orderia/eas.json": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T11:25:19.429Z"
     }
   },
   "files_written": [
@@ -947,6 +962,12 @@
       "action": "edit",
       "tokens": 193,
       "at": "2026-08-14T10:58:16.856Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/eas.json",
+      "action": "edit",
+      "tokens": 202,
+      "at": "2026-08-14T11:25:36.674Z"
     }
   ],
   "edit_counts": {
@@ -977,10 +998,11 @@
     "src/i18n/LocalizationContext.tsx": 2,
     "public/index.html": 1,
     "src/navigation/AdaptiveTabBar.tsx": 2,
-    "e2e/app-shell.spec.ts": 1
+    "e2e/app-shell.spec.ts": 1,
+    "eas.json": 1
   },
   "anatomy_hits": 14,
-  "anatomy_misses": 48,
+  "anatomy_misses": 51,
   "repeated_reads_warned": 64,
   "cerebrum_warnings": 0,
   "stop_count": 13

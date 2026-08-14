@@ -2440,6 +2440,18 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T10:55:00.000Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-08-14T11:20:00.000Z",
+      "error_message": "EAS Android build fails at Gradle: 'error: An organization ID or slug is required (provide with --org)' -- task :app:createBundleReleaseJsAndAssets_SentryUpload_... FAILED, whole build ERRORED (EAS_BUILD_UNKNOWN_GRADLE_ERROR)",
+      "file": "eas.json",
+      "root_cause": "The @sentry/react-native Gradle plugin (sentry.gradle) runs a sourcemap-upload step during every release build via sentry-cli, and hard-fails the ENTIRE build if no Sentry org/project is configured. This project has never had real Sentry credentials set (confirmed by the build log's earlier warning: '[@sentry/react-native/expo] Missing config for organization, project') and none are set as EAS environment variables for any profile ('No environment variables ... found for the preview environment on EAS'). The web build already has an established, deliberate policy for this exact situation -- scripts/verify-release-env.mjs runs with --warn-only so a missing Sentry config warns but never blocks a release (see cerebrum.md decision log, 2026-08-07). The Android EAS build profiles never got the equivalent treatment, so it hard-blocked every APK/AAB build.",
+      "fix": "Added \"env\": {\"SENTRY_DISABLE_AUTO_UPLOAD\": \"true\"} to all three eas.json build profiles (development, preview, production). This is the sentry.gradle plugin's own documented escape hatch (project.ext.shouldSentryAutoUploadGeneral checks exactly this env var) -- it skips the sourcemap upload task entirely rather than failing the build. No functional impact on the shipped app; only effect is Sentry won't have symbolicated stack traces until real org/project credentials are configured later.",
+      "tags": ["eas", "android", "build", "sentry", "gradle", "release-pipeline", "p1"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T11:20:00.000Z"
     }
   ]
 }

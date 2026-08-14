@@ -1,10 +1,11 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-14T10:58:16.847Z
-> Files: 60 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-14T11:25:36.661Z
+> Files: 61 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
+- `eas.json` (~263 tok)
 
 ## .agents/skills/supabase-postgres-best-practices/
 
