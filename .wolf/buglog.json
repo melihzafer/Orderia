@@ -2562,6 +2562,29 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T18:05:00.000Z"
+    },
+    {
+      "id": "bug-025",
+      "timestamp": "2026-08-14T19:05:00.000Z",
+      "error_message": "User asked: does the APK version have Supabase auth? Investigation found EVERY prior Android build (v2.0.0, v2.0.1) shipped with NO working Supabase auth/cloud sync at all -- silently fell back to local-only offline mode.",
+      "file": "eas.json / EAS project environment variables",
+      "root_cause": "EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY only existed in the local, gitignored .env file. EAS Build reads env vars from eas.json's per-profile 'env' block (which only had SENTRY_DISABLE_AUTO_UPLOAD) or from EAS's own project-level environment variable store -- confirmed via 'eas env:list' that NO environment (preview/production/development) had any variables configured. readSupabaseEnvironment() (src/config/environment.ts) returns null when both vars are absent, so getSupabaseClient() returned null and the whole app silently ran in local-only mode in every APK build. Verified directly by unzipping the built APK and grepping index.android.bundle for the project's actual Supabase URL substring -- zero matches, confirming the value was never injected at build time.",
+      "fix": "Ran 'eas env:create' to add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY (plaintext visibility -- these are public, RLS-protected client keys, same as what ships in the PWA) to both the preview and production EAS environments. Verified with 'eas env:list --environment preview'. Triggered a fresh Android build (75804e08) to pick them up.",
+      "tags": [
+        "eas",
+        "android",
+        "build",
+        "supabase",
+        "auth",
+        "env-vars",
+        "p0"
+      ],
+      "related_bugs": [
+        "bug-022",
+        "bug-023"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T19:05:00.000Z"
     }
   ]
 }
