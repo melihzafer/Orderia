@@ -72,14 +72,16 @@ export class SupabaseLayoutGateway {
     );
     const hallRows = hallResult.data as HallRow[];
     const tableRows = tableResult.data as RestaurantTableRow[];
-    const tablesByHall = new Map<string, number>();
-
+    // restaurant_tables_active_sequence_unique is (branch_id, sequence_number) --
+    // sequence numbers are unique across the WHOLE branch, not per hall. A
+    // per-hall counter here would suggest 1 for every new hall's first table,
+    // colliding with whichever hall already holds that number and making the
+    // insert fail with a unique-constraint violation.
+    let maxSequenceNumber = 0;
     for (const table of tableRows) {
-      tablesByHall.set(
-        table.hall_id,
-        Math.max(tablesByHall.get(table.hall_id) ?? 0, table.sequence_number),
-      );
+      maxSequenceNumber = Math.max(maxSequenceNumber, table.sequence_number);
     }
+    const nextTableSequence = maxSequenceNumber + 1;
 
     return {
       halls: hallRows.map((hall) => ({
@@ -87,7 +89,7 @@ export class SupabaseLayoutGateway {
         name: hall.name,
         sortOrder: hall.sort_order,
         createdAt: hall.created_at,
-        nextTableSequence: (tablesByHall.get(hall.id) ?? 0) + 1,
+        nextTableSequence,
       })),
       tables: tableRows.map((table) => ({
         id: table.id,
