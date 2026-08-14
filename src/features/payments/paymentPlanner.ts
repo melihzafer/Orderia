@@ -1,3 +1,4 @@
+import uuid from 'react-native-uuid';
 import {
   Check,
   CheckId,
@@ -255,7 +256,5 @@ function safeAdd(left: number, right: number): number {
 }
 
 function defaultUuid(): string {
-  const value = globalThis.crypto?.randomUUID?.();
-  if (!value) throw new Error('Secure UUID generation is unavailable');
-  return value;
+  return String(uuid.v4());
 }
