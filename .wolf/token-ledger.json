@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-08-06T09:09:05.336Z",
   "lifetime": {
-    "total_tokens_estimated": 1971875,
-    "total_reads": 919,
-    "total_writes": 1346,
+    "total_tokens_estimated": 2198281,
+    "total_reads": 1025,
+    "total_writes": 1475,
     "total_sessions": 22,
-    "anatomy_hits": 288,
-    "anatomy_misses": 603,
-    "repeated_reads_blocked": 632,
-    "estimated_savings_vs_bare_cli": 4648482
+    "anatomy_hits": 309,
+    "anatomy_misses": 684,
+    "repeated_reads_blocked": 721,
+    "estimated_savings_vs_bare_cli": 5236944
   },
   "sessions": [
     {
@@ -12946,6 +12946,1321 @@
         "writes_count": 62,
         "repeated_reads_blocked": 44,
         "anatomy_lookups": 9
+      }
+    },
+    {
+      "id": "session-2026-08-13-1112",
+      "started": "2026-08-13T08:12:03.220Z",
+      "ended": "2026-08-13T22:02:40.401Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 2057,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 11805,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2745,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 4353,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-operations/TableOperationSheet.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-operations/tableOperationGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 501,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/ShiftBoardQuickActions.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 8873,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/PLAN.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/IMPLEMENTATION_PLAN.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 2191,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/stateTransitions.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/contracts/outbox.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731190000_order_item_served_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceActionSheet.tsx",
+          "tokens_estimated": 1377,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 5199,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/QuantityStepper.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 6214,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/paymentPlanner.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/paymentGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260727001000_split_partial_payments.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sqlite/migrations.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/indexeddb/indexedDbSchema.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/PaymentSheet.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 5232,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitPlanner.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitCommands.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/domainChangeApplier.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731093000_order_item_void_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/__tests__/paymentPlanner.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/fulfillment.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/entities.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 5614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceModel.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useTableWorkspace.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 2742,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5265,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/pwaLifecycle.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21108,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/evet-festival-yar-nsa-sorted-book.md",
+          "tokens_estimated": 3457,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/entities.ts",
+          "tokens_estimated": 121,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/stateTransitions.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/fulfillment.ts",
+          "tokens_estimated": 309,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 259,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 847,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 151,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 240,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260813120000_order_item_serve_quantity_command.sql",
+          "tokens_estimated": 2179,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 164,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 195,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 190,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 171,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 1037,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 10,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 92,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 382,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 159,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 100,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 1584,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 171,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 166,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 249,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 32,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 124,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 466,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 397,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts",
+          "tokens_estimated": 154,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 336,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 166,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 9,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 85276,
+        "output_tokens_estimated": 16292,
+        "reads_count": 51,
+        "writes_count": 62,
+        "repeated_reads_blocked": 44,
+        "anatomy_lookups": 9
+      }
+    },
+    {
+      "id": "session-2026-08-13-1112",
+      "started": "2026-08-13T08:12:03.220Z",
+      "ended": "2026-08-13T23:14:23.371Z",
+      "reads": [
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 2057,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 11805,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 2745,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 4353,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-operations/TableOperationSheet.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-operations/tableOperationGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/routes.ts",
+          "tokens_estimated": 501,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/ShiftBoardQuickActions.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/NotificationContext.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/DraftBar.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/stores/settingsStore.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 8873,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/PLAN.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/IMPLEMENTATION_PLAN.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 2191,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/stateTransitions.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/contracts/outbox.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731190000_order_item_served_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/components/ServiceActionSheet.tsx",
+          "tokens_estimated": 1377,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 5199,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/components/QuantityStepper.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/design-system/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 6214,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/paymentPlanner.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/paymentGateway.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260726173000_business_schema_rls.sql",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260727001000_split_partial_payments.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sqlite/migrations.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/indexeddb/indexedDbSchema.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/PaymentSheet.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 5232,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitPlanner.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/checkSplitCommands.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/domainChangeApplier.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260731093000_order_item_void_command.sql",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/payments/__tests__/paymentPlanner.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/fulfillment.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/entities.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/index.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 5614,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceModel.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/useTableWorkspace.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/navigation/AppNavigator.tsx",
+          "tokens_estimated": 2742,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/HomeScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 5265,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/pwaLifecycle.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 21108,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/RestaurantAccessScreen.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 8954,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 7715,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+          "tokens_estimated": 6132,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "C:/Users/melih/.claude/plans/evet-festival-yar-nsa-sorted-book.md",
+          "tokens_estimated": 3457,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/entities.ts",
+          "tokens_estimated": 121,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/domain/stateTransitions.ts",
+          "tokens_estimated": 56,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/fulfillment.ts",
+          "tokens_estimated": 309,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 259,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/orderCommands.ts",
+          "tokens_estimated": 847,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/data/sync/mutationPushGateway.ts",
+          "tokens_estimated": 151,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/services/supabase/database.types.ts",
+          "tokens_estimated": 240,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/supabase/migrations/20260813120000_order_item_serve_quantity_command.sql",
+          "tokens_estimated": 2179,
+          "action": "create"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 164,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 195,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 190,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 171,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 1037,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 37,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceModals.tsx",
+          "tokens_estimated": 10,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 92,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 382,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 159,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 163,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 39,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 100,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 1584,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 171,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/__tests__/orderCommands.test.ts",
+          "tokens_estimated": 36,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/OrderPane.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/PalettePane.tsx",
+          "tokens_estimated": 98,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 166,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 249,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 196,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/components/WorkspaceChrome.tsx",
+          "tokens_estimated": 110,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 32,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/table-workspace/workspaceCopy.ts",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 54,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 58,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 124,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/TableDetailScreen.tsx",
+          "tokens_estimated": 466,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 397,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/pwa/PwaLifecycleBanner.tsx",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/shiftBoardModel.ts",
+          "tokens_estimated": 154,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 336,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/service-board/__tests__/shiftBoardModel.test.ts",
+          "tokens_estimated": 95,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 166,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/OrdersFlowScreen.tsx",
+          "tokens_estimated": 51,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+          "tokens_estimated": 9,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+          "tokens_estimated": 44,
+          "action": "edit"
+        },
+        {
+          "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+          "tokens_estimated": 300,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 108077,
+        "output_tokens_estimated": 16761,
+        "reads_count": 55,
+        "writes_count": 67,
+        "repeated_reads_blocked": 45,
+        "anatomy_lookups": 12
       }
     }
   ],

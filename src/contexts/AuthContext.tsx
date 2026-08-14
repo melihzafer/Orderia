@@ -30,6 +30,14 @@ const deviceStorageKey = 'orderia.cloud.device_id';
 const branchStorageKeyPrefix = 'orderia.cloud.active_branch';
 const defaultAppVersion = '2.0.0';
 
+/** Sabit çeviri anahtarından çözülen hata metinleri için — bkz. `errorKey` state'i. */
+type AuthErrorKey =
+  | 'authDeviceRevokedMessage'
+  | 'authWorkspaceLoadFailed'
+  | 'authSessionRestoreFailed'
+  | 'authBranchActivateFailed'
+  | 'authDeviceListRefreshFailed';
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -74,9 +82,31 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
   const [pendingApprovals, setPendingApprovals] = useState<readonly SignupRequestRow[]>([]);
   const [onboardingRole, setOnboardingRole] = useState<OnboardingRole | null>(null);
   const [createdRestaurantCode, setCreatedRestaurantCode] = useState<string | undefined>();
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+  // Statik hata metinleri COZULMUS string olarak degil, ANAHTAR olarak saklanir ve her
+  // render'da GUNCEL `t` ile cozulur (asagida `resolvedErrorMessage`). Aksi halde: uygulama
+  // acilisinda `restoreSession` dil tercihi AsyncStorage'dan yuklenmeden ONCE bir hata
+  // yakalarsa, o an henuz varsayilan 'tr' olan `t`'den cozulmus metin STATE'e kalici olarak
+  // yazilir ve dil sonradan Ingilizce'ye gecse bile ekranda Turkce kalir (baslik Ingilizce,
+  // govde Turkce karisik gorunur). Dinamik yardimcilardan gelen (signIn/signUp/onboarding
+  // hata haritalayicilari) metinler zaten cagri anindaki `t` ile cozuluyor; o yollar icin
+  // dogrudan metin saklanir.
+  const [errorKey, setErrorKey] = useState<AuthErrorKey | undefined>();
+  const [errorMessageText, setErrorMessageText] = useState<string | undefined>(
     resolution.configurationError,
   );
+  const clearError = useCallback(() => {
+    setErrorKey(undefined);
+    setErrorMessageText(undefined);
+  }, []);
+  const applyErrorKey = useCallback((key: AuthErrorKey) => {
+    setErrorKey(key);
+    setErrorMessageText(undefined);
+  }, []);
+  const applyErrorText = useCallback((text: string) => {
+    setErrorMessageText(text);
+    setErrorKey(undefined);
+  }, []);
+  const errorMessage = errorKey ? t[errorKey] : errorMessageText;
   const hydrationRevision = useRef(0);
 
   const activateBranch = useCallback(
@@ -90,14 +120,34 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         throw new Error('Selected branch is not available to this user');
       }
 
-      const deviceId = await getOrCreateDeviceId();
-      await gateway.registerDevice({
-        appVersion: process.env.EXPO_PUBLIC_APP_VERSION?.trim() || defaultAppVersion,
-        branchId: branch.id,
-        deviceId,
-        organizationId: branch.organization_id,
-        platform: detectDevicePlatform(),
-      });
+      let deviceId = await getOrCreateDeviceId();
+      try {
+        await gateway.registerDevice({
+          appVersion: process.env.EXPO_PUBLIC_APP_VERSION?.trim() || defaultAppVersion,
+          branchId: branch.id,
+          deviceId,
+          organizationId: branch.organization_id,
+          platform: detectDevicePlatform(),
+        });
+      } catch (error) {
+        if (!isDeviceScopeMismatchError(error)) throw error;
+        // Bu cihaz kimligi bu tarayicida DAHA ONCE baska bir hesaba kayitliydi (ornegin
+        // ayni cihazda once yonetici, sonra farkli bir garson hesabi ile giris yapildi).
+        // Sunucu ayni id'yi baska bir user/org'a yeniden baglamayi reddediyor — yeni bir
+        // kimlik uretip BIR KEZ daha dene. Ikinci deneme de basarisiz olursa normal hata
+        // akisina duser, sonsuz "Try again" dongusune girmez.
+        captureOperationalError(error, 'auth_failure', {
+          operation: 'register_device_scope_mismatch_retry',
+        });
+        deviceId = await regenerateDeviceId();
+        await gateway.registerDevice({
+          appVersion: process.env.EXPO_PUBLIC_APP_VERSION?.trim() || defaultAppVersion,
+          branchId: branch.id,
+          deviceId,
+          organizationId: branch.organization_id,
+          platform: detectDevicePlatform(),
+        });
+      }
       await AsyncStorage.setItem(branchStorageKey(targetSession.user.id), branch.id);
 
       setSession(targetSession);
@@ -107,11 +157,11 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       setDevices([]);
       setOnboardingRole(null);
       setCreatedRestaurantCode(undefined);
-      setErrorMessage(undefined);
+      clearError();
       setStatus('ready');
       recordOperationalEvent('auth_success', { operation: 'activate_branch' });
     },
-    [gateway],
+    [gateway, clearError],
   );
 
   const restoreSession = useCallback(
@@ -129,13 +179,13 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setPendingSignupEmail(undefined);
         setOnboardingRole(null);
         setCreatedRestaurantCode(undefined);
-        setErrorMessage(undefined);
+        clearError();
         setStatus('signed_out');
         return;
       }
 
       setStatus('initializing');
-      setErrorMessage(undefined);
+      clearError();
 
       try {
         const targetWorkspace = await gateway.loadWorkspace(targetSession.user.id);
@@ -153,7 +203,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
             setOnboardingRole(null);
             setCreatedRestaurantCode(undefined);
             setPendingSignupEmail(signupRequest.email);
-            setErrorMessage(undefined);
+            clearError();
             setStatus('pending_approval');
             return;
           }
@@ -165,7 +215,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           setPendingSignupEmail(undefined);
           setOnboardingRole(null);
           setCreatedRestaurantCode(undefined);
-          setErrorMessage(undefined);
+          clearError();
           setStatus('onboarding_role');
           return;
         }
@@ -197,7 +247,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           setSession(null);
           setWorkspace(null);
           setActiveBranchId(null);
-          setErrorMessage(t.authDeviceRevokedMessage);
+          applyErrorKey('authDeviceRevokedMessage');
           setStatus('signed_out');
           return;
         }
@@ -207,7 +257,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         setActiveBranchId(null);
         setOnboardingRole(null);
         setCreatedRestaurantCode(undefined);
-        setErrorMessage(t.authWorkspaceLoadFailed);
+        applyErrorKey('authWorkspaceLoadFailed');
         setStatus('error');
         captureOperationalError(error, 'auth_failure', {
           operation: 'restore_workspace',
@@ -215,7 +265,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         });
       }
     },
-    [activateBranch, gateway],
+    [activateBranch, applyErrorKey, clearError, gateway],
   );
 
   useEffect(() => {
@@ -240,7 +290,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           operation: 'restore_session',
           errorClass: error instanceof Error ? error.name : 'UnknownError',
         });
-        setErrorMessage(t.authSessionRestoreFailed);
+        applyErrorKey('authSessionRestoreFailed');
         setStatus('error');
       });
 
@@ -249,7 +299,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       unsubscribeAuth();
       unsubscribeRefresh();
     };
-  }, [gateway, restoreSession, suppliedGateway]);
+  }, [applyErrorKey, gateway, restoreSession, suppliedGateway]);
 
   const activeBranch = workspace?.branches.find((branch) => branch.id === activeBranchId) ?? null;
   const activeOrganization =
@@ -266,7 +316,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       }
 
       setStatus('initializing');
-      setErrorMessage(undefined);
+      clearError();
       try {
         const nextSession = await gateway.signIn(email.trim(), password);
         await restoreSession(nextSession);
@@ -276,10 +326,10 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
           errorClass: error instanceof Error ? error.name : 'UnknownError',
         });
         setStatus('signed_out');
-        setErrorMessage(signInErrorMessage(error, t));
+        applyErrorText(signInErrorMessage(error, t));
       }
     },
-    [gateway, restoreSession, t],
+    [applyErrorText, clearError, gateway, restoreSession, t],
   );
 
   const signUp = useCallback(
@@ -289,7 +339,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       }
 
       setStatus('initializing');
-      setErrorMessage(undefined);
+      clearError();
       try {
         const nextSession = await gateway.signUp(email.trim(), password, displayName.trim());
         setSession(nextSession);
@@ -309,31 +359,34 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         });
         setStatus('signed_out');
         if (error instanceof Error && error.message === 'email_confirmation_must_be_disabled') {
-          setErrorMessage(
+          applyErrorText(
             'This Supabase project still sends confirmation emails to users. Disable "Confirm email" in Supabase Auth settings so only the owner receives approval emails.',
           );
         } else {
-          setErrorMessage(signUpErrorMessage(error, t));
+          applyErrorText(signUpErrorMessage(error, t));
         }
         throw error;
       }
     },
-    [gateway, t],
+    [applyErrorText, clearError, gateway, t],
   );
 
-  const selectOnboardingRole = useCallback((role: OnboardingRole) => {
-    setOnboardingRole(role);
-    setCreatedRestaurantCode(undefined);
-    setErrorMessage(undefined);
-    setStatus('onboarding_restaurant');
-  }, []);
+  const selectOnboardingRole = useCallback(
+    (role: OnboardingRole) => {
+      setOnboardingRole(role);
+      setCreatedRestaurantCode(undefined);
+      clearError();
+      setStatus('onboarding_restaurant');
+    },
+    [clearError],
+  );
 
   const resetOnboardingRole = useCallback(() => {
     setOnboardingRole(null);
     setCreatedRestaurantCode(undefined);
-    setErrorMessage(undefined);
+    clearError();
     setStatus('onboarding_role');
-  }, []);
+  }, [clearError]);
 
   const joinRestaurant = useCallback(
     async (code: string) => {
@@ -342,17 +395,17 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       }
 
       setStatus('initializing');
-      setErrorMessage(undefined);
+      clearError();
       try {
         await gateway.joinRestaurant(code, onboardingRole);
         await restoreSession(session);
       } catch (error) {
         setStatus('onboarding_restaurant');
-        setErrorMessage(onboardingErrorMessage(error, t));
+        applyErrorText(onboardingErrorMessage(error, t));
         throw error;
       }
     },
-    [gateway, onboardingRole, restoreSession, session, t],
+    [applyErrorText, clearError, gateway, onboardingRole, restoreSession, session, t],
   );
 
   const createRestaurant = useCallback(
@@ -362,18 +415,18 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       }
 
       setStatus('initializing');
-      setErrorMessage(undefined);
+      clearError();
       try {
         const result = await gateway.createRestaurant(name, branchName);
         setCreatedRestaurantCode(result.restaurantCode);
         setStatus('onboarding_restaurant');
       } catch (error) {
         setStatus('onboarding_restaurant');
-        setErrorMessage(onboardingErrorMessage(error, t));
+        applyErrorText(onboardingErrorMessage(error, t));
         throw error;
       }
     },
-    [gateway, onboardingRole, session, t],
+    [applyErrorText, clearError, gateway, onboardingRole, session, t],
   );
 
   const finishOnboarding = useCallback(async () => {
@@ -394,9 +447,9 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     setPendingSignupEmail(undefined);
     setOnboardingRole(null);
     setCreatedRestaurantCode(undefined);
-    setErrorMessage(undefined);
+    clearError();
     setStatus('signed_out');
-  }, [gateway]);
+  }, [clearError, gateway]);
 
   const retry = useCallback(async () => {
     if (!gateway) return;
@@ -415,15 +468,15 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
       } catch (error) {
         if (isDeviceRevocationError(error)) {
           await signOut();
-          setErrorMessage(t.authDeviceRevokedMessage);
+          applyErrorKey('authDeviceRevokedMessage');
           return;
         }
 
-        setErrorMessage(t.authBranchActivateFailed);
+        applyErrorKey('authBranchActivateFailed');
         setStatus(activeBranchId ? 'ready' : 'select_branch');
       }
     },
-    [activateBranch, activeBranchId, session, signOut, t, workspace],
+    [activateBranch, activeBranchId, applyErrorKey, session, signOut, workspace],
   );
 
   useEffect(() => {
@@ -436,7 +489,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         if (!isDeviceRevocationError(error)) return;
 
         await signOut().catch(() => undefined);
-        setErrorMessage(t.authDeviceRevokedMessage);
+        applyErrorKey('authDeviceRevokedMessage');
       }
     };
 
@@ -460,7 +513,7 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
     return () => {
       subscription.remove();
     };
-  }, [currentDeviceId, gateway, signOut, status, t]);
+  }, [applyErrorKey, currentDeviceId, gateway, signOut, status]);
 
   const refreshDevices = useCallback(async () => {
     if (!gateway || !activeBranch || activeMembership?.role !== 'manager') {
@@ -476,9 +529,9 @@ export function AuthProvider({ children, gateway: suppliedGateway }: AuthProvide
         ),
       );
     } catch {
-      setErrorMessage(t.authDeviceListRefreshFailed);
+      applyErrorKey('authDeviceListRefreshFailed');
     }
-  }, [activeBranch, activeMembership, gateway, t]);
+  }, [activeBranch, activeMembership, applyErrorKey, gateway]);
 
   const revokeDevice = useCallback(
     async (deviceId: string) => {
@@ -580,10 +633,23 @@ function branchStorageKey(userId: string): string {
 async function getOrCreateDeviceId(): Promise<string> {
   const existing = await AsyncStorage.getItem(deviceStorageKey);
   if (existing) return existing;
+  return regenerateDeviceId();
+}
 
+/** Depolanan cihaz kimligini YENISIYLE degistirir — bkz. `device_scope_mismatch` kurtarmasi. */
+async function regenerateDeviceId(): Promise<string> {
   const created = String(uuid.v4());
   await AsyncStorage.setItem(deviceStorageKey, created);
   return created;
+}
+
+function isDeviceScopeMismatchError(error: unknown): boolean {
+  return (
+    error instanceof Object &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string' &&
+    (error as { message: string }).message.includes('device_scope_mismatch')
+  );
 }
 
 function detectDevicePlatform(): DeviceRow['platform'] {

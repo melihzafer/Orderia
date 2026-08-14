@@ -256,6 +256,51 @@
       "count": 1,
       "tokens": 21108,
       "first_read": "2026-08-13T21:59:49.082Z"
+    },
+    "D:/Projects/Orderia/src/screens/RestaurantAccessScreen.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-13T22:18:52.155Z"
+    },
+    "D:/Projects/Orderia/src/screens/SettingsScreen.tsx": {
+      "count": 2,
+      "tokens": 8954,
+      "first_read": "2026-08-13T22:19:46.504Z"
+    },
+    "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts": {
+      "count": 1,
+      "tokens": 7715,
+      "first_read": "2026-08-13T22:21:12.008Z"
+    },
+    "D:/Projects/Orderia/src/contexts/AuthContext.tsx": {
+      "count": 17,
+      "tokens": 6982,
+      "first_read": "2026-08-13T22:39:52.192Z"
+    },
+    "D:/Projects/Orderia/src/components/AuthGate.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T08:36:09.527Z"
+    },
+    "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T08:37:30.372Z"
+    },
+    "D:/Projects/Orderia/src/features/service-board/ServiceTableCard.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T08:43:20.134Z"
+    },
+    "D:/Projects/Orderia/public/index.html": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T08:44:33.981Z"
+    },
+    "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx": {
+      "count": 1,
+      "tokens": 1973,
+      "first_read": "2026-08-14T08:57:58.447Z"
     }
   },
   "files_written": [
@@ -630,6 +675,240 @@
       "action": "edit",
       "tokens": 9,
       "at": "2026-08-13T21:59:57.570Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+      "action": "edit",
+      "tokens": 35,
+      "at": "2026-08-13T22:21:19.284Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+      "action": "edit",
+      "tokens": 45,
+      "at": "2026-08-13T22:21:26.533Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+      "action": "edit",
+      "tokens": 45,
+      "at": "2026-08-13T22:21:34.861Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/features/app-settings/settingsCopy.ts",
+      "action": "edit",
+      "tokens": 44,
+      "at": "2026-08-13T22:21:41.695Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/SettingsScreen.tsx",
+      "action": "edit",
+      "tokens": 300,
+      "at": "2026-08-13T22:21:59.040Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 408,
+      "at": "2026-08-14T08:45:01.394Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 119,
+      "at": "2026-08-14T08:45:21.019Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 6,
+      "at": "2026-08-14T08:45:48.490Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 5,
+      "at": "2026-08-14T08:46:11.014Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 25,
+      "at": "2026-08-14T08:46:37.902Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 22,
+      "at": "2026-08-14T08:46:50.661Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 23,
+      "at": "2026-08-14T08:47:05.439Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 16,
+      "at": "2026-08-14T08:47:20.535Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 112,
+      "at": "2026-08-14T08:47:36.276Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 17,
+      "at": "2026-08-14T08:47:47.658Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 38,
+      "at": "2026-08-14T08:48:01.059Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 31,
+      "at": "2026-08-14T08:48:11.589Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 21,
+      "at": "2026-08-14T08:48:21.500Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 402,
+      "at": "2026-08-14T08:49:05.643Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 211,
+      "at": "2026-08-14T08:49:53.607Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 47,
+      "at": "2026-08-14T08:51:56.307Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 48,
+      "at": "2026-08-14T08:52:18.837Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 19,
+      "at": "2026-08-14T08:52:38.843Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 28,
+      "at": "2026-08-14T08:53:05.486Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 139,
+      "at": "2026-08-14T08:53:19.342Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 38,
+      "at": "2026-08-14T08:53:41.127Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 37,
+      "at": "2026-08-14T08:53:54.737Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 22,
+      "at": "2026-08-14T08:54:27.802Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 25,
+      "at": "2026-08-14T08:54:40.190Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 19,
+      "at": "2026-08-14T08:55:03.804Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/contexts/AuthContext.tsx",
+      "action": "edit",
+      "tokens": 18,
+      "at": "2026-08-14T08:55:29.261Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+      "action": "edit",
+      "tokens": 12,
+      "at": "2026-08-14T08:57:16.863Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+      "action": "edit",
+      "tokens": 21,
+      "at": "2026-08-14T08:57:27.096Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+      "action": "edit",
+      "tokens": 23,
+      "at": "2026-08-14T08:57:38.130Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/languages.ts",
+      "action": "edit",
+      "tokens": 21,
+      "at": "2026-08-14T08:57:47.473Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/screens/AddTableScreenModern.tsx",
+      "action": "edit",
+      "tokens": 18,
+      "at": "2026-08-14T08:58:13.933Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+      "action": "edit",
+      "tokens": 71,
+      "at": "2026-08-14T08:58:39.667Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/i18n/LocalizationContext.tsx",
+      "action": "edit",
+      "tokens": 208,
+      "at": "2026-08-14T08:58:56.281Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/public/index.html",
+      "action": "edit",
+      "tokens": 5,
+      "at": "2026-08-14T08:59:07.376Z"
     }
   ],
   "edit_counts": {
@@ -652,11 +931,17 @@
     "src/features/service-board/shiftBoardModel.ts": 1,
     "src/features/service-board/__tests__/shiftBoardModel.test.ts": 2,
     "src/screens/OrdersFlowScreen.tsx": 2,
-    "src/i18n/languages.ts": 1
+    "src/i18n/languages.ts": 5,
+    "src/features/app-settings/settingsCopy.ts": 4,
+    "src/screens/SettingsScreen.tsx": 1,
+    "src/contexts/AuthContext.tsx": 26,
+    "src/screens/AddTableScreenModern.tsx": 1,
+    "src/i18n/LocalizationContext.tsx": 2,
+    "public/index.html": 1
   },
-  "anatomy_hits": 9,
-  "anatomy_misses": 40,
-  "repeated_reads_warned": 44,
+  "anatomy_hits": 13,
+  "anatomy_misses": 45,
+  "repeated_reads_warned": 61,
   "cerebrum_warnings": 0,
-  "stop_count": 10
+  "stop_count": 12
 }

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-13T21:59:57.561Z
-> Files: 56 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-14T08:59:07.367Z
+> Files: 58 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -135,6 +135,7 @@
 
 ## public/
 
+- `index.html` — %WEB_TITLE% (~638 tok)
 
 ## scripts/
 
@@ -156,7 +157,7 @@
 
 ## src/contexts/
 
-- `AuthContext.tsx` — deviceStorageKey (~6132 tok)
+- `AuthContext.tsx` — Sabit çeviri anahtarından çözülen hata metinleri için — bkz. `errorKey` state'i. (~6986 tok)
 
 ## src/contexts/__tests__/
 
@@ -226,7 +227,7 @@
 
 ## src/features/app-settings/
 
-- `settingsCopy.ts` — Ayarlar ekranının metinleri burada yaşar. (~7715 tok)
+- `settingsCopy.ts` — Ayarlar ekranının metinleri burada yaşar. (~7789 tok)
 
 ## src/features/cancellation-reasons/
 
@@ -316,7 +317,8 @@
 
 ## src/i18n/
 
-- `languages.ts` — Exports Translation, translations (~21106 tok)
+- `languages.ts` — Exports Translation, translations (~21120 tok)
+- `LocalizationContext.tsx` — currencies (~1231 tok)
 
 ## src/navigation/
 
@@ -333,7 +335,7 @@
 
 - `AddCategoryScreenModern.tsx` — AddCategoryScreenModern (~2194 tok)
 - `AddHallScreenModern.tsx` — AddHallScreenModern (~1659 tok)
-- `AddTableScreenModern.tsx` — AddTableScreenModern (~1973 tok)
+- `AddTableScreenModern.tsx` — AddTableScreenModern (~1982 tok)
 - `AnalyticsScreen.tsx` — AnalyticsScreen (~7792 tok)
 - `CancellationReasonsScreen.tsx` — CancellationReasonsScreen (~1751 tok)
 - `HistoryScreen.tsx` — archivePageSize (~6191 tok)
@@ -343,7 +345,7 @@
 - `MenuScreen.tsx` — MenuScreen (~8155 tok)
 - `OrdersFlowScreen.tsx` — Orders is intentionally a short navigation flow. Operational filters and (~5268 tok)
 - `RegisterScreen.tsx` — emailPattern (~2584 tok)
-- `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~8954 tok)
+- `SettingsScreen.tsx` — Dosya seçme ve doğrulama burada biter; veriyi yazma işi onaydan sonra (~9104 tok)
 - `TableDetailScreen.tsx` — "Yeni hesap"a basıldı, henüz gönderilmedi. (~12202 tok)
 
 ## src/screens/__tests__/

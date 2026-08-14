@@ -165,7 +165,7 @@ export default function AddTableScreenModern() {
                 { color: tokens.colors.textMuted, marginTop: tokens.space.xs },
               ]}
             >
-              {t.tableNameHint}
+              {t.tableNameHint(displayHall.nextTableSequence)}
             </Text>
             <ServiceButton
               disabled={saving}

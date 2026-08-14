@@ -120,6 +120,33 @@
   insa etmeyi degil). Tek giris noktasi (`SettingsScreen.tsx`'teki "QR Menu" satiri) kaldirildi;
   `QRMenuScreenModern`/`QRMenuContext`/route kaydi SILINMEDI, sadece erisilemez hale getirildi.
   Bu domain/QR akisini "duzeltmek" isteyen bir istekle karsilasirsan bu once bir urun karari.
+- [2026-08-14] **DUZELTILDI (Option A): `device_scope_mismatch` artik otomatik kurtariliyor.**
+  Onceki bulgu: ayni tarayicida hesap degistirmek (sign out + baska hesapla giris) KALICI olarak
+  "Workspace unavailable" ile kiliyordu, cunku `getOrCreateDeviceId()` TEK, kullaniciya ozel
+  OLMAYAN bir localStorage anahtari (`orderia.cloud.device_id`) kullaniyordu ve sign-out'ta hic
+  temizlenmiyordu. Fix: `activateBranch()` artik `registerDevice()`'i try/catch'e alip
+  `device_scope_mismatch` gorunce `regenerateDeviceId()` ile YENI bir uuid uretip BIR KEZ daha
+  deniyor (AuthContext.tsx). Ikinci deneme de basarisiz olursa normal hata akisina duser, sonsuz
+  donguye girmez. Canli dogrulandi: manager→waiter→manager gecisleri hicbir manuel mudahale
+  olmadan calisti, deviceId her seferinde otomatik yenilendi. Guvenlik notu: bu YENI bir kimlik
+  uretir, ESKI hesabin kaydini calmaz/devralmaz — B secenegi (sunucu tarafinda yeniden atama)
+  BILEREK seçilmedi, kullaniciya soruldu.
+- [2026-08-14] **DUZELTILDI: Hata mesajlarinda dil karisikligi (baslik Ingilizce, govde Turkce).**
+  Kok neden: `AuthContext`, `t.xxx`'den COZULMUS string'i state'e yaziyordu. Uygulama acilisinda
+  `LocalizationContext` persisted dili AsyncStorage'dan YUKLEMEDEN once (varsayilan `'tr'` ile ilk
+  render'da) bir hata olusursa, o anki Turkce metin state'e KALICI olarak yaziliyor, dil sonradan
+  Ingilizce'ye gecse bile GUNCELLENMIYORDU. Fix: statik anahtarli hatalar artik `errorKey` olarak
+  saklaniyor ve HER render'da guncel `t` ile cozuluyor (`AuthContext.tsx`). Dinamik yardimci
+  mesajlar (signIn/signUp/onboarding) degismedi — onlar mount'tan cok sonra tetiklenir, race riski
+  yok denecek kadar dusuk.
+- [2026-08-14] **DUZELTILDI: CSS `text-transform:uppercase` yanlis yerel kurallari kullaniyordu
+  ("AVAILABLE" → "AVAİLABLE" Turkce noktali I, Ingilizce secili olsa bile).** Kok neden:
+  `public/index.html`'deki `<html lang="%LANG_ISO_CODE%">` hic templatelenmiyordu VE uygulama ici
+  dil secimiyle senkron degildi — CSS buyuk harf donusumu tarayici/isletim sistemi yereline
+  duserdi. Fix: statik varsayilan `lang="tr"` (LocalizationContext'in kendi varsayilanina
+  hizali) + `LocalizationContext.tsx`'te dil degistikce `document.documentElement.lang`'i
+  guncelleyen bir `useEffect` (web-only). Ayni desen: PWA-only bilesenlerde dogrudan
+  `document`/`window` erisimi zaten var, AsyncStorage soyutlamasina gecmeye gerek yok.
 - [2026-08-14] **KRITIK: `ShiftBoardTableState.payment_pending` sadece kismi odemede olusur,
   hicbir kod yolu `tableSession.status`'u dogrudan bu degere getirmiyor.** "Odeme al" gibi
   filtreleri bu state'e gore yazma — Home ekraninin kendi sayaci zaten dogru tanimi

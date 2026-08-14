@@ -8,6 +8,8 @@
 | 17:10 | Fixed stretched/uneven pill height on OrderPane "All items/Kitchen/Drinks" scope chips + same latent bug in PalettePane category chips (missing `alignItems:'center'` on horizontal ScrollView contentContainerStyle → default 'stretch') | src/features/table-workspace/components/OrderPane.tsx, PalettePane.tsx | pending user verify | ~4k |
 | 17:10 | Confirmed table-to-table order transfer already exists end-to-end (RPC `transfer_or_merge_table_session`, TableOperationSheet, "..." actions sheet → "Masayı taşı / birleştir") — no new work needed | src/screens/TableDetailScreen.tsx, src/features/table-operations/* | informed user | ~1k |
 | 17:12 | tsc --noEmit clean after chip-height fix | — | pass | ~1k |
+| 09:15 | Fixed all issues from the manager/waiter QA pass: (1) P0 device_scope_mismatch — implemented Option A, activateBranch() auto-regenerates and retries the device id once on scope-mismatch instead of dying permanently; (2) error-message language race — AuthContext now stores an errorKey resolved live against current t instead of a pre-resolved string, closing the boot-time race where an error caught before language hydration finished stayed in the wrong language forever; (3) tableNameHint's literal "{seq}" placeholder — now a function interpolated with the real next sequence number; (4) "AVAİLABLE" Turkish-dotted-I bug — public/index.html's dead %LANG_ISO_CODE% placeholder replaced with a static default, and LocalizationContext now syncs document.documentElement.lang on every language change. All four verified LIVE (not just typechecked): three consecutive manager<->waiter account switches succeeded with zero manual intervention, device id auto-regenerated each time, document.lang read "en" correctly, Add Table hint showed "Table 2" correctly. | src/contexts/AuthContext.tsx, src/i18n/LocalizationContext.tsx, src/i18n/languages.ts, src/screens/AddTableScreenModern.tsx, public/index.html | pass (tsc clean, lint clean, 65/65 suites, 331 tests, verified live) | ~110k |
+| 02:10 | Added "Restaurant code" row to Settings management section (manager-only, reads auth.activeBranch.restaurant_code -- no backend change needed, field already fetched). Verified live. Then ran a full manager+waiter QA pass per user request (app-red-team-qa methodology): signed up fresh manager, created restaurant/hall/table/menu item, signed up fresh waiter, joined via restaurant code, placed an order, verified real-time sync back to manager, took payment. Found P0: switching accounts on the same browser permanently breaks (device_scope_mismatch 403 from register_device, "Workspace unavailable" forever, no recovery UI) because the device id is a single un-scoped localStorage key never cleared on sign-out. Reported to user with root cause and options, not yet fixed. Also found 3 minor i18n/copy defects. | src/screens/SettingsScreen.tsx, src/features/app-settings/settingsCopy.ts, src/i18n/languages.ts | manager+waiter flow works correctly once device-id bug is worked around; P0 reported, not fixed | ~60k |
 | 00:35 | Changed Bulgarian bottom-nav label for Receipts tab per user request: "Касови бележки" -> "Касов Бон" | src/i18n/languages.ts | pass (tsc clean) | ~2k |
 | 00:20 | Fixed "Take payment" quick action showing "No tables in this hall" for every open unpaid table: `filterShiftBoardTables` scope='payment' required `table.state === 'payment_pending'`, a state ONLY reachable via a partial payment already made — no code path ever sets it directly, so a fully-unpaid open table (the common case) never qualified even though Home's own badge count uses `remainingMinor>0`. Aligned the filter to the same definition. Also split the empty-state message (scope-filtered-to-zero vs genuinely-empty-hall) using the existing noMatchingTables copy. | src/features/service-board/shiftBoardModel.ts, src/features/service-board/__tests__/shiftBoardModel.test.ts, src/screens/OrdersFlowScreen.tsx | pass (tsc clean, lint clean, verified live) | ~20k |
 | 00:20 | PWA install banner was reappearing every reload — `installDismissed` was plain useState(false), never persisted. Added localStorage-backed dismissal (web-only, install prompt only — update-ready banner intentionally still reappears per session). | src/features/pwa/PwaLifecycleBanner.tsx | pass (verified live: banner stayed dismissed after reload) | ~8k |
@@ -748,3 +750,44 @@ bug-081..086 olarak islendi. Hicbir dosya silinmedi, sadece duzenlendi (kullanic
 | 00:58 | Session end: 61 writes across 19 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 50 reads | ~80451 tok |
 | 00:59 | Edited src/i18n/languages.ts | "Касови бележки" → "Касов Бон" | ~9 |
 | 01:01 | Session end: 62 writes across 20 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 51 reads | ~101568 tok |
+| 01:02 | Session end: 62 writes across 20 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 51 reads | ~101568 tok |
+| 01:21 | Edited src/features/app-settings/settingsCopy.ts | 2→3 lines | ~35 |
+| 01:21 | Edited src/features/app-settings/settingsCopy.ts | 1→2 lines | ~45 |
+| 01:21 | Edited src/features/app-settings/settingsCopy.ts | 1→2 lines | ~45 |
+| 01:21 | Edited src/features/app-settings/settingsCopy.ts | 1→2 lines | ~44 |
+| 01:21 | Edited src/screens/SettingsScreen.tsx | added optional chaining | ~300 |
+| 02:14 | Session end: 67 writes across 22 files (OrderPane.tsx, PalettePane.tsx, evet-festival-yar-nsa-sorted-book.md, entities.ts, stateTransitions.ts) | 55 reads | ~124838 tok |
+| 11:45 | Edited src/contexts/AuthContext.tsx | CSS: halde, key, text | ~408 |
+| 11:45 | Edited src/contexts/AuthContext.tsx | expanded (+8 lines) | ~119 |
+| 11:45 | Edited src/contexts/AuthContext.tsx | inline fix | ~6 |
+| 11:46 | Edited src/contexts/AuthContext.tsx | inline fix | ~5 |
+| 11:46 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~25 |
+| 11:46 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~22 |
+| 11:47 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~23 |
+| 11:47 | Edited src/contexts/AuthContext.tsx | inline fix | ~16 |
+| 11:47 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorText() | ~112 |
+| 11:47 | Edited src/contexts/AuthContext.tsx | inline fix | ~17 |
+| 11:48 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~38 |
+| 11:48 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~31 |
+| 11:48 | Edited src/contexts/AuthContext.tsx | setErrorMessage() → applyErrorKey() | ~21 |
+| 11:49 | Edited src/contexts/AuthContext.tsx | added error handling | ~402 |
+| 11:49 | Edited src/contexts/AuthContext.tsx | CSS: error, message, message | ~211 |
+| 11:51 | Edited src/contexts/AuthContext.tsx | 6→6 lines | ~47 |
+| 11:52 | Edited src/contexts/AuthContext.tsx | 7→7 lines | ~48 |
+| 11:52 | Edited src/contexts/AuthContext.tsx | inline fix | ~19 |
+| 11:53 | Edited src/contexts/AuthContext.tsx | 4→4 lines | ~28 |
+| 11:53 | Edited src/contexts/AuthContext.tsx | 16→19 lines | ~139 |
+| 11:53 | Edited src/contexts/AuthContext.tsx | 4→4 lines | ~38 |
+| 11:53 | Edited src/contexts/AuthContext.tsx | 4→4 lines | ~37 |
+| 11:54 | Edited src/contexts/AuthContext.tsx | 3→3 lines | ~22 |
+| 11:54 | Edited src/contexts/AuthContext.tsx | 2→2 lines | ~25 |
+| 11:55 | Edited src/contexts/AuthContext.tsx | inline fix | ~19 |
+| 11:55 | Edited src/contexts/AuthContext.tsx | inline fix | ~18 |
+| 11:57 | Edited src/i18n/languages.ts | inline fix | ~12 |
+| 11:57 | Edited src/i18n/languages.ts | inline fix | ~21 |
+| 11:57 | Edited src/i18n/languages.ts | inline fix | ~23 |
+| 11:57 | Edited src/i18n/languages.ts | inline fix | ~21 |
+| 11:58 | Edited src/screens/AddTableScreenModern.tsx | inline fix | ~18 |
+| 11:58 | Edited src/i18n/LocalizationContext.tsx | added 1 import(s) | ~71 |
+| 11:58 | Edited src/i18n/LocalizationContext.tsx | CSS: text-transform | ~208 |
+| 11:59 | Edited public/index.html | "%LANG_ISO_CODE%" → "tr" | ~5 |

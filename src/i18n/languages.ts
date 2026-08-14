@@ -131,7 +131,7 @@ export interface Translation {
   enterNewTableName: string;
   hallUpdated: string;
   tableUpdated: string;
-  tableNameHint: string;
+  tableNameHint: (seq: number) => string;
   tableDeleted: string;
   newOrderSubtitle: string;
   selectHall: string;
@@ -640,7 +640,7 @@ export const translations: Record<string, Translation> = {
     enterNewTableName: 'Yeni masa adını girin:',
     hallUpdated: 'Salon başarıyla güncellendi',
     tableUpdated: 'Masa başarıyla güncellendi',
-    tableNameHint: 'Boş bırakırsanız "Masa {seq}" kullanılır',
+    tableNameHint: (seq) => `Boş bırakırsanız "Masa ${seq}" kullanılır`,
     tableDeleted: 'Masa başarıyla silindi',
     newOrderSubtitle: 'Önce salonu, sonra müsait masayı seçin.',
     selectHall: 'Salon seçin',
@@ -951,7 +951,8 @@ export const translations: Record<string, Translation> = {
     authEmailInUse: 'Bu e-posta adresi zaten kayıtlı.',
     authWeakPassword: 'Şifre çok zayıf. En az 6 karakter kullanın.',
     authRegistrationFailed: 'Kayıt tamamlanamadı. Bilgilerinizi kontrol edip tekrar deneyin.',
-    authDeviceRevokedMessage: 'Bu cihaz bir yönetici tarafından iptal edildi. Yetkili bir cihazdan giriş yapın.',
+    authDeviceRevokedMessage:
+      'Bu cihaz bir yönetici tarafından iptal edildi. Yetkili bir cihazdan giriş yapın.',
     authWorkspaceLoadFailed: 'Orderia çalışma alanınız yüklenemedi.',
     authSessionRestoreFailed: 'Kayıtlı oturum geri yüklenemedi.',
     authBranchActivateFailed: 'Seçilen şube etkinleştirilemedi.',
@@ -960,7 +961,8 @@ export const translations: Record<string, Translation> = {
     authAlreadyMember: 'Bu hesap zaten bir restorana bağlı.',
     authInvalidRestaurantName: '1-120 karakter arasında bir restoran adı girin.',
     authInvalidBranchName: 'Geçerli bir şube adı girin.',
-    authRestaurantSetupFailed: 'Restoran kurulumu tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.',
+    authRestaurantSetupFailed:
+      'Restoran kurulumu tamamlanamadı. Bağlantınızı kontrol edip tekrar deneyin.',
     tryAgain: 'Tekrar dene',
     selectBranchTitle: 'Şube seçin',
     selectBranchSubtitle: 'Aktif masa ve raporlarınız bu seçime göre gösterilecek.',
@@ -1154,7 +1156,7 @@ export const translations: Record<string, Translation> = {
     enterNewTableName: 'Въведете ново име на масата:',
     hallUpdated: 'Залата е успешно обновена',
     tableUpdated: 'Масата е успешно обновена',
-    tableNameHint: 'Ако оставите празно ще се използва "Маса {seq}"',
+    tableNameHint: (seq) => `Ако оставите празно ще се използва "Маса ${seq}"`,
     tableDeleted: 'Масата е успешно изтрита',
     newOrderSubtitle: 'Първо изберете зала, след това свободна маса.',
     selectHall: 'Изберете зала',
@@ -1465,8 +1467,10 @@ export const translations: Record<string, Translation> = {
     authTooManyRequests: 'Твърде много опити. Моля, изчакайте малко и опитайте отново.',
     authEmailInUse: 'Този имейл вече е регистриран.',
     authWeakPassword: 'Паролата е твърде слаба. Използвайте поне 6 знака.',
-    authRegistrationFailed: 'Регистрацията не бе завършена. Проверете данните си и опитайте отново.',
-    authDeviceRevokedMessage: 'Това устройство бе отменено от мениджър. Влезте от оторизирано устройство.',
+    authRegistrationFailed:
+      'Регистрацията не бе завършена. Проверете данните си и опитайте отново.',
+    authDeviceRevokedMessage:
+      'Това устройство бе отменено от мениджър. Влезте от оторизирано устройство.',
     authWorkspaceLoadFailed: 'Работното ви пространство в Orderia не можа да се зареди.',
     authSessionRestoreFailed: 'Запазената сесия не можа да бъде възстановена.',
     authBranchActivateFailed: 'Избраният филиал не можа да бъде активиран.',
@@ -1475,7 +1479,8 @@ export const translations: Record<string, Translation> = {
     authAlreadyMember: 'Този акаунт вече е свързан с ресторант.',
     authInvalidRestaurantName: 'Въведете име на ресторант между 1 и 120 знака.',
     authInvalidBranchName: 'Въведете валидно име на филиал.',
-    authRestaurantSetupFailed: 'Настройката на ресторанта не бе завършена. Проверете връзката си и опитайте отново.',
+    authRestaurantSetupFailed:
+      'Настройката на ресторанта не бе завършена. Проверете връзката си и опитайте отново.',
     tryAgain: 'Опитай отново',
     selectBranchTitle: 'Изберете обект',
     selectBranchSubtitle: 'Активните ви маси и отчети ще следват този избор.',
@@ -1666,7 +1671,7 @@ export const translations: Record<string, Translation> = {
     enterNewTableName: 'Enter new table name:',
     hallUpdated: 'Hall updated successfully',
     tableUpdated: 'Table updated successfully',
-    tableNameHint: 'If left empty, "Table {seq}" will be used',
+    tableNameHint: (seq) => `If left empty, "Table ${seq}" will be used`,
     tableDeleted: 'Table deleted successfully',
     newOrderSubtitle: 'Choose a hall first, then choose an available table.',
     selectHall: 'Choose a hall',
@@ -1974,8 +1979,10 @@ export const translations: Record<string, Translation> = {
     authTooManyRequests: 'Too many attempts. Please wait a moment and try again.',
     authEmailInUse: 'This email address is already registered.',
     authWeakPassword: 'Password is too weak. Use at least 6 characters.',
-    authRegistrationFailed: 'Registration could not be completed. Check your details and try again.',
-    authDeviceRevokedMessage: 'This device was revoked by a manager. Sign in on an authorized device.',
+    authRegistrationFailed:
+      'Registration could not be completed. Check your details and try again.',
+    authDeviceRevokedMessage:
+      'This device was revoked by a manager. Sign in on an authorized device.',
     authWorkspaceLoadFailed: 'Your Orderia workspace could not be loaded.',
     authSessionRestoreFailed: 'The saved session could not be restored.',
     authBranchActivateFailed: 'The selected branch could not be activated.',
@@ -1984,7 +1991,8 @@ export const translations: Record<string, Translation> = {
     authAlreadyMember: 'This account is already connected to a restaurant.',
     authInvalidRestaurantName: 'Enter a restaurant name between 1 and 120 characters.',
     authInvalidBranchName: 'Enter a valid branch name.',
-    authRestaurantSetupFailed: 'Restaurant setup could not be completed. Check your connection and try again.',
+    authRestaurantSetupFailed:
+      'Restaurant setup could not be completed. Check your connection and try again.',
     tryAgain: 'Try again',
     selectBranchTitle: 'Select a branch',
     selectBranchSubtitle: 'Your active tables and reports will follow this selection.',

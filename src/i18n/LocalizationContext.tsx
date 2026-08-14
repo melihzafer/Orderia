@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { translations, Translation } from './languages';
 
@@ -60,6 +61,18 @@ export function LocalizationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     loadSettings();
   }, []);
+
+  // `public/index.html`'in `<html lang>` degeri hicbir zaman templatelenmiyor ve
+  // uygulama ici dil secimini takip etmiyor. CSS `text-transform: uppercase` gibi
+  // yerel-duyarli kurallar (ornegin Turkce noktali BUYUK I) o zaman tarayicinin
+  // varsayilan/isletim sistemi yereline gore calisir — kullanici Ingilizce secse
+  // BILE "AVAILABLE" gibi metinler "AVAİLABLE" olarak gorunebilir. Dil degistikce
+  // dokuman etiketini de guncelle ki CSS buyuk/kucuk harf donusumu dogru yerel
+  // kurallari kullansin.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    document.documentElement.lang = language;
+  }, [language]);
 
   const loadSettings = async () => {
     try {

@@ -2202,6 +2202,204 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-13T21:59:57.572Z"
+    },
+    {
+      "id": "bug-136",
+      "timestamp": "2026-08-13T22:21:59.043Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/screens/SettingsScreen.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-13T22:21:59.043Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-08-14T02:10:00.000Z",
+      "error_message": "P0: 'Workspace unavailable' shown to every account after the first, when signing in/up on a browser that already has a registered device from a different account -- register_device RPC returns 403 device_scope_mismatch, and 'Try again' retries forever with no recovery UI",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "getOrCreateDeviceId() persists a single global AsyncStorage/localStorage key ('orderia.cloud.device_id') shared by the whole browser install, never scoped per-user and never cleared on sign-out. The server's register_device RPC (supabase/migrations/20260726160000_auth_tenancy.sql:280-348) does `insert ... on conflict (id) do update ... where user_id = auth.uid() and organization_id = X and branch_id = Y` -- if that device id already has a row from a DIFFERENT user/org, the WHERE excludes it, zero rows update, and the function raises 42501 device_scope_mismatch. Confirmed via live QA: created a manager account (new org), then signed up a waiter account and joined the same org via restaurant code -- second account hit this immediately and permanently, on both signUp and signIn paths.",
+      "fix": "FIXED (option A, user-approved): activateBranch() now wraps registerDevice() in a try/catch; on device_scope_mismatch it calls a new regenerateDeviceId() (overwrites the stored id with a fresh uuid) and retries registerDevice() once. A second failure propagates normally instead of looping. Verified live end-to-end: signed manager out, signed waiter in with no manual localStorage clearing -- succeeded automatically, device id changed from da337697... to db76768e..., repeated a second switch back to the manager with the same result.",
+      "tags": [
+        "auth",
+        "device-registration",
+        "rls",
+        "p0",
+        "multi-account",
+        "onboarding",
+        "fixed"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T02:10:00.000Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-08-14T02:10:00.000Z",
+      "error_message": "P3: minor copy/locale defects found during manager+waiter QA pass",
+      "file": "src/i18n/languages.ts, src/screens/AddTableScreenModern.tsx (or equivalent)",
+      "root_cause": "(a) Workspace-unavailable error screen shows an English title but a Turkish body ('Orderia calisma alaniniz yuklenemedi') regardless of selected language -- likely a hardcoded fallback string bypassing the i18n system entirely. (b) Add Table screen's helper text leaks an unresolved template placeholder literally: 'If left empty, \"Table {seq}\" will be used'. (c) Table status pill renders 'AVAILABLE' with a Turkish dotted-I ('AVAİLABLE') under English locale, a CSS text-transform/lang-attribute locale leak.",
+      "fix": "FIXED. (a) Root cause was a real race: AuthContext stored resolved t.xxx strings in errorMessage state; if an error fired before LocalizationContext finished loading the persisted language from AsyncStorage (default 'tr' on first render), the resolved Turkish text got baked into state and never updated even after the language later hydrated to English. Replaced with an errorKey ('authWorkspaceLoadFailed' etc.) resolved live against the CURRENT t on every render, so the displayed text always matches the current language regardless of when the error fired. Dynamic helper-derived messages (signIn/signUp/onboarding) kept as direct text since those fire well after mount. (b) tableNameHint changed from a static string with a literal unresolved '{seq}' to a function (seq: number) => string, called with the real displayHall.nextTableSequence at the AddTableScreenModern call site -- verified live, hint now reads 'If left empty, \"Table 2\" will be used'. (c) Root cause was public/index.html's <html lang> never being templated (dead %LANG_ISO_CODE% placeholder) and never synced to the in-app language selection, so CSS text-transform:uppercase used the browser/OS locale's special-casing rules (Turkish dotted-I) regardless of the selected UI language. Set a sane static default (lang=\"tr\", matching LocalizationContext's own default state) and added a useEffect in LocalizationContext.tsx that sets document.documentElement.lang = language on every language change (web-only). Verified live: document.documentElement.lang reads 'en' and 'AVAILABLE' renders correctly under English.",
+      "tags": [
+        "i18n",
+        "copy",
+        "locale",
+        "p3",
+        "fixed"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T02:10:00.000Z"
+    },
+    {
+      "id": "bug-139",
+      "timestamp": "2026-08-14T08:45:48.493Z",
+      "error_message": "Wrong reference: setErrorMessage should be clearError",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Used \"setErrorMessage\" instead of \"clearError\"",
+      "fix": "Changed setErrorMessage → clearError",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-08-14T08:47:47.660Z"
+    },
+    {
+      "id": "bug-140",
+      "timestamp": "2026-08-14T08:46:37.905Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Had 'signed_out'",
+      "fix": "Changed to 'authDeviceRevokedMessage'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-08-14T08:47:05.442Z"
+    },
+    {
+      "id": "bug-141",
+      "timestamp": "2026-08-14T08:49:05.645Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:49:05.645Z"
+    },
+    {
+      "id": "bug-142",
+      "timestamp": "2026-08-14T08:49:53.609Z",
+      "error_message": "Type error",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:49:53.609Z"
+    },
+    {
+      "id": "bug-143",
+      "timestamp": "2026-08-14T08:54:27.804Z",
+      "error_message": "Wrong reference: gateway should be clearError",
+      "file": "src/contexts/AuthContext.tsx",
+      "root_cause": "Used \"gateway\" instead of \"clearError\"",
+      "fix": "Changed gateway → clearError",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:54:27.804Z"
+    },
+    {
+      "id": "bug-144",
+      "timestamp": "2026-08-14T08:57:16.867Z",
+      "error_message": "Wrong reference: string should be seq",
+      "file": "src/i18n/languages.ts",
+      "root_cause": "Used \"string\" instead of \"seq\"",
+      "fix": "Changed string → seq",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:57:16.867Z"
+    },
+    {
+      "id": "bug-145",
+      "timestamp": "2026-08-14T08:57:27.099Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/i18n/languages.ts",
+      "root_cause": "Had 'Boş bırakırsanız \"",
+      "fix": "Changed to `Boş bırakırsanız \"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-08-14T08:57:47.477Z"
+    },
+    {
+      "id": "bug-146",
+      "timestamp": "2026-08-14T08:58:56.284Z",
+      "error_message": "Missing guard clause",
+      "file": "src/i18n/LocalizationContext.tsx",
+      "root_cause": "No early return/throw for edge case: Platform.OS !== 'web' || typeof document === 'undefined'",
+      "fix": "Added guard clause: if (Platform.OS !== 'web' || typeof document)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:58:56.284Z"
+    },
+    {
+      "id": "bug-147",
+      "timestamp": "2026-08-14T08:59:07.378Z",
+      "error_message": "Incorrect value in code",
+      "file": "public/index.html",
+      "root_cause": "Had \"%LANG_ISO_CODE%\"",
+      "fix": "Changed to \"tr\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "html"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T08:59:07.378Z"
     }
   ]
 }

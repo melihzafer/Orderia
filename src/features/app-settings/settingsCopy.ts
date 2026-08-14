@@ -63,6 +63,7 @@ export interface SettingsCopy {
   readonly approvalsBody: string;
   readonly cancellationReasons: string;
   readonly cancellationReasonsBody: string;
+  readonly restaurantCodeBody: string;
   readonly managerPin: string;
   readonly managerPinBody: string;
   readonly managerPinPlaceholder: string;
@@ -204,6 +205,7 @@ const tr: SettingsCopy = {
   approvalsBody: 'Katılmayı bekleyen kullanıcılar',
   cancellationReasons: 'İptal sebepleri',
   cancellationReasonsBody: 'Ürün veya hesap iptal edilirken seçilecek sebep listesi',
+  restaurantCodeBody: 'Yeni bir ekip üyesi eklerken bu kodu paylaşın',
   managerPin: 'Yönetici PIN’i',
   managerPinBody: 'Kapalı siparişi yeniden açarken 4 veya 6 haneli PIN iste.',
   managerPinPlaceholder: '4 veya 6 hane',
@@ -366,6 +368,7 @@ const bg: SettingsCopy = {
   approvalsBody: 'Чакащи потребители',
   cancellationReasons: 'Причини за отказ',
   cancellationReasonsBody: 'Списък с причини при отказ на продукт или сметка',
+  restaurantCodeBody: 'Споделете този код, когато добавяте нов член на екипа',
   managerPin: 'PIN на управителя',
   managerPinBody: 'Изисквай 4 или 6 цифри при повторно отваряне на сметка.',
   managerPinPlaceholder: '4 или 6 цифри',
@@ -529,6 +532,7 @@ const en: SettingsCopy = {
   approvalsBody: 'People waiting to join',
   cancellationReasons: 'Cancellation reasons',
   cancellationReasonsBody: 'Reasons staff can pick when voiding an item or check',
+  restaurantCodeBody: 'Share this code when adding a new team member',
   managerPin: 'Manager PIN',
   managerPinBody: 'Require a 4 or 6 digit PIN before reopening a closed order.',
   managerPinPlaceholder: '4 or 6 digits',

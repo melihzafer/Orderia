@@ -657,12 +657,23 @@ export default function SettingsScreen() {
                     accessory="chevron"
                     compact={settings.compactDensity}
                     icon="close-circle-outline"
-                    last
                     onPress={() => navigation.navigate('CancellationReasons')}
                     showSubtitle={managementDescriptionsRevealed}
                     subtitle={copy.cancellationReasonsBody}
                     title={copy.cancellationReasons}
                   />
+                  {auth.activeBranch?.restaurant_code ? (
+                    <ServiceListRow
+                      accessory="value"
+                      compact={settings.compactDensity}
+                      icon="key-outline"
+                      last
+                      showSubtitle={managementDescriptionsRevealed}
+                      subtitle={copy.restaurantCodeBody}
+                      title={t.restaurantCodeLabel}
+                      value={auth.activeBranch.restaurant_code}
+                    />
+                  ) : null}
                 </>
               ) : null}
             </ServiceRowGroup>
