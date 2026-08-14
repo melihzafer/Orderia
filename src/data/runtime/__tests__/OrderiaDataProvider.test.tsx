@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { Text } from 'react-native';
 import { BranchId, OrganizationId, toDomainId } from '../../../domain';
@@ -71,11 +71,77 @@ describe('OrderiaDataProvider scoped refreshes', () => {
 
     await view.unmount();
   });
+
+  it('skips automatic push/pull while local-only sync mode is on, but still syncs on manual refresh', async () => {
+    const pushScopes: string[] = [];
+    (OutboxPushWorker as jest.Mock).mockImplementation(() => ({
+      runOnce: jest.fn((scope: { branchId: BranchId }) => {
+        pushScopes.push(String(scope.branchId));
+        return Promise.resolve();
+      }),
+    }));
+
+    const database = new InMemoryLocalDatabase();
+    const openDatabase = jest.fn().mockResolvedValue(database);
+    const client = {} as never;
+    const view = await render(
+      <OrderiaDataProvider client={client} openDatabase={openDatabase}>
+        <LocalOnlyProbe />
+      </OrderiaDataProvider>,
+    );
+
+    await waitFor(() => expect(pushScopes).toEqual(['branch-a']));
+    pushScopes.length = 0;
+
+    await act(async () => {
+      await view.getByTestId('enable-local-only').props.onPress();
+    });
+    await waitFor(() =>
+      expect(view.getByTestId('local-only').props.children).toBe('true'),
+    );
+
+    mockActiveBranch = branch('branch-b');
+    await view.rerender(
+      <OrderiaDataProvider client={client} openDatabase={openDatabase}>
+        <LocalOnlyProbe />
+      </OrderiaDataProvider>,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pushScopes).toEqual([]);
+
+    await act(async () => {
+      await view.getByTestId('manual-refresh').props.onPress();
+    });
+    await waitFor(() => expect(pushScopes).toEqual(['branch-b']));
+
+    await view.unmount();
+  });
 });
 
 function RevisionProbe() {
   const { revision } = useOrderiaData();
   return <Text testID="revision">{revision}</Text>;
+}
+
+function LocalOnlyProbe() {
+  const { localOnlySyncMode, setLocalOnlySyncMode, refresh } = useOrderiaData();
+  return (
+    <>
+      <Text testID="local-only">{String(localOnlySyncMode)}</Text>
+      <Text
+        onPress={() => {
+          void setLocalOnlySyncMode(true);
+        }}
+        testID="enable-local-only"
+      />
+      <Text
+        onPress={() => {
+          void refresh();
+        }}
+        testID="manual-refresh"
+      />
+    </>
+  );
 }
 
 function branch(id: string) {

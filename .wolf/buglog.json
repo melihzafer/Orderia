@@ -2620,6 +2620,104 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T21:45:00.000Z"
+    },
+    {
+      "id": "bug-160",
+      "timestamp": "2026-08-14T19:55:53.184Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/data/runtime/OrderiaDataContext.tsx",
+      "root_cause": "Had '@supabase/supabase-js'",
+      "fix": "Changed to '@react-native-async-storage/async-storage'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T19:55:53.184Z"
+    },
+    {
+      "id": "bug-161",
+      "timestamp": "2026-08-14T19:56:15.868Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/data/runtime/OrderiaDataContext.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T19:56:15.868Z"
+    },
+    {
+      "id": "bug-162",
+      "timestamp": "2026-08-14T20:00:06.859Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/screens/SettingsScreen.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T20:00:06.859Z"
+    },
+    {
+      "id": "bug-163",
+      "timestamp": "2026-08-14T20:00:30.077Z",
+      "error_message": "Wrong reference: useLocalization should be formatDateTime",
+      "file": "src/screens/SettingsScreen.tsx",
+      "root_cause": "Used \"useLocalization\" instead of \"formatDateTime\"",
+      "fix": "Changed useLocalization → formatDateTime",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T20:00:30.077Z"
+    },
+    {
+      "id": "bug-164",
+      "timestamp": "2026-08-14T20:03:28.007Z",
+      "error_message": "Function not marked async",
+      "file": "src/data/runtime/__tests__/OrderiaDataProvider.test.tsx",
+      "root_cause": "Function uses await but wasn't declared async",
+      "fix": "Added async modifier",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-08-14T20:04:04.427Z"
+    },
+    {
+      "id": "bug-027",
+      "timestamp": "2026-08-14T23:05:00.000Z",
+      "error_message": "Feature request: local-only mode toggle plus a manual Sync now button, so background auto-sync can be paused and triggered on demand.",
+      "file": "src/data/runtime/OrderiaDataContext.tsx, src/screens/SettingsScreen.tsx, src/features/app-settings/settingsCopy.ts",
+      "root_cause": "N/A -- new feature, not a bug.",
+      "fix": "Added localOnlySyncMode (persisted to AsyncStorage under 'orderia:localOnlySyncMode') and setLocalOnlySyncMode to OrderiaDataContext. When on, the three automatic sync triggers (mount/branch-change effect incl. realtime hint subscription, AppState-active listener, browser online-event listener) are gated off; refresh() itself is untouched, so manual sync and direct-RPC actions (payments, catalog, hall/table management) still work normally regardless of the toggle -- only the OutboxPushWorker/SyncPullEngine background cadence is paused. Local writes keep queuing in the existing offline outbox exactly as before. Added a Sync section to SettingsScreen (visible only in cloud mode) with the toggle and a 'Sync now' row showing pending-change count / last-synced time / offline state, calling refresh() on tap. Added a provider test asserting auto-push is skipped while the toggle is on and still fires on manual refresh. Full suite: 65/65 suites, 332/332 tests pass; tsc clean.",
+      "tags": [
+        "sync",
+        "settings",
+        "offline",
+        "feature",
+        "context"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T23:05:00.000Z"
     }
   ]
 }

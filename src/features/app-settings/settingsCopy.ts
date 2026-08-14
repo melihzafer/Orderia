@@ -71,6 +71,19 @@ export interface SettingsCopy {
   readonly managerPinSaved: string;
   readonly managerPinFailed: string;
 
+  readonly syncSection: string;
+  readonly syncCaption: string;
+  readonly localOnlySyncMode: string;
+  readonly localOnlySyncModeBody: string;
+  readonly syncNow: string;
+  readonly syncNowRunning: string;
+  readonly syncPendingCount: (count: number) => string;
+  readonly syncLastSynced: (time: string) => string;
+  readonly syncNeverSynced: string;
+  readonly syncOffline: string;
+  readonly syncNowSuccess: string;
+  readonly syncNowFailed: string;
+
   readonly dataSection: string;
   readonly dataCaption: string;
   readonly exportBackup: string;
@@ -212,6 +225,20 @@ const tr: SettingsCopy = {
   saveManagerPin: 'PIN’i kaydet',
   managerPinSaved: 'Yönetici PIN’i kaydedildi',
   managerPinFailed: 'Yönetici PIN’i kaydedilemedi',
+
+  syncSection: 'Senkronizasyon',
+  syncCaption: 'Bulutla ne zaman veri alışverişi yapılacağını denetle',
+  localOnlySyncMode: 'Yalnızca yerel mod',
+  localOnlySyncModeBody:
+    'Açıkken otomatik senkron durur; değişiklikler bu cihazda birikir ve yalnızca "Şimdi senkronize et" ile buluta gönderilir.',
+  syncNow: 'Şimdi senkronize et',
+  syncNowRunning: 'Senkronize ediliyor…',
+  syncPendingCount: (count) => `${count} değişiklik gönderilmeyi bekliyor`,
+  syncLastSynced: (time) => `Son senkron: ${time}`,
+  syncNeverSynced: 'Henüz senkronize edilmedi',
+  syncOffline: 'Çevrimdışı — bağlantı bekleniyor',
+  syncNowSuccess: 'Senkronizasyon tamamlandı',
+  syncNowFailed: 'Senkronizasyon başarısız oldu',
 
   dataSection: 'Veri ve yedek',
   dataCaption: 'Kayıtları dışa aktar, taşı ve çevrimdışı durumu izle',
@@ -376,6 +403,20 @@ const bg: SettingsCopy = {
   managerPinSaved: 'PIN кодът е запазен',
   managerPinFailed: 'PIN кодът не бе запазен',
 
+  syncSection: 'Синхронизация',
+  syncCaption: 'Контролирай кога се обменят данни с облака',
+  localOnlySyncMode: 'Само локален режим',
+  localOnlySyncModeBody:
+    'Когато е включено, автоматичната синхронизация спира; промените се натрупват на това устройство и се изпращат само с "Синхронизирай сега".',
+  syncNow: 'Синхронизирай сега',
+  syncNowRunning: 'Синхронизира се…',
+  syncPendingCount: (count) => `${count} промени чакат за изпращане`,
+  syncLastSynced: (time) => `Последна синхронизация: ${time}`,
+  syncNeverSynced: 'Все още не е синхронизирано',
+  syncOffline: 'Офлайн — изчаква се връзка',
+  syncNowSuccess: 'Синхронизацията завърши',
+  syncNowFailed: 'Синхронизацията не бе успешна',
+
   dataSection: 'Данни и резервно копие',
   dataCaption: 'Експорт, миграция и състояние офлайн',
   exportBackup: 'Направи резервно копие',
@@ -539,6 +580,20 @@ const en: SettingsCopy = {
   saveManagerPin: 'Save PIN',
   managerPinSaved: 'Manager PIN saved',
   managerPinFailed: 'Manager PIN could not be saved',
+
+  syncSection: 'Sync',
+  syncCaption: 'Control when data is exchanged with the cloud',
+  localOnlySyncMode: 'Local-only mode',
+  localOnlySyncModeBody:
+    'While on, automatic sync stops; changes queue up on this device and only go to the cloud when you tap "Sync now".',
+  syncNow: 'Sync now',
+  syncNowRunning: 'Syncing…',
+  syncPendingCount: (count) => `${count} change${count === 1 ? '' : 's'} waiting to send`,
+  syncLastSynced: (time) => `Last synced: ${time}`,
+  syncNeverSynced: 'Not synced yet',
+  syncOffline: 'Offline — waiting for a connection',
+  syncNowSuccess: 'Sync complete',
+  syncNowFailed: 'Sync failed',
 
   dataSection: 'Data and backup',
   dataCaption: 'Export records, migrate and watch the offline state',

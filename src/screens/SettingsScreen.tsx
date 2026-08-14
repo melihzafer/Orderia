@@ -82,13 +82,22 @@ export default function SettingsScreen() {
     tokens,
     useSystemColorMode: applySystemColorMode,
   } = useTheme();
-  const { t, language, currency, setLanguage, setCurrency } = useLocalization();
+  const { t, language, currency, setLanguage, setCurrency, formatDateTime } = useLocalization();
   const auth = useAuth();
   const navigation = useNavigation<NavigationProp>();
   const layout = useAdaptiveLayout();
   const copy = useMemo(() => settingsCopy(language), [language]);
   const data = useOrderiaData();
-  const { mode, scope, refresh, setManagerActionPin } = data;
+  const {
+    mode,
+    scope,
+    refresh,
+    setManagerActionPin,
+    sync,
+    localOnlySyncMode,
+    setLocalOnlySyncMode,
+    lastSuccessfulSyncAt,
+  } = data;
   const cloudClient = getSupabaseClient();
   const legacyMigrationGateway = useMemo(
     () => (cloudClient ? new LegacyMigrationGateway(cloudClient) : null),
@@ -112,6 +121,7 @@ export default function SettingsScreen() {
   const [importing, setImporting] = useState(false);
   const [managerPin, setManagerPin] = useState('');
   const [savingManagerPin, setSavingManagerPin] = useState(false);
+  const [syncingNow, setSyncingNow] = useState(false);
   // Onay bekleyen yıkıcı işlemler: yedek geri yükleme ve yerel veri sıfırlama.
   const [pendingImport, setPendingImport] = useState<OrderiaBackup>();
   const [pendingCatalogReplace, setPendingCatalogReplace] = useState<LegacyMigrationSnapshot>();
@@ -310,6 +320,20 @@ export default function SettingsScreen() {
     resetLocalOperationalData();
     haptic('success');
     show({ message: copy.resetLocalDataDone, tone: 'success' });
+  };
+
+  const handleManualSync = async () => {
+    setSyncingNow(true);
+    try {
+      await refresh();
+      haptic('success');
+      show({ message: copy.syncNowSuccess, tone: 'success' });
+    } catch {
+      haptic('error');
+      show({ message: copy.syncNowFailed, tone: 'error' });
+    } finally {
+      setSyncingNow(false);
+    }
   };
 
   const handleManagerPinSave = async () => {
@@ -676,6 +700,50 @@ export default function SettingsScreen() {
                   ) : null}
                 </>
               ) : null}
+            </ServiceRowGroup>
+          </>
+        ) : null}
+
+        {/* Senkronizasyon */}
+        {mode === 'cloud' ? (
+          <>
+            <ServiceSectionHeader caption={copy.syncCaption} title={copy.syncSection} />
+            <ServiceRowGroup>
+              <ServiceListRow
+                accessory="switch"
+                compact={settings.compactDensity}
+                icon="cloud-offline-outline"
+                onValueChange={(next) => {
+                  void setLocalOnlySyncMode(next);
+                }}
+                showSubtitle
+                subtitle={copy.localOnlySyncModeBody}
+                switchValue={localOnlySyncMode}
+                title={copy.localOnlySyncMode}
+              />
+              <ServiceListRow
+                accessory="value"
+                compact={settings.compactDensity}
+                disabled={syncingNow || !sync.online}
+                icon="sync-outline"
+                last
+                onPress={() => {
+                  void handleManualSync();
+                }}
+                showSubtitle
+                subtitle={
+                  syncingNow
+                    ? copy.syncNowRunning
+                    : !sync.online
+                      ? copy.syncOffline
+                      : sync.pendingCount > 0
+                        ? copy.syncPendingCount(sync.pendingCount)
+                        : lastSuccessfulSyncAt
+                          ? copy.syncLastSynced(formatDateTime(new Date(lastSuccessfulSyncAt).getTime()))
+                          : copy.syncNeverSynced
+                }
+                title={copy.syncNow}
+              />
             </ServiceRowGroup>
           </>
         ) : null}

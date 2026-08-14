@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SupabaseClient } from '@supabase/supabase-js';
 import React, {
   createContext,
@@ -73,6 +74,8 @@ import { inspectLocalSync } from './syncInspection';
 export type OrderiaDataMode = 'local_only' | 'cloud';
 export type OrderiaDataReadiness = 'opening' | 'ready' | 'error';
 
+const LOCAL_ONLY_SYNC_STORAGE_KEY = 'orderia:localOnlySyncMode';
+
 export interface OrderiaDataContextValue {
   readonly database: LocalDatabase | null;
   readonly mode: OrderiaDataMode;
@@ -82,6 +85,15 @@ export interface OrderiaDataContextValue {
   readonly revision: number;
   readonly lastSuccessfulSyncAt?: string;
   readonly errorMessage?: string;
+  /**
+   * Kullanıcının açtığı, cihaz düzeyinde bir tercih: açıkken otomatik
+   * arka plan push/pull (açılış, uygulama öne gelişi, çevrimiçi olma,
+   * realtime ipuçları) devre dışı kalır. Yerel değişiklikler her zamanki
+   * gibi outbox'ta birikir; yalnızca ne zaman gönderileceğini kullanıcı
+   * `refresh()`'i elle çağırarak belirler.
+   */
+  readonly localOnlySyncMode: boolean;
+  setLocalOnlySyncMode(next: boolean): Promise<void>;
   refresh(): Promise<void>;
   resolveProfileNames(userIds: readonly string[]): Promise<Readonly<Record<string, string>>>;
   resolveActiveParticipants(
@@ -166,6 +178,8 @@ export function OrderiaDataProvider({
   const [revision, setRevision] = useState(0);
   const [lastSuccessfulSyncAt, setLastSuccessfulSyncAt] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [localOnlySyncMode, setLocalOnlySyncModeState] = useState(false);
+  const [localOnlySyncModeLoaded, setLocalOnlySyncModeLoaded] = useState(false);
   const refreshesInFlight = useRef(new Map<string, Promise<void>>());
   const activeScopeKey = useRef<string>('local');
   const mounted = useRef(true);
@@ -227,6 +241,26 @@ export function OrderiaDataProvider({
       }
     };
   }, [openDatabase]);
+
+  useEffect(() => {
+    let active = true;
+    void AsyncStorage.getItem(LOCAL_ONLY_SYNC_STORAGE_KEY)
+      .then((stored) => {
+        if (active) setLocalOnlySyncModeState(stored === 'true');
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLocalOnlySyncModeLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const setLocalOnlySyncMode = useCallback(async (next: boolean) => {
+    setLocalOnlySyncModeState(next);
+    await AsyncStorage.setItem(LOCAL_ONLY_SYNC_STORAGE_KEY, next ? 'true' : 'false');
+  }, []);
 
   const refresh = useCallback(async () => {
     const existing = refreshesInFlight.current.get(scopeKey);
@@ -623,7 +657,7 @@ export function OrderiaDataProvider({
   );
 
   useEffect(() => {
-    if (!database || !scope || !client) return;
+    if (!database || !scope || !client || !localOnlySyncModeLoaded || localOnlySyncMode) return;
 
     let active = true;
     let unsubscribeHints: (() => Promise<void>) | undefined;
@@ -683,7 +717,7 @@ export function OrderiaDataProvider({
         void unsubscribeHints();
       }
     };
-  }, [client, database, refresh, scope]);
+  }, [client, database, refresh, scope, localOnlySyncMode, localOnlySyncModeLoaded]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -697,7 +731,7 @@ export function OrderiaDataProvider({
           hasError: current.hasError,
         }),
       );
-      if (browserIsOnline()) void refresh();
+      if (browserIsOnline() && !localOnlySyncMode) void refresh();
     };
     window.addEventListener('online', updateConnection);
     window.addEventListener('offline', updateConnection);
@@ -705,7 +739,7 @@ export function OrderiaDataProvider({
       window.removeEventListener('online', updateConnection);
       window.removeEventListener('offline', updateConnection);
     };
-  }, [refresh]);
+  }, [refresh, localOnlySyncMode]);
 
   const value = useMemo<OrderiaDataContextValue>(
     () => ({
@@ -717,6 +751,8 @@ export function OrderiaDataProvider({
       revision,
       lastSuccessfulSyncAt,
       errorMessage,
+      localOnlySyncMode,
+      setLocalOnlySyncMode,
       refresh,
       resolveProfileNames,
       resolveActiveParticipants,
@@ -765,6 +801,8 @@ export function OrderiaDataProvider({
       transferOrMergeTableSession,
       reopenTableSession,
       setManagerActionPin,
+      localOnlySyncMode,
+      setLocalOnlySyncMode,
     ],
   );
 
