@@ -2718,6 +2718,56 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T23:05:00.000Z"
+    },
+    {
+      "id": "bug-166",
+      "timestamp": "2026-08-14T20:11:11.209Z",
+      "error_message": "Missing guard clause",
+      "file": "src/screens/TableDetailScreen.tsx",
+      "root_cause": "No early return/throw for edge case: !database || !scope || !snapshot",
+      "fix": "Added guard clause: if (!database || !scope || !snapshot)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T20:11:11.209Z"
+    },
+    {
+      "id": "bug-167",
+      "timestamp": "2026-08-14T20:12:18.794Z",
+      "error_message": "CSS fix: borderColor",
+      "file": "src/features/table-workspace/components/OrderPane.tsx",
+      "root_cause": "borderColor: tokens.colors.state.pending.border, → tokens.colors.borderLight,",
+      "fix": "Changed borderColor: tokens.colors.state.pending.border, → tokens.colors.borderLight,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T20:12:18.794Z"
+    },
+    {
+      "id": "bug-028",
+      "timestamp": "2026-08-14T23:35:00.000Z",
+      "error_message": "Feature request: add an \"All served\" bulk-action button (mirroring the existing drinks-delivered button) so a waiter can mark every pending line on a check served in one tap instead of one-by-one.",
+      "file": "src/features/table-workspace/components/OrderPane.tsx, src/screens/TableDetailScreen.tsx, src/features/table-workspace/workspaceCopy.ts",
+      "root_cause": "N/A -- new feature. Note: markOrderItemsServed (orderCommands.ts) was already fully generic (filters any item list by status==='ordered'); only the drinks-specific bulk button existed in the UI, no whole-check equivalent.",
+      "fix": "Added markAllServed() in TableDetailScreen.tsx, scoped correctly to selectedCheckItems (the currently open check) filtered to status 'ordered', reusing markOrderItemsServed. Added onMarkAllServed prop to OrderPane and a new outline button shown whenever the check has any pending ('ordered') line, below the existing drinks-reminder banner. Added markAllItemsServed/markAllItemsServedFailed copy keys (tr/bg/en). Note for later: the existing markDrinksDelivered handler filters snapshot.orderItems (the WHOLE TABLE) by status+group, not scoped to selectedCheckId like the new markAllServed is -- with person-accounts/split-check enabled this could serve drinks belonging to a different check at the same table. Not fixed here (out of scope for this request); worth a follow-up if reported.",
+      "tags": [
+        "table-workspace",
+        "fulfillment",
+        "served",
+        "feature",
+        "waiter-ux"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T23:35:00.000Z"
     }
   ]
 }

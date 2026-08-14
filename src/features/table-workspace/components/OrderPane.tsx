@@ -38,6 +38,7 @@ export function OrderPane({
   orderViewCounts,
   onOrderViewChange,
   onMarkDrinksDelivered,
+  onMarkAllServed,
   fulfillmentSplitEnabled,
   drinksReminderEnabled,
   onCancel,
@@ -65,6 +66,7 @@ export function OrderPane({
   readonly orderViewCounts: Readonly<Record<OrderView, number>>;
   readonly onOrderViewChange: (view: OrderView) => void;
   readonly onMarkDrinksDelivered: () => void;
+  readonly onMarkAllServed: () => void;
   readonly fulfillmentSplitEnabled: boolean;
   readonly drinksReminderEnabled: boolean;
   readonly onCancel: (item: OrderItem) => void;
@@ -83,6 +85,7 @@ export function OrderPane({
 }) {
   const { tokens } = useTheme();
   const hasLiveItems = items.some((item) => item.status !== 'cancelled');
+  const hasPendingItems = items.some((item) => item.status === 'ordered');
   const batchNumberById = new Map<string, number>();
   allItems.forEach((item) => {
     if (!batchNumberById.has(item.orderBatchId)) {
@@ -369,6 +372,22 @@ export function OrderPane({
             label={copy.drinksDelivered}
             onPress={onMarkDrinksDelivered}
             style={{ marginTop: tokens.space.xs }}
+            variant="outline"
+          />
+        </View>
+      ) : null}
+      {hasPendingItems ? (
+        <View
+          style={{
+            borderColor: tokens.colors.borderLight,
+            borderTopWidth: 1,
+            padding: tokens.space.sm,
+          }}
+        >
+          <ServiceButton
+            icon="checkmark-done-outline"
+            label={copy.markAllItemsServed}
+            onPress={onMarkAllServed}
             variant="outline"
           />
         </View>

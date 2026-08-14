@@ -377,6 +377,22 @@ function CloudTableWorkspace({
     }
   };
 
+  const markAllServed = async () => {
+    if (!database || !scope || !snapshot) return;
+    const pending = selectedCheckItems.filter((item) => item.status === 'ordered');
+    if (pending.length === 0) return;
+    try {
+      await markOrderItemsServed({ database, scope, actorUserId, deviceId, items: pending });
+      await reload();
+      void refresh();
+    } catch (error) {
+      notify(
+        copy.markAllItemsServedFailed,
+        error instanceof Error ? error.message : copy.tryAgain,
+      );
+    }
+  };
+
   const applyServedQuantity = async (item: OrderItem, nextServed: number) => {
     if (!database || !scope) return;
     setServingItem(undefined);
@@ -720,6 +736,7 @@ function CloudTableWorkspace({
       conflicts={snapshot.conflicts}
       onOrderViewChange={setOrderView}
       onMarkDrinksDelivered={() => void markDrinksDelivered()}
+      onMarkAllServed={() => void markAllServed()}
       onCancel={setCancellingItem}
       onChangeQuantity={(item, nextQuantity) => void changeItemQuantity(item, nextQuantity)}
       onEditNote={(item) => {

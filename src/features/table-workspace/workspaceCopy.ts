@@ -44,6 +44,9 @@ export interface WorkspaceCopy {
   readonly drinksReminder: string;
   readonly drinksDelivered: string;
   readonly drinksDeliveryFailed: string;
+  /** Adisyondaki tüm bekleyen satırları tek dokunuşla servis edilmiş işaretler. */
+  readonly markAllItemsServed: string;
+  readonly markAllItemsServedFailed: string;
   /** Kısmi servis paneli. `queued` sync anlamında kullanıldığı için ayrı anahtar. */
   readonly serveStatus: string;
   readonly served: string;
@@ -175,6 +178,8 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       drinksReminder: 'İçecekler hâlâ götürülmeyi bekliyor.',
       drinksDelivered: 'Tüm içecekler götürüldü',
       drinksDeliveryFailed: 'İçecek durumu kaydedilemedi',
+      markAllItemsServed: 'Tümü servis edildi',
+      markAllItemsServedFailed: 'Servis durumu kaydedilemedi',
       serveStatus: 'Servis durumu',
       served: 'Servis edildi',
       outstanding: 'Bekliyor',
@@ -304,6 +309,8 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
       drinksReminder: 'Напитките още чакат да бъдат занесени.',
       drinksDelivered: 'Всички напитки са занесени',
       drinksDeliveryFailed: 'Статусът на напитките не е запазен',
+      markAllItemsServed: 'Всичко сервирано',
+      markAllItemsServedFailed: 'Статусът на сервиране не бе запазен',
       serveStatus: 'Статус на сервиране',
       served: 'Сервирано',
       outstanding: 'Чака',
@@ -440,6 +447,8 @@ function buildWorkspaceCopy(language: Language): WorkspaceCopy {
     drinksReminder: 'Drinks are still waiting to be carried out.',
     drinksDelivered: 'All drinks carried out',
     drinksDeliveryFailed: 'Drink delivery status could not be saved',
+    markAllItemsServed: 'Mark all served',
+    markAllItemsServedFailed: 'Serving status could not be saved',
     serveStatus: 'Serving status',
     served: 'Served',
     outstanding: 'Outstanding',
