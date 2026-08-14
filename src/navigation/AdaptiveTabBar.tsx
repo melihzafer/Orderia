@@ -184,7 +184,11 @@ function AdaptiveTabItem({
       >
         <View>
           <Ionicons
-            color={selected ? tokens.colors.primary : tokens.colors.textSubtle}
+            // `accent` kullanılıyor, `primary` değil: bu hap `accentSoft` zemin üstünde
+            // ve `primary`/`accentSoft` çifti 12px kalın metinde WCAG AA 4.5:1'i
+            // yakalayamıyordu (4.38:1, axe-core e2e testinde tespit edildi).
+            // `accent` üstteki metinle aynı ton, 5.48:1 ile geçiyor.
+            color={selected ? tokens.colors.accent : tokens.colors.textSubtle}
             name={icon}
             size={expanded ? 24 : 22}
           />
@@ -221,7 +225,7 @@ function AdaptiveTabItem({
           style={[
             tokens.typography.caption,
             {
-              color: selected ? tokens.colors.primary : tokens.colors.textSubtle,
+              color: selected ? tokens.colors.accent : tokens.colors.textSubtle,
               fontWeight: selected ? '700' : '500',
               marginLeft: expanded ? tokens.space.sm : 0,
               marginTop: expanded ? 0 : 2,

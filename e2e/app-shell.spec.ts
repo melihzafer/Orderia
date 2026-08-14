@@ -200,20 +200,18 @@ test('opens the searchable receipt archive with explicit offline recovery', asyn
   ).toBeVisible();
 });
 
-test('keeps manual menu editing available while AI add is disabled', async ({ page }, testInfo) => {
+test('keeps manual menu editing available while AI add is hidden', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('tab', { name: nav.menu }).click();
 
   await expect(page.getByRole('heading', { name: nav.menu })).toBeVisible();
+  // AI ile ürün ekleme şu an tamamen gizli (devre dışı-ama-görünür değil) —
+  // bkz. MenuScreen.tsx'teki yorum satırına alınmış blok. Bu testin asıl
+  // amacı manuel ekleme akışının bundan etkilenmediğini doğrulamak.
   await expect(
     page.getByRole('button', { name: /AI ile ürün ekle|Добави с AI|Add with AI/i }),
-  ).toBeDisabled();
-  await expect(
-    page.getByText(
-      /AI ile ürün ekleme şimdilik devre dışı|Добавянето с AI временно е деактивирано|Adding items with AI is temporarily disabled/i,
-    ),
-  ).toBeVisible();
+  ).toHaveCount(0);
 
   await page
     .getByRole('button', { name: /Elle ürün ekle|Добави ръчно|Add manually/i })

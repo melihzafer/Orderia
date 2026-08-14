@@ -301,6 +301,26 @@
       "count": 1,
       "tokens": 1973,
       "first_read": "2026-08-14T08:57:58.447Z"
+    },
+    "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-08-14T10:55:41.691Z"
+    },
+    "D:/Projects/Orderia/src/design-system/tokens.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-08-14T10:56:01.451Z"
+    },
+    "D:/Projects/Orderia/src/screens/MenuScreen.tsx": {
+      "count": 1,
+      "tokens": 8155,
+      "first_read": "2026-08-14T10:57:31.147Z"
+    },
+    "D:/Projects/Orderia/e2e/app-shell.spec.ts": {
+      "count": 3,
+      "tokens": 2727,
+      "first_read": "2026-08-14T10:57:46.629Z"
     }
   },
   "files_written": [
@@ -909,6 +929,24 @@
       "action": "edit",
       "tokens": 5,
       "at": "2026-08-14T08:59:07.376Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+      "action": "edit",
+      "tokens": 141,
+      "at": "2026-08-14T10:56:54.956Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/src/navigation/AdaptiveTabBar.tsx",
+      "action": "edit",
+      "tokens": 23,
+      "at": "2026-08-14T10:57:06.274Z"
+    },
+    {
+      "file": "D:/Projects/Orderia/e2e/app-shell.spec.ts",
+      "action": "edit",
+      "tokens": 193,
+      "at": "2026-08-14T10:58:16.856Z"
     }
   ],
   "edit_counts": {
@@ -937,11 +975,13 @@
     "src/contexts/AuthContext.tsx": 26,
     "src/screens/AddTableScreenModern.tsx": 1,
     "src/i18n/LocalizationContext.tsx": 2,
-    "public/index.html": 1
+    "public/index.html": 1,
+    "src/navigation/AdaptiveTabBar.tsx": 2,
+    "e2e/app-shell.spec.ts": 1
   },
-  "anatomy_hits": 13,
-  "anatomy_misses": 45,
-  "repeated_reads_warned": 61,
+  "anatomy_hits": 14,
+  "anatomy_misses": 48,
+  "repeated_reads_warned": 64,
   "cerebrum_warnings": 0,
-  "stop_count": 12
+  "stop_count": 13
 }

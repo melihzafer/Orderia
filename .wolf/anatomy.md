@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-08-14T08:59:07.367Z
-> Files: 58 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-08-14T10:58:16.847Z
+> Files: 60 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -123,6 +123,7 @@
 
 ## e2e/
 
+- `app-shell.spec.ts` — Sipariş akışı önce salon sordurur; masalar ikinci adımda görünür. (~2727 tok)
 
 ## mockup-v2/
 
@@ -322,6 +323,7 @@
 
 ## src/navigation/
 
+- `AdaptiveTabBar.tsx` — AdaptiveTabBar (~2544 tok)
 - `AppNavigator.tsx` — Bir ekranı kendi hata sınırına sarar. (~2742 tok)
 - `routes.ts` — Rota sözleşmesi — yalnızca tipler, hiçbir ekran içe aktarılmaz. (~501 tok)
 

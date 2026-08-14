@@ -2400,6 +2400,46 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T08:59:07.378Z"
+    },
+    {
+      "id": "bug-148",
+      "timestamp": "2026-08-14T10:57:06.277Z",
+      "error_message": "Wrong reference: primary should be accent",
+      "file": "src/navigation/AdaptiveTabBar.tsx",
+      "root_cause": "Used \"primary\" instead of \"accent\"",
+      "fix": "Changed primary → accent",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T10:57:06.277Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-08-14T10:55:00.000Z",
+      "error_message": "e2e accessibility test failure: 'Element has insufficient color contrast of 4.37 (foreground color: #be4a26, background color: #fbede8, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1' on the selected bottom-tab pill (e.g. aria-label=\"Masalar\")",
+      "file": "src/navigation/AdaptiveTabBar.tsx",
+      "root_cause": "The selected tab's icon and label used tokens.colors.primary (#BE4A26) as text color directly on tokens.colors.accentSoft (#FBEDE8) as the pill background -- a real WCAG AA 4.5:1 failure at 4.38:1, caught by the axe-core e2e accessibility test. tokens.ts documents that every color PAIR in the palette is meant to pass 4.5:1 (see tokens.test.ts), but this specific primary-on-accentSoft usage wasn't one of the audited pairs.",
+      "fix": "Switched both the selected-tab icon color and label text color from tokens.colors.primary to tokens.colors.accent (#A63F1F), which already existed as the token's darker/pressed brand shade and gives 5.48:1 against accentSoft -- comfortably passing. No new token invented; reused an existing one with the right contrast profile.",
+      "tags": ["accessibility", "wcag", "contrast", "design-system", "navigation", "e2e"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T10:55:00.000Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-08-14T10:55:00.000Z",
+      "error_message": "e2e test failure: 'keeps manual menu editing available while AI add is disabled' -- getByRole('button', {name: /AI ile ürün ekle.../}) not found at all, test expected it disabled-but-visible",
+      "file": "e2e/app-shell.spec.ts",
+      "root_cause": "Stale test, not an app bug. MenuScreen.tsx has a documented, deliberate product decision (comment at line ~302) to hide the AI-add-menu-item entry point entirely (code not deleted, block commented out) rather than show it disabled with an explanatory message. The e2e test was written for the OLD 'visible but disabled' behavior and never updated when the feature was fully hidden.",
+      "fix": "Updated the test to assert the AI-add button has zero matches (toHaveCount(0)) instead of toBeDisabled(), removed the now-nonexistent disabled-explanation text assertion, and renamed the test to 'while AI add is hidden'. The test's real value (manual item-add flow still works) is unchanged and still passes.",
+      "tags": ["e2e", "test-maintenance", "stale-test", "menu"],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-14T10:55:00.000Z"
     }
   ]
 }
