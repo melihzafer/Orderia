@@ -44,6 +44,7 @@ export function ShiftBoardQuickActions({
         flexWrap: 'wrap',
         gap: tokens.space.xs,
         marginBottom: tokens.space.sm,
+        width: '100%',
       }}
     >
       {actions.map((id) => {

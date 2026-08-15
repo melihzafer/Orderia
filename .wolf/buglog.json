@@ -2768,6 +2768,42 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-08-14T23:35:00.000Z"
+    },
+    {
+      "id": "bug-169",
+      "timestamp": "2026-08-15T05:17:50.889Z",
+      "error_message": "CSS fix: flexDirection",
+      "file": "src/screens/HomeScreen.tsx",
+      "root_cause": "flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs → 'row', flexWrap: 'wrap', gap: tokens.space.xs, width: '100%'",
+      "fix": "Changed flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs → 'row', flexWrap: 'wrap', gap: tokens.space.xs, width: '100%'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-15T05:17:50.889Z"
+    },
+    {
+      "id": "bug-029",
+      "timestamp": "2026-08-15T08:15:00.000Z",
+      "error_message": "User-reported (screenshot, native Android APK, Home screen): quick-action cards overlap each other -- \"Настрой масите\" (Configure tables, red) and \"Отчети\" (Reports) render floating on top of the second row of the shift-board quick actions strip (open checks/take payment/day summary), instead of appearing below it in their own \"more\" section.",
+      "file": "src/features/service-board/ShiftBoardQuickActions.tsx, src/screens/HomeScreen.tsx",
+      "root_cause": "Both flexWrap row containers (ShiftBoardQuickActions's action strip, and HomeScreen's 'more nav' block) had flexDirection:'row', flexWrap:'wrap' with children sized by percentage/flexGrow flexBasis, but no explicit width on the wrapping View. On native RN (Yoga), a flexWrap container without a definite width can mis-measure its own total height when content wraps to a second row -- the container reports a height short of what its wrapped rows actually occupy, so the next sibling in the vertical ScrollView starts rendering too early and visually overlaps the wrapped row beneath it. This only reproduces on native (Yoga layout), not on the web/PWA build (browser flexbox measures wrapped rows correctly), which is why it wasn't caught in prior PWA-only QA passes.",
+      "fix": "Added explicit width: '100%' to both flexWrap containers (ShiftBoardQuickActions.tsx's action strip View, HomeScreen.tsx's more-nav View), giving Yoga a definite width up front so it correctly measures wrapped-row height. tsc clean; jest src/features/service-board src/screens all pass (56/56).",
+      "tags": [
+        "ui",
+        "layout",
+        "android",
+        "native",
+        "flexwrap",
+        "home-screen",
+        "p1"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-15T08:15:00.000Z"
     }
   ]
 }

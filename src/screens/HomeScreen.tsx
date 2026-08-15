@@ -308,7 +308,9 @@ export default function HomeScreen() {
         />
 
         <ServiceSectionHeader title={t.moreNav} />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs }}>
+        <View
+          style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.xs, width: '100%' }}
+        >
           {isManager ? (
             <ServiceQuickAction
               emphasis="primary"
